@@ -1,5 +1,5 @@
 import Technician from '../../models/authModels/technician.js'
-import { generateToken } from '../../utils/generateToken.js';
+import { generateToken } from '../../utils/generateToken';
 
 export const registerTechnician = async ({ username, phoneNumber, password, confirmPassword, category }) => {
   if (password !== confirmPassword) {

@@ -10,7 +10,7 @@ import serviceRoutes from './routes/services.route.js';
 import cors from 'cors';
 
 dotenv.config();
-connectDB();
+connectDB()
 
 const app = express();
 
@@ -23,6 +23,11 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/serices', serviceRoutes);
 
+// app.get('/profile/:id', (req, res) => {
+//   const { id } = req.params;
+//   // Logic to get the profile by ID
+// });
+
 app.use(errorHandler)
-  
+
 export default app;

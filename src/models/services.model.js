@@ -44,7 +44,8 @@ const serviceSchema = new Schema({
     type: Number,
     default: 0,
   },
-  photos: [photoSchema],
+  photos: [photoSchema], // optional, remove if photo is not service-specific
+
 }, {
   timestamps: true,
 });
