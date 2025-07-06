@@ -1,4 +1,4 @@
-import Technician from '../../models/authModels/technician'
+import Technician from '../../models/authModels/technician.js'
 import { generateToken } from '../../utils/generateToken';
 
 export const registerTechnician = async ({ username, phoneNumber, password, confirmPassword, category }) => {

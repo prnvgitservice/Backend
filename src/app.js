@@ -24,11 +24,5 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/serices', serviceRoutes);
 
 app.use(errorHandler)
-  
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(400).json({ message: err.message });
-});
 
 export default app;
