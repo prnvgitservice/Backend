@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 
+
 const connectDB = async () => {
   console.log(process.env.MONGO_URI);
   
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    console.log(process.env.MONGO_URI)
+    await mongoose.connect(`mongodb+srv://PrnvServices:lohitha@cluster0.s3f2vim.mongodb.net/PRNVServices?retryWrites=true&w=majority&appName=Cluster0`);
     console.log('✅ MongoDB connected');
   } catch (err) {
     console.error('❌ MongoDB connection failed', err.message);
