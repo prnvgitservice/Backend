@@ -22,7 +22,24 @@ const userSchema = new Schema({
     required: true,
     minlength: 6,
     select: false
-  }
+  },
+  role: {
+    type: String,
+    enum: ['user', 'technician'],
+    default: 'user',
+    required: true
+  },
+  category: {
+    type: String,
+    required: function() {
+      return this.role === 'technician';
+    }
+  },
+  buildingName: { type: String, required: true },
+  areaName: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  pincode: { type: String, required: true },
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {

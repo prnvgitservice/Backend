@@ -2,6 +2,7 @@ import * as authService from "../../services/authServices/user.js";
 
 export const register = async (req, res, next) => {
   try {
+    console.log("req.body", req.body)
     const result = await authService.register(req.body);
      console.log("req.body", req.body)
     res.status(201).json({
@@ -10,6 +11,21 @@ export const register = async (req, res, next) => {
       user: result,
     });
   } catch (err) {
+    
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      const value = err.keyValue[field];
+      return res.status(400).json({ 
+        success: false, 
+        message: `${field} '${value}' already exists. Please use a different ${field}.` 
+      });
+    }
+    
+    
+    if (err.message === "Role must be either 'user' or 'technician'." ||
+        err.message === "Category is required for technicians.") {
+      return res.status(400).json({ success: false, message: err.message });
+    }
     next(err)
   }
 };
@@ -22,8 +38,44 @@ export const login = async (req, res, next) => {
       message: "User Login successfully.",
       user: result,
     });
-    console.log("req.body",req.body)
+
   } catch (err) {
+    next(err);
+  }
+};
+
+export const getProfile = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const result = await authService.getProfile(userId);
+    res.json({
+      success: true,
+      message: "User profile fetched successfully.",
+      user: result,
+    });
+  } catch (err) {
+
+    next(err);
+  }
+};
+
+export const editProfile = async (req, res, next) => {
+  try {
+    const userId = req.params.id; 
+    const result = await authService.editProfile(userId, req.body);
+    res.json({
+      success: true,
+      message: req.body.newPassword ? "Password updated successfully." : "User profile updated successfully.",
+      user: result,
+    });
+  } catch (err) {
+
+    if (err.message === "Both newPassword and confirmPassword are required to change password." ||
+        err.message === "New password and confirm password do not match." ||
+        err.message === "Role must be either 'user' or 'technician'." ||
+        err.message === "Category is required for technicians.") {
+      return res.status(400).json({ success: false, message: err.message });
+    }
     next(err);
   }
 };
