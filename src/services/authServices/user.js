@@ -1,5 +1,6 @@
 import User from "../../models/authModels/user.js";
 import { generateToken } from "../../utils/generateToken.js";
+import mongoose from 'mongoose';
 
 export const register = async ({
   username,
@@ -78,8 +79,6 @@ if (errors.length > 0) {
   };
 };
 
-
-
 export const login = async ({ phoneNumber, password }) => {
   if (!phoneNumber || !password) 
      {
@@ -94,9 +93,14 @@ export const login = async ({ phoneNumber, password }) => {
   if (!user) {
     errors.push("User not found with this phone number.");
   }
-  const isMatch = await user.isPasswordMatch(password);
-  if (!isMatch) {
-    errors.push("Invalid credentials.");
+
+    let isMatch = false;
+
+     if (user) {
+    isMatch = await user.isPasswordMatch(password);
+    if (!isMatch) {
+      errors.push("Invalid credentials.");
+    }
   }
 
   if (errors.length > 0) {
@@ -124,10 +128,28 @@ export const login = async ({ phoneNumber, password }) => {
 };
 
 export const getProfile = async (userId) => {
+  if (!userId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["User ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    const err = new Error("Invalid User ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided user ID is not valid."];
+    throw err;
+  }
+
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error("User not found.");
+    const err = new Error("User not found.");
+    err.statusCode = 404;
+    err.errors = ["User not found."];
+    throw err;
   }
+
   return {
     id: user._id,
     username: user.username,
@@ -143,35 +165,68 @@ export const getProfile = async (userId) => {
 
 
 
-export const editProfile = async (userId, profileData) => {
-  const user = await User.findById(userId);
+ export const editProfile = async (userId, updateData) => {
+  const errors = [];
+
+  const {
+    id,
+    username,
+    password,
+    buildingName,
+    areaName,
+    city,
+    state,
+    pincode,
+    phoneNumber,
+    role, 
+  } = updateData;
+ if (phoneNumber || role) 
+     {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Phone number cant be Updated."];
+    throw err;
+  }
+
+
+  if (!id) {
+    const err = new Error("ID is required.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const user = await User.findById(id);
   if (!user) {
-    throw new Error("User not found.");
+    const err = new Error("User not found.");
+    err.statusCode = 404;
+    throw err;
   }
 
-  const { newPassword, confirmPassword, ...otherProfileData } = profileData;
-  if (newPassword || confirmPassword) {
-    if (!newPassword || !confirmPassword) {
-      throw new Error("Both newPassword and confirmPassword are required to change password.");
+  if (username && typeof username !== "string") {
+    errors.push("Username must be a string.");
+  }
+
+  if (password) {
+    if (password.length < 6 || password.length > 20) {
+      errors.push("Password must be between 6 and 20 characters.");
     }
-    if (newPassword !== confirmPassword) {
-      throw new Error("New password and confirm password do not match.");
-    }
-    user.password = newPassword;
   }
 
-
-  if (otherProfileData.role && !['user', 'technician'].includes(otherProfileData.role)) {
-    throw new Error("Role must be either 'user' or 'technician'.");
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 400;
+    err.errors = errors;
+    throw err;
   }
 
+  if (username) user.username = username;
+  if (password) user.password = password;
+  if (buildingName) user.buildingName = buildingName;
+  if (areaName) user.areaName = areaName;
+  if (city) user.city = city;
+  if (state) user.state = state;
+  if (pincode) user.pincode = pincode;
 
-  if (otherProfileData.role === 'technician' && !otherProfileData.category) {
-    throw new Error("Category is required for technicians.");
-  }
-
-
-  Object.assign(user, otherProfileData);
   await user.save();
 
   return {
@@ -179,7 +234,6 @@ export const editProfile = async (userId, profileData) => {
     username: user.username,
     phoneNumber: user.phoneNumber,
     role: user.role,
-    category: user.category,
     buildingName: user.buildingName,
     areaName: user.areaName,
     city: user.city,
