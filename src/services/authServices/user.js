@@ -1,5 +1,6 @@
 import User from "../../models/authModels/user.js";
 import { generateToken } from "../../utils/generateToken.js";
+import mongoose from 'mongoose';
 
 export const register = async ({
   username,
@@ -126,13 +127,29 @@ export const login = async ({ phoneNumber, password }) => {
   };
 };
 
-
-
 export const getProfile = async (userId) => {
+  if (!userId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["User ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    const err = new Error("Invalid User ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided user ID is not valid."];
+    throw err;
+  }
+
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error("User not found.");
+    const err = new Error("User not found.");
+    err.statusCode = 404;
+    err.errors = ["User not found."];
+    throw err;
   }
+
   return {
     id: user._id,
     username: user.username,
@@ -145,6 +162,7 @@ export const getProfile = async (userId) => {
     pincode: user.pincode,
   };
 };
+
 
 
  export const editProfile = async (userId, updateData) => {
