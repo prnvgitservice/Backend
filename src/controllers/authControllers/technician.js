@@ -1,5 +1,5 @@
-import technician from "../../models/authModels/technician";
-import { generateToken } from "../../utils/generateToken";
+import technician from "../../models/authModels/technician.js";
+import { generateToken } from "../../utils/generateToken.js";
 
 
 const generatedSequrityCodes = new Set();
