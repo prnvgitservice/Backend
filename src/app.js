@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import authRoutes from './routes/authRoutes/user.js';
+import authUserRoutes from './routes/authRoutes/user.js';
 import authTechRoutes from './routes/authRoutes/technician.js';
 import categoryRoutes from './routes/category.route.js';
 import reviewRoutes from './routes/customerReviews.route.js';
@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use('/api/auth', authRoutes);
+app.use('/api/userAuth', authUserRoutes);
 app.use('/api/techAuth', authTechRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);

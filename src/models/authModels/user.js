@@ -7,9 +7,6 @@ const userSchema = new Schema({
   username: {
     type: String,
     required: true,
-    unique: true,  
-    trim: true,
-    lowercase: true
   },
   phoneNumber: {
     type: String,
@@ -21,19 +18,13 @@ const userSchema = new Schema({
     type: String,
     required: true,
     minlength: 6,
+    maxlength: 20,
     select: false
   },
   role: {
     type: String,
-    enum: ['user', 'technician'],
     default: 'user',
     required: true
-  },
-  category: {
-    type: String,
-    required: function() {
-      return this.role === 'technician';
-    }
   },
   buildingName: { type: String, required: true },
   areaName: { type: String, required: true },

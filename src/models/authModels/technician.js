@@ -4,20 +4,20 @@ import bcrypt from 'bcryptjs';
 const { Schema, model } = mongoose;
 
 const technicianSchema = new Schema({
-  username: {
+  userId: {
     type: String,
     required: true,
     unique: true,
     trim: true,
   },
-  name: {
+  username: {
     type: String,
     required: true,
   },
   role: {
     type: String,
     required: true,
-    default: "Technician",
+    default: "technician",
   },
   phoneNumber: {
     type: String,
@@ -25,7 +25,7 @@ const technicianSchema = new Schema({
     unique: true,
     match: [/^\d{10}$/, 'Phone number must be 10 digits']
   },
-  hash_password: {
+  password: {
     type: String,
     required: true,
   },
@@ -33,16 +33,21 @@ const technicianSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Category',
   },
+  buildingName: { type: String, required: true },
+  areaName: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  pincode: { type: String, required: true },
 }, { timestamps: true });
 
-technicianSchema.pre('save', async function(next) {
-  if (!this.isModified('hash_password')) return next();
-  this.hash_password = await bcrypt.hash(this.hash_password, 12);
+technicianSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-technicianSchema.methods.isPasswordMatch = function(password) {
-  return bcrypt.compare(password, this.hash_password);
+technicianSchema.methods.isPasswordMatch = function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
 export default model('Technician', technicianSchema);

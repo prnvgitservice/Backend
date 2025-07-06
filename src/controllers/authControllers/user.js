@@ -2,31 +2,15 @@ import * as authService from "../../services/authServices/user.js";
 
 export const register = async (req, res, next) => {
   try {
-    console.log("req.body", req.body)
     const result = await authService.register(req.body);
-     console.log("req.body", req.body)
+     console.log("result", result)
     res.status(201).json({
       success: true,
       message: "User Registered successfully.",
-      user: result,
+      result,
     });
   } catch (err) {
-    
-    if (err.code === 11000) {
-      const field = Object.keys(err.keyPattern)[0];
-      const value = err.keyValue[field];
-      return res.status(400).json({ 
-        success: false, 
-        message: `${field} '${value}' already exists. Please use a different ${field}.` 
-      });
-    }
-    
-    
-    if (err.message === "Role must be either 'user' or 'technician'." ||
-        err.message === "Category is required for technicians.") {
-      return res.status(400).json({ success: false, message: err.message });
-    }
-    next(err)
+   next(err);
   }
 };
 
@@ -36,7 +20,7 @@ export const login = async (req, res, next) => {
     res.json({
       success: true,
       message: "User Login successfully.",
-      user: result,
+      result,
     });
 
   } catch (err) {
