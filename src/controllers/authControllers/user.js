@@ -35,7 +35,7 @@ export const getProfile = async (req, res, next) => {
     res.json({
       success: true,
       message: "User profile fetched successfully.",
-      user: result,
+      result,
     });
   } catch (err) {
 
