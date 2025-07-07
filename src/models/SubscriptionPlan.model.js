@@ -7,6 +7,10 @@ const featureSchema = new Schema({
   included: { type: Boolean, default: false }
 }, { _id: false });
 
+const fullFeatureSchema = new Schema({
+  text: { type: String, required: true }
+}, { _id: false });
+
 const subscriptionPlanSchema = new Schema({
   name: {
     type: String,
@@ -45,7 +49,6 @@ const subscriptionPlanSchema = new Schema({
   },
   validityUnit: {
     type: String,
-    enum: ['days', 'months', 'years'],
     default: 'days'
   },
   maxMembers: {
@@ -60,6 +63,22 @@ const subscriptionPlanSchema = new Schema({
     type: [featureSchema],
     required: true
   },
+  fullFeatures: {
+    type: [fullFeatureSchema],
+    default: []
+  },
+  icon: {
+    type: String,
+    default: null
+  },
+  color: {
+    type: String,
+    default: null
+  },
+  buttonColor: {
+    type: String,
+    default: null
+  },
   isPopular: {
     type: Boolean,
     default: false
@@ -72,4 +91,4 @@ const subscriptionPlanSchema = new Schema({
   timestamps: true
 });
 
-export default model('SubscriptionPlan', subscriptionPlanSchema);
+export default model('plans', subscriptionPlanSchema);
