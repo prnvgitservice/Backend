@@ -1,31 +1,94 @@
 import mongoose from 'mongoose';
 
-const featureSchema = new mongoose.Schema({
-  text: { type: String, required: true },
-  included: { type: Boolean, default: true }, // default true for compatibility
-}, { _id: false });
+const { Schema, model } = mongoose;
 
-const fullFeatureSchema = new mongoose.Schema({
-  text: { type: String, required: true },
-}, { _id: false });
-
-const planSchema = new mongoose.Schema({
+const featureSchema = new Schema({
   name: { type: String, required: true },
-  price: { type: String, required: true },
-  originalPrice: { type: String },
-  discount: { type: String },
-  gst: { type: String },
-  validity: { type: String },
-  color: { type: String },
-  buttonColor: { type: String },
-  popular: { type: Boolean, default: false },
+  included: { type: Boolean, default: false }
+}, { _id: false });
 
-  features: [featureSchema],
-  fullFeatures: [fullFeatureSchema],
+const fullFeatureSchema = new Schema({
+  text: { type: String, required: true }
+}, { _id: false });
+
+const subscriptionPlanSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: 3,
+    maxlength: 100,
+    trim: true
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  originalPrice: {
+    type: Number,
+    default: null
+  },
+  discount: {
+    type: Number,
+    default: null
+  },
+  gst: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  totalPrice: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  validity: {
+    type: Number,
+    required: true,
+    min: 1
+  },
+  validityUnit: {
+    type: String,
+    default: 'days'
+  },
+  maxMembers: {
+    type: Number,
+    default: null
+  },
+  maxLeads: {
+    type: Number,
+    default: null
+  },
+  features: {
+    type: [featureSchema],
+    required: true
+  },
+  fullFeatures: {
+    type: [fullFeatureSchema],
+    default: []
+  },
+  icon: {
+    type: String,
+    default: null
+  },
+  color: {
+    type: String,
+    default: null
+  },
+  buttonColor: {
+    type: String,
+    default: null
+  },
+  isPopular: {
+    type: Boolean,
+    default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  }
 }, {
-  timestamps: true,
+  timestamps: true
 });
 
-const Plan = mongoose.model('Subscriptions', planSchema);
-
-export default Plan;
+export default model('plans', subscriptionPlanSchema);
