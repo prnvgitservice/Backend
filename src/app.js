@@ -7,7 +7,6 @@ import reviewRoutes from './routes/customerReviews.route.js';
 import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import serviceRoutes from './routes/services.route.js';
-import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -23,7 +22,11 @@ app.use('/api/techAuth', authTechRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/serices', serviceRoutes);
-app.use('/api/techProfile', techProfileRoutes);
+
+// app.get('/profile/:id', (req, res) => {
+//   const { id } = req.params;
+//   // Logic to get the profile by ID
+// });
 
 app.use(errorHandler)
 
