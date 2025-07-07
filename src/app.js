@@ -25,11 +25,6 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/serices', serviceRoutes);
 app.use('/api/techProfile', techProfileRoutes);
 
-// app.get('/profile/:id', (req, res) => {
-//   const { id } = req.params;
-//   // Logic to get the profile by ID
-// });
-
 app.use(errorHandler)
 
 export default app;

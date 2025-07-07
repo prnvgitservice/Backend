@@ -37,7 +37,7 @@ export const multerUpload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 5 * 1024 * 1024,
   },
 });
 
@@ -58,7 +58,6 @@ export const uploadWithValidation = (req, res, next) => {
       return acc;
     }, {});
 
-    // Validation
     if (req.method === "POST") {
       if (grouped.profileImage && grouped.profileImage.length > 1) {
         req.uploadError = "Only one profileImage allowed.";
