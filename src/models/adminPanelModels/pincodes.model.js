@@ -16,4 +16,4 @@ const PincodeSchema = new mongoose.Schema({
   areas: [AreaSchema],
 }, { timestamps: true });
 
-export default mongoose.model('Pincode', PincodeSchema);
+export default mongoose.model('pincodes', PincodeSchema);

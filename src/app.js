@@ -8,6 +8,7 @@ import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import serviceRoutes from './routes/services.route.js';
 import planRoutes from './routes/subscriptionRoutes.js';
+import pincodeRoutes from './routes/adminPanelRoutes/pincodes.route.js';
 import cors from 'cors';
 
 dotenv.config();
@@ -24,11 +25,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/serices', serviceRoutes);
 app.use('/api/subscriptions', planRoutes);
-
-// app.get('/profile/:id', (req, res) => {
-//   const { id } = req.params;
-//   // Logic to get the profile by ID
-// });
+app.use('/api/pincodes', pincodeRoutes);
 
 app.use(errorHandler)
 
