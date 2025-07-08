@@ -33,6 +33,14 @@ const technicianSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Category',
   },
+   description: {
+    type: String,
+    trim: true,
+    maxlength: 1000,
+  },
+  profileImage: {
+    type: String
+  },
   buildingName: { type: String, required: true },
   areaName: { type: String, required: true },
   city: { type: String, required: true },
