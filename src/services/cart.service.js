@@ -1,17 +1,27 @@
-// src/services/cart.service.js
 import Cart from '../models/cart.model.js';
 
-export const addToCartService = async (userId, serviceId, quantity = 1) => {
+export const addToCartService = async (userId, serviceId, quantity = 1, bookingDate) => {
   let cart = await Cart.findOne({ userId });
 
+  const itemData = {
+    serviceId,
+    quantity,
+    bookingDate,
+    status: 'upcoming', // default
+    // otp is generated via model default
+  };
+
   if (!cart) {
-    cart = new Cart({ userId, items: [{ serviceId, quantity }] });
+    cart = new Cart({ userId, items: [itemData] });
   } else {
-    const existingItem = cart.items.find(item => item.serviceId.toString() === serviceId);
+    const existingItem = cart.items.find(
+      item => item.serviceId.toString() === serviceId && new Date(item.bookingDate).toISOString() === new Date(bookingDate).toISOString()
+    );
+
     if (existingItem) {
       existingItem.quantity += quantity;
     } else {
-      cart.items.push({ serviceId, quantity });
+      cart.items.push(itemData);
     }
   }
 
@@ -27,7 +37,7 @@ export const removeFromCartService = async (userId, serviceId) => {
     { userId },
     { $pull: { items: { serviceId } } },
     { new: true }
-  );
+  ).populate('items.serviceId');
 };
 
 export const clearCartService = async (userId) => {
