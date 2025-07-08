@@ -50,4 +50,4 @@ const serviceSchema = new Schema({
   timestamps: true,
 });
 
-export default model('Service', serviceSchema);
+export default model('services', serviceSchema);
