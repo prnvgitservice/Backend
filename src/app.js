@@ -9,11 +9,9 @@ import { errorHandler } from './middleware/errorMiddleware.js';
 import serviceRoutes from './routes/services.route.js';
 import planRoutes from './routes/subscriptionRoutes.js';
 import pincodeRoutes from './routes/adminPanelRoutes/pincodes.route.js';
-<<<<<<< Updated upstream
-=======
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
->>>>>>> Stashed changes
+
 import cors from 'cors';
 
 dotenv.config();
