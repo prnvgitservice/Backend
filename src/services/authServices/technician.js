@@ -1,5 +1,9 @@
 import Technician from '../../models/authModels/technician.js'
 import { generateToken } from '../../utils/generateToken.js';
+import mongoose from 'mongoose';
+import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
+
 
 export const registerTechnician = async ({ 
   userId,
@@ -133,6 +137,141 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
     state: technician.state,
     pincode: technician.pincode,
     token,
+  }
+};
+
+
+
+export const updateTechnician = async ({ 
+   technicianId,
+    username,
+    password,
+    buildingName,
+    areaName,
+    city,
+    state,
+    pincode,
+    description,
+    files,
+}) => {
+   const errors = [];
+  
+    if (!technicianId) {
+      const err = new Error("Validation failed");
+      err.statusCode = 401;
+      err.errors = ["technicianId are required."];
+      throw err;
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+        const err = new Error("Technician ID format.");
+        err.statusCode = 400;
+        err.errors = ["Provided Technician ID is not valid."];
+        throw err;
+      }
+
+    const technician = await Technician.findById(technicianId);
+    if (!technician) {
+      const err = new Error("Technician not found");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (files.profileImage?.[0]) {
+      const filePath = files.profileImage[0].path;
+
+      const oldUrl = technician.profileImage;
+      if (oldUrl) {
+        const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+        const publicId = match ? `TechProfiles/${match[1]}` : null;
+        if (publicId) {
+          await cloudinary.uploader.destroy(publicId);
+        }
+      }
+
+      const uploadResult = await cloudinary.uploader.upload(filePath, {
+        folder: "TechProfiles",
+      });
+      fs.unlinkSync(filePath);
+
+      technician.profileImage = uploadResult.secure_url;
+    }
+
+    if (username) technician.username = username;
+    if (password) technician.password = password;
+    if (buildingName) technician.buildingName = buildingName;
+    if (areaName) technician.areaName = areaName;
+    if (city) technician.city = city;
+    if (state) technician.state = state;
+    if (pincode) technician.pincode = pincode;
+    if (description) technician.description = description;
+
+    await technician.save();
+
+     if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+
+return {
+   id: technician._id,
+    username: technician.username,
+    userId: technician.userId,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    description: technician.description,
+    profileImage: technician.profileImage,
+}
+};
+
+export const getTechnicianProfile = async (technicianId) => {
+  console.log("technicianId", technicianId)
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found.");
+    err.statusCode = 404;
+    err.errors = ["Technician not found."];
+    throw err;
+  }
+
+  return {
+     id: technician._id,
+    username: technician.username,
+    userId: technician.userId,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    description: technician.description,
+    profileImage: technician.profileImage,
   };
 };
+
 

@@ -31,7 +31,6 @@ export const registerTechnicianController = async (req, res, next) => {
       userId: generateSequrityCode(),
     };
     const result = await technician.registerTechnician(technicianData);
-     console.log("result", result)
     res.status(201).json({
       success: true,
       message: "Technician Registered successfully.",
@@ -52,6 +51,52 @@ export const loginTechnicianController = async (req, res, next) => {
     });
 
   } catch (err) {
+    next(err);
+  }
+};
+
+export const updateTechnicianControl = async (req, res, next) => {
+  const filesArray = req.files || [];
+  const filesMap = {};
+
+  filesArray.forEach((file) => {
+    if (!filesMap[file.fieldname]) {
+      filesMap[file.fieldname] = [];
+    }
+    filesMap[file.fieldname].push(file);
+  });
+
+  const technicianData = {
+    ...req.body,
+    files: filesMap,
+  };
+
+  try {
+    const result = await technician.updateTechnician(technicianData);
+    res.json({
+      success: true,
+      message: "Technician profile updated successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+export const getTechProfileControl = async (req, res, next) => {
+  try {
+    const {technicianId} = req.params;
+
+    console.log("technicianIdtechnicianId", technicianId)
+    const result = await technician.getTechnicianProfile(technicianId);
+    res.json({
+      success: true,
+      message: "Technician profile fetched successfully.",
+      result,
+    });
+  } catch (err) {
+
     next(err);
   }
 };
