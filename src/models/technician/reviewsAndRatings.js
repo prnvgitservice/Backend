@@ -12,6 +12,11 @@ const techReviewAndRatingsSchema = new Schema({
     ref: 'User',
     required: true,
   },
+    serviceId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Service',
+    required: true,
+  },
   review: {
     type: String,
     trim: true,
@@ -20,6 +25,8 @@ const techReviewAndRatingsSchema = new Schema({
   rating: {
     type: Number,
     required: true,
+    min: 1,
+    max: 5,
   },
   comment: {
     type: String,
