@@ -4,7 +4,6 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
-// Required because __dirname is not available in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 

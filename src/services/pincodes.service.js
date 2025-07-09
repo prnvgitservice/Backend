@@ -1,4 +1,4 @@
-import Pincodes from '../../models/adminPanelModels/pincodes.model.js';
+import Pincodes from '../models/pincodes.model.js';
 
 export const getCodeAndAreaNamesService = async () => {
   try {

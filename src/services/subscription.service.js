@@ -1,4 +1,4 @@
-import plans from '../models/subscriptionPlan.model.js';
+import plans from '../models/subscription.model.js';
 
 export const getAllActivePlansService = async () => {
   return await plans.find({ isActive: true });
