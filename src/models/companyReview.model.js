@@ -1,15 +1,18 @@
 import mongoose from 'mongoose';
+const { Schema, model } = mongoose;
 
 const companyReviewSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
+  },
+   technicianId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Technician',
   },
     role: {
     type: String,
     required: true,
-    default: "user",
   },
   rating: {
     type: Number,

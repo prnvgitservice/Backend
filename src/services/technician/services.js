@@ -69,7 +69,6 @@ export const updateService = async ({
   servicePrice,
   files,
 }) => {
-  console.log("files", files);
 
   if (!serviceId) {
     const err = new Error("Validation failed");
