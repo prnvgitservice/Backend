@@ -33,8 +33,6 @@ export const createTechImagesControl = async (req, res, next) => {
   }
 };
 
-
-
 export const getTechImagesByTechIdControl = async (req, res, next) => {
   try {
     const {technicianId} = req.params;
@@ -51,3 +49,34 @@ export const getTechImagesByTechIdControl = async (req, res, next) => {
     next(err);
   }
 };
+export const deleteAllImgsByTechnId = async (req, res, next) => {
+  try {
+    const {technicianId} = req.params;
+
+    console.log("technicianIdtechnicianId", technicianId)
+    const result = await techImgs.deleteAllTechnicianImages(technicianId);
+    res.json({
+      success: true,
+      message: "Technician Images deleted successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+export const deleteSingleTechnicianImageControl = async (req, res, next) => {
+  try {
+    // const {technicianId} = req.params;
+
+    console.log("technicianIdtechnicianId", req.body)
+    const result = await techImgs.deleteSingleTechnicianImage(req.body);
+    res.json({
+      success: true,
+      message: "Technician Image deleted successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

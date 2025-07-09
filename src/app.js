@@ -8,6 +8,8 @@ import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import serviceRoutes from './routes/technician/services.js';
 import techImagesRoutes from './routes/technician/techImgs.js';
+import techReviewRoutes from './routes/technician/reviewsAndRatings.js';
+import techDetailsRoutes from './routes/technician/techDetails.js';
 import planRoutes from './routes/subscriptionRoutes.js';
 import pincodeRoutes from './routes/adminPanelRoutes/pincodes.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
@@ -30,6 +32,8 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/techImages', techImagesRoutes);
 app.use('/api/techProfile', techProfileRoutes);
+app.use('/api/techReview', techReviewRoutes);
+app.use('/api/techDetails', techDetailsRoutes);
 app.use('/api/pincodes', pincodeRoutes);
 app.use('/api/cart', cartRoutes);
 

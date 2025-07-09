@@ -152,10 +152,11 @@ export const updateTechnician = async ({
     state,
     pincode,
     description,
+    service,
     files,
 }) => {
    const errors = [];
-  
+  console.log("service", service)
     if (!technicianId) {
       const err = new Error("Validation failed");
       err.statusCode = 401;
@@ -204,6 +205,7 @@ export const updateTechnician = async ({
     if (city) technician.city = city;
     if (state) technician.state = state;
     if (pincode) technician.pincode = pincode;
+    if (service) technician.service = service;
     if (description) technician.description = description;
 
     await technician.save();
@@ -229,6 +231,7 @@ return {
     state: technician.state,
     pincode: technician.pincode,
     description: technician.description,
+    service: technician.service,
     profileImage: technician.profileImage,
 }
 };
@@ -270,6 +273,7 @@ export const getTechnicianProfile = async (technicianId) => {
     state: technician.state,
     pincode: technician.pincode,
     description: technician.description,
+    service: technician.service,
     profileImage: technician.profileImage,
   };
 };

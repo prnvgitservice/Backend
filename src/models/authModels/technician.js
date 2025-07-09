@@ -41,6 +41,9 @@ const technicianSchema = new Schema({
   profileImage: {
     type: String
   },
+   service: {
+    type: String,
+  },
   buildingName: { type: String, required: true },
   areaName: { type: String, required: true },
   city: { type: String, required: true },

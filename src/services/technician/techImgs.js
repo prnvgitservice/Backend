@@ -103,3 +103,84 @@ export const getTechImagesByTechId = async (technicianId) => {
     imageUrl: technicianImages.imageUrl,
   };
 };
+
+
+export const deleteAllTechnicianImages = async (technicianId) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const techImages = await TechnicianImages.find({ technicianId });
+
+  if (!techImages || techImages.length === 0) {
+    const err = new Error("No Technician Images found for this technician");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  for (const record of techImages) {
+    for (const imageUrl of record.imageUrl) {
+      const match = imageUrl.match(/\/([^/]+)\.[a-z]+$/i);
+      const publicId = match ? `TechUploadedPhotos/${match[1]}` : null;
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
+    }
+  }
+
+  const result = await TechnicianImages.deleteMany({ technicianId });
+
+  return {
+    message: "All technician images deleted successfully.",
+    deletedCount: result.deletedCount,
+  };
+};
+
+export const deleteSingleTechnicianImage = async ( {technicianId, imageUrlToDelete} ) => {
+  if (!technicianId || !imageUrlToDelete) {
+    const err = new Error("Validation failed");
+    err.statusCode = 400;
+    err.errors = ["Technician ID and image URL to delete are required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format.");
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const record = await TechnicianImages.findOne({ technicianId });
+
+  if (!record || !record.imageUrl.includes(imageUrlToDelete)) {
+    const err = new Error("Image not found for the given technician.");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const match = imageUrlToDelete.match(/\/([^/]+)\.[a-z]+$/i);
+  const publicId = match ? `TechUploadedPhotos/${match[1]}` : null;
+
+  if (publicId) {
+    await cloudinary.uploader.destroy(publicId);
+  }
+
+  record.imageUrl = record.imageUrl.filter(url => url !== imageUrlToDelete);
+  await record.save();
+
+  return {
+    message: "Image deleted successfully.",
+    remainingImages: record.imageUrl,
+  };
+};
+
