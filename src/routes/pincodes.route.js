@@ -1,5 +1,5 @@
 import express from 'express';
-import { getPincodeAreaNames, updatePincode, createPincode, getAllPincodes, deletePincode } from '../../controllers/adminPanelControllers/pincodes.controller.js';
+import { getPincodeAreaNames, updatePincode, createPincode, getAllPincodes, deletePincode } from '.././controllers/pincodes.controller.js';
 
 const router = express.Router();
 

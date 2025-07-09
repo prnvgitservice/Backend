@@ -1,4 +1,3 @@
-// controllers/subscription.controller.js
 import { getAllActivePlansService } from '../services/subscription.service.js';
 
 export const getAllActivePlans = async (req, res) => {

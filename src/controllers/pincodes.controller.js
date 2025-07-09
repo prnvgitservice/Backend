@@ -1,4 +1,4 @@
-import { getCodeAndAreaNamesService, getAllPincodesService, createPincodeService, updatePincodeService, deletePincodeService  } from "../../services/adminPanelServices/pincodes.service.js";
+import { getCodeAndAreaNamesService, getAllPincodesService, createPincodeService, updatePincodeService, deletePincodeService  } from "../services/pincodes.service.js";
 
 export const getPincodeAreaNames = async (req, res) => {
   try {

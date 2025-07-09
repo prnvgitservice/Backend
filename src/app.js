@@ -1,9 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
+
 import authUserRoutes from './routes/authRoutes/user.js';
 import authTechRoutes from './routes/authRoutes/technician.js';
 import categoryRoutes from './routes/category.route.js';
-import reviewRoutes from './routes/customerReviews.route.js';
+import reviewRoutes from './routes/reviews.route.js';
 import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import serviceRoutes from './routes/technician/services.js';
@@ -14,6 +15,7 @@ import planRoutes from './routes/subscriptionRoutes.js';
 import pincodeRoutes from './routes/adminPanelRoutes/pincodes.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
+import subscriptionRoutes from './routes/subscription.route.js';
 
 import cors from 'cors';
 
@@ -36,6 +38,7 @@ app.use('/api/techReview', techReviewRoutes);
 app.use('/api/techDetails', techDetailsRoutes);
 app.use('/api/pincodes', pincodeRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 app.use(errorHandler)
 
