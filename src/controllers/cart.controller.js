@@ -3,7 +3,6 @@ import * as Cart from '../services/cart.service.js';
 
 export const addToCart = async (req, res, next) => {
   try {
-  
     const result = await Cart.addToCartService(req.body);
       res.status(201).json({
       success: true,
@@ -22,7 +21,7 @@ export const getCart = async (req, res, next) => {
     const result = await Cart.getCartService({userId});
      res.status(201).json({
       success: true,
-      message: "Cart Created successfully.",
+      message: "Cart items fetched successfully.",
      result,
     });
   } catch (err) {
@@ -30,7 +29,6 @@ export const getCart = async (req, res, next) => {
   }
 };
 
-// Remove from Cart
 export const removeFromCart = async (req, res) => {
   try {
     const { serviceId } = req.params;
@@ -48,7 +46,6 @@ export const removeFromCart = async (req, res) => {
   }
 };
 
-// Clear Cart
 export const clearCart = async (req, res) => {
   try {
     const userId = req.user?._id || req.body.userId;
@@ -68,7 +65,7 @@ export const clearCart = async (req, res) => {
 export const updateCartItem = async (req, res) => {
   try {
     const userId = req.user?._id || req.body.userId;
-    const itemId = req.params.itemId; // item _id from URL
+    const itemId = req.params.itemId; 
     const updates = req.body;
 
     if (!userId || !itemId) {

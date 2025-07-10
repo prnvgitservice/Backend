@@ -1,4 +1,4 @@
-import * as companyReview from '../services/companyReview.servicel.js';
+import * as companyReview from '../services/companyReview.service.js';
 
 export const createReviewComp = async (req, res, next) => {
   try {
