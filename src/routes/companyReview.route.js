@@ -1,5 +1,5 @@
 import express from 'express';
-import { createReviewComp, getCompanyReviewsComp } from '../controllers/companyReview.model.js';
+import { createReviewComp, getCompanyReviewsComp } from '../controllers/companyReview.controller.js';
 
 
 const router = express.Router();

@@ -1,10 +1,10 @@
-import * as companyReview from '../services/companyReview.model.js';
+import * as companyReview from '../services/companyReview.servicel.js';
 
 export const createReviewComp = async (req, res, next) => {
   try {
 
     const result = await companyReview.createReview(req.body);
-        res.json({
+      res.status(201).json({
           success: true,
           message: "Review Created Successfully",
          result,
@@ -18,7 +18,7 @@ export const createReviewComp = async (req, res, next) => {
 export const getCompanyReviewsComp = async (req, res, next) => {
   try {
     const result = await companyReview.getCompanyReviews();
-   res.json({
+   res.status(201).json({
           success: true,
           message: "Review Created Successfully",
          result,

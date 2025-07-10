@@ -17,7 +17,7 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const result = await authService.login(req.body);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "User Login successfully.",
       result,
@@ -32,7 +32,7 @@ export const getProfile = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const result = await authService.getProfile(userId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "User profile fetched successfully.",
       result,
@@ -47,7 +47,7 @@ export const editProfile = async (req, res, next) => {
   try {
     const userId = req.params.id; 
     const result = await authService.editProfile(userId, req.body);
-    res.json({
+    res.status(201).json({
       success: true,
       message: req.body.newPassword ? "Password updated successfully." : "User profile updated successfully.",
       result,

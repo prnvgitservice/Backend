@@ -44,7 +44,7 @@ export const registerTechnicianController = async (req, res, next) => {
 export const loginTechnicianController = async (req, res, next) => {
   try {
     const result = await technician.loginTechnician(req.body);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Technician Login successfully.",
       result,
@@ -73,7 +73,7 @@ export const updateTechnicianControl = async (req, res, next) => {
 
   try {
     const result = await technician.updateTechnician(technicianData);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Technician profile updated successfully.",
       result,
@@ -90,7 +90,7 @@ export const getTechProfileControl = async (req, res, next) => {
 
     console.log("technicianIdtechnicianId", technicianId)
     const result = await technician.getTechnicianProfile(technicianId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Technician profile fetched successfully.",
       result,

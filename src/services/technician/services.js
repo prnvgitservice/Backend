@@ -3,7 +3,6 @@ import Services from '../../models/technician/services.js';
 import Technician from '../../models/authModels/technician.js';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
-import services from '../../models/technician/services.js';
 
 export const createService = async ({
   technicianId,

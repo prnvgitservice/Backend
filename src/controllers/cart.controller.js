@@ -1,39 +1,32 @@
 import { addToCartService, getCartService,removeFromCartService, clearCartService, updateCartItemService} from '../services/cart.service.js';
+import * as Cart from '../services/cart.service.js';
 
-// Add to Cart
-export const addToCart = async (req, res) => {
+export const addToCart = async (req, res, next) => {
   try {
-    const { serviceId, quantity = 1, bookingDate, status } = req.body;
-    const userId = req.user?._id || req.body.userId;
-
-    if (!userId || !serviceId || !bookingDate) {
-      return res.status(400).json({
-        success: false,
-        message: "userId, serviceId, and bookingDate are required",
-      });
-    }
-
-    const cart = await addToCartService(userId, serviceId, quantity, bookingDate, status);
-    return res.status(200).json({ success: true, data: cart });
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+  
+    const result = await Cart.addToCartService(req.body);
+      res.status(201).json({
+      success: true,
+      message: "Cart Created successfully.",
+     result,
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
-// Get Cart
-export const getCart = async (req, res) => {
+export const getCart = async (req, res, next) => {
   try {
-    const userId = req.user?._id || req.params.userId;
-    if (!userId) {
-      return res.status(400).json({ success: false, message: "userId is required" });
-    }
+    const userId = req.params.userId;
 
-    const cart = await getCartService(userId);
-    return res.status(200).json({ success: true, data: cart });
-  } catch (error) {
-    console.error("Error fetching cart:", error);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    const result = await Cart.getCartService({userId});
+     res.status(201).json({
+      success: true,
+      message: "Cart Created successfully.",
+     result,
+    });
+  } catch (err) {
+    next(err);
   }
 };
 

@@ -1,12 +1,11 @@
 import mongoose from 'mongoose';
 
-// Helper function to generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
 
 const CartItemSchema = new mongoose.Schema({
   serviceId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'services',
+    ref: 'Service',
     required: true,
   },
   quantity: {
@@ -17,11 +16,11 @@ const CartItemSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  status: {
-    type: String,
-    enum: ['upcoming', 'completed', 'cancelled'],
-    default: 'upcoming',
-  },
+  // status: {
+  //   type: String,
+  //   enum: ['upcoming', 'completed', 'cancelled'],
+  //   default: 'upcoming',
+  // },
   otp: {
     type: Number,
     default: generateOTP,

@@ -18,11 +18,9 @@ export const createServiceControl = async (req, res, next) => {
     files: filesMap,
   };
 
-  console.log("req.body", req.body)
-
   try {
     const result = await services.createService(serviceData);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Services Created successfully.",
      result,
@@ -55,7 +53,7 @@ export const updateServiceControl = async (req, res, next) => {
 
   try {
     const result = await services.updateService(serviceData);
-    res.json({
+  res.status(201).json({
       success: true,
       message: "Services Updated successfully.",
      result,
@@ -71,9 +69,8 @@ export const updateServiceControl = async (req, res, next) => {
 export const getServicesByTechIdControl = async (req, res, next) => {
   try {
     const {technicianId} = req.params;
-    console.log("technicianId", technicianId)
     const result = await services.getServicesByTechId({technicianId});
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Services By Techinicians fetched successfully.",
      result: result?.service,
@@ -87,9 +84,8 @@ export const getServicesByTechIdControl = async (req, res, next) => {
 export const deleteAllServicesControl = async (req, res, next) => {
   try {
     const {technicianId} = req.params;
-    console.log("technicianId", technicianId)
     const result = await services.deleteAllServices(technicianId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Services Deleted successfully.",
      result,
@@ -103,7 +99,7 @@ export const deleteServicesControl = async (req, res, next) => {
     const {serviceId} = req.params;
     console.log("serviceId", serviceId)
     const result = await services.deleteServicesById(serviceId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Services Deleted successfully.",
      result,

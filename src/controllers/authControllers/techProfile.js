@@ -21,7 +21,7 @@ export const getTechProfileData = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const result = await techProfile.getTechProfile(userId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "User profile fetched successfully.",
      result,
@@ -34,7 +34,7 @@ export const getTechProfileData = async (req, res, next) => {
 export const getTechAllProfileData = async (req, res, next) => {
   try {
     const result = await techProfile.getTechAllProfile();
-    res.json({
+    res.status(201).json({
       success: true,
       message: "User profile fetched successfully.",
      result,

@@ -28,8 +28,9 @@ export const createReview = async ({ userId, technicianId, role, rating, comment
   const existing = await CompanyReview.findOne({ [reviewerField]: reviewerId });
 
   if (existing) {
-    const err = new Error("You have already submitted a review.");
+    const err = new Error("Duplicate Error");
     err.statusCode = 400;
+    err.errors = ["You have already submitted a review."];
     throw err;
   }
 

@@ -6,7 +6,7 @@ export const getTechAllDetailsCont = async (req, res, next) => {
 
     console.log("technicianIdtechnicianId", technicianId)
     const result = await techDetails.getTechAllDetails(technicianId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Technician Images fetched successfully.",
       result,
@@ -22,7 +22,7 @@ export const getAllTechniciansByCateIdCont = async (req, res, next) => {
 
     console.log("technicianIdtechnicianId", categoryId)
     const result = await techDetails.getAllTechniciansByCateId(categoryId);
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Technician Images fetched successfully.",
       result,

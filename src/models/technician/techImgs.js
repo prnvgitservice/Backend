@@ -17,8 +17,9 @@ const techImgsSchema = new Schema({
 
 techImgsSchema.pre('save', function (next) {
   if (this.imageUrl.length > 5) {
-    const err = new Error("You can upload a maximum of 5 images.");
+    const err = new Error("Images Error");
     err.statusCode = 400;
+    err.errors = ["You can upload a maximum of 5 images."];
     return next(err);
   }
   next();

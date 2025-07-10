@@ -175,6 +175,7 @@ export const updateTechnician = async ({
     if (!technician) {
       const err = new Error("Technician not found");
       err.statusCode = 404;
+      err.errors = ["Technician ID Not Found."];
       throw err;
     }
 
