@@ -12,7 +12,7 @@ import techImagesRoutes from './routes/technician/techImgs.js';
 import techReviewRoutes from './routes/technician/reviewsAndRatings.js';
 import techDetailsRoutes from './routes/technician/techDetails.js';
 import pincodeRoutes from './routes/pincodes.route.js';
-import companyReviewRoutes from './routes/companyReview.model.js';
+import companyReviewRoutes from './routes/companyReview.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
 import subscriptionRoutes from './routes/subscription.route.js';
