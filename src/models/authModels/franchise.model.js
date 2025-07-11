@@ -8,6 +8,17 @@ const franchiseSchema = new Schema({
     required: true,
     trim: true
   },
+   phoneNumber: {
+    type: String,
+    required: true,
+    unique: true,
+    match: [/^\d{10}$/, 'Phone number must be 10 digits']
+  },
+   message: {
+    type: String,
+    required: true,
+    trim: true
+  },
   franchiseCode: {
     type: String,
     required: true,
