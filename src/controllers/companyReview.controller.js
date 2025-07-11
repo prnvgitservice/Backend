@@ -20,7 +20,7 @@ export const getCompanyReviewsComp = async (req, res, next) => {
     const result = await companyReview.getCompanyReviews();
    res.status(201).json({
           success: true,
-          message: "Review Created Successfully",
+          message: "Fetched Reviews Successfully",
          result,
         });
   } catch (err) {

@@ -44,16 +44,29 @@ export const createReview = async ({ userId, technicianId, role, rating, comment
 };
 
 
-export const getCompanyReviews = async () => {
-  const reviews = await CompanyReview.find({ rating: { $in: [4, 5] } });
+// export const getCompanyReviews = async () => {
+//   const reviews = await CompanyReview.find({ rating: { $in: [4, 5] } });
 
+//   if (!reviews || reviews.length === 0) {
+//     const err = new Error("No Reviews Found");
+//     err.statusCode = 400;
+//     err.errors = ["No reviews with rating 4 or 5 found."];
+//     throw err;
+//   }
+
+//   return reviews;
+// };
+
+export const getCompanyReviews = async () => {
+  const reviews = await CompanyReview.find()
+    .sort({ rating: -1, createdAt: -1 }) 
+    .limit(15);
   if (!reviews || reviews.length === 0) {
     const err = new Error("No Reviews Found");
     err.statusCode = 400;
-    err.errors = ["No reviews with rating 4 or 5 found."];
+    err.errors = ["No reviews found."];
     throw err;
   }
-
   return reviews;
 };
 
