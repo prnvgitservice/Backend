@@ -1,11 +1,10 @@
 import Cart from '../models/cart.model.js';
 import Services from '../models/technician/services.js';
-import '../models/services.model.js';
 import mongoose from "mongoose";
 import User from "../models/authModels/user.js";
 
 export const addToCartService = async ({userId, serviceId, quantity, bookingDate}) => {
-console.log("userId", userId)
+
   if (!serviceId || !userId || !quantity || !bookingDate) {
       const err = new Error("Validation failed");
       err.statusCode = 401;

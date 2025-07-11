@@ -19,7 +19,6 @@ const serviceSchema = new Schema({
   servicePrice: {
     type: Number,
     required: true,
-    min: 0,
   }
 }, {
   timestamps: true,

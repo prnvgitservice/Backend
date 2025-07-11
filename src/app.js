@@ -15,6 +15,7 @@ import pincodeRoutes from './routes/pincodes.route.js';
 import companyReviewRoutes from './routes/companyReview.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
+import bookingServicesRoutes from './routes/bookingServices.js';
 import subscriptionRoutes from './routes/subscription.route.js';
 
 import cors from 'cors';
@@ -39,6 +40,7 @@ app.use('/api/techDetails', techDetailsRoutes);
 app.use('/api/pincodes', pincodeRoutes);
 app.use('/api/companyReview', companyReviewRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/bookingServices', bookingServicesRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 
 app.use(errorHandler)

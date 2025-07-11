@@ -24,7 +24,7 @@ export const getAllTechniciansByCateIdCont = async (req, res, next) => {
     const result = await techDetails.getAllTechniciansByCateId(categoryId);
     res.status(201).json({
       success: true,
-      message: "Technician Images fetched successfully.",
+      message: "Technicians fetched by category successfully.",
       result,
     });
   } catch (err) {
