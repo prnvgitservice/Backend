@@ -11,11 +11,13 @@ import serviceRoutes from './routes/technician/services.js';
 import techImagesRoutes from './routes/technician/techImgs.js';
 import techReviewRoutes from './routes/technician/reviewsAndRatings.js';
 import techDetailsRoutes from './routes/technician/techDetails.js';
+import franchaseRoutes from './routes/franchase/franchaseEnqury.js';
 import pincodeRoutes from './routes/pincodes.route.js';
 import companyReviewRoutes from './routes/companyReview.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
 import bookingServicesRoutes from './routes/bookingServices.js';
+import guestBookingRoutes from './routes/guestBooking.js';
 import subscriptionRoutes from './routes/subscription.route.js';
 
 import cors from 'cors';
@@ -42,6 +44,8 @@ app.use('/api/companyReview', companyReviewRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/bookingServices', bookingServicesRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/franchaseEnquiry', franchaseRoutes);
+app.use('/api/guestBooking', guestBookingRoutes);
 
 app.use(errorHandler)
 

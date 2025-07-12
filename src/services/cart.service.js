@@ -3,9 +3,9 @@ import Services from '../models/technician/services.js';
 import mongoose from "mongoose";
 import User from "../models/authModels/user.js";
 
-export const addToCartService = async ({userId, serviceId, quantity, bookingDate}) => {
+export const addToCartService = async ({userId, serviceId, quantity}) => {
 
-  if (!serviceId || !userId || !quantity || !bookingDate) {
+  if (!serviceId || !userId || !quantity) {
       const err = new Error("Validation failed");
       err.statusCode = 401;
       err.errors = ["Service Id, User Id, Quatity, Booking Date all are required."];
@@ -33,18 +33,6 @@ export const addToCartService = async ({userId, serviceId, quantity, bookingDate
        err.errors = ["User ID Not Found"];
       throw err;
     }
-   const today = new Date();
-today.setHours(0, 0, 0, 0);
-
-const booking = new Date(bookingDate);
-booking.setHours(0, 0, 0, 0);
-
-if (booking < today) {
-  const err = new Error("Date Error");
-  err.statusCode = 400;
-  err.errors = ["Date can't be in the past"];
-  throw err;
-}
 
 
   let cart = await Cart.findOne({ userId });
@@ -52,7 +40,6 @@ if (booking < today) {
   const itemData = {
     serviceId,
     quantity,
-    bookingDate,
     status: 'upcoming',
   };
 
@@ -60,7 +47,7 @@ if (booking < today) {
     cart = new Cart({ userId, items: [itemData] });
   } else {
     const existingItem = cart.items.find(
-      item => item.serviceId.toString() === serviceId && new Date(item.bookingDate).toISOString() === new Date(bookingDate).toISOString()
+      item => item.serviceId.toString() === serviceId 
     );
 
     if (existingItem) {
@@ -114,37 +101,4 @@ export const getCartService = async ({ userId }) => {
     user,
     cart,
   };
-};
-
-
-export const removeFromCartService = async (userId, serviceId) => {
-  return await Cart.findOneAndUpdate(
-    { userId },
-    { $pull: { items: { serviceId } } },
-    { new: true }
-  ).populate('items.serviceId');
-};
-
-export const clearCartService = async (userId) => {
-  return await Cart.findOneAndUpdate(
-    { userId },
-    { $set: { items: [] } },
-    { new: true }
-  );
-};
-
-export const updateCartItemService = async (userId, itemId, updates) => {
-  const cart = await Cart.findOne({ userId });
-
-  if (!cart) throw new Error('Cart not found');
-
-  const item = cart.items.id(itemId);
-  if (!item) throw new Error('Item not found in cart');
-
-  if (updates.quantity !== undefined) item.quantity = updates.quantity;
-  if (updates.bookingDate !== undefined) item.bookingDate = updates.bookingDate;
-  if (updates.status !== undefined) item.status = updates.status;
-  if (updates.otp !== undefined) item.otp = updates.otp;
-
-  return await cart.save();
 };
