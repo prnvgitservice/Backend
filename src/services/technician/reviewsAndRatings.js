@@ -102,7 +102,8 @@ export const getTechReviewsById = async ({technicianId}) => {
     throw err;
   }
 
-  const ratings = await Review.findOne({ technicianId });
+  // const ratings = await Review.find({ technicianId });
+  const ratings = await Review.find({ technicianId }).populate('userId serviceId');
 
   return {
     technician,
