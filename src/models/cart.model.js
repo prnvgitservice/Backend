@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-// const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
-
 const CartItemSchema = new mongoose.Schema({
   serviceId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,19 +10,6 @@ const CartItemSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
-  bookingDate: {
-    type: Date,
-    required: true,
-  },
-  // status: {
-  //   type: String,
-  //   enum: ['upcoming', 'completed', 'cancelled'],
-  //   default: 'upcoming',
-  // },
-  // otp: {
-  //   type: Number,
-  //   default: generateOTP,
-  // },
 });
 
 const CartSchema = new mongoose.Schema(
