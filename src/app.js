@@ -18,8 +18,8 @@ import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
 import bookingServicesRoutes from './routes/bookingServices.js';
 import guestBookingRoutes from './routes/guestBooking.js';
-import getInTouchRoutes from './routes/getInTouch.js';
 import subscriptionRoutes from './routes/subscription.route.js';
+import getInTouchRoutes from './routes/authRoutes/getInTouch.js';
 
 import cors from 'cors';
 

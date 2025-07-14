@@ -1,87 +1,54 @@
-import getInTouch from "../../models/authModels/getInTouch";
+import Category from '../../models/category.model.js';
+import mongoose from "mongoose";
+import getInTouch from '../../models/authModels/getInTouch.js';
 
-export const registerTechnician = async ({ 
-  userId,
-  username,
-  phoneNumber,
-  password,
-  role = 'technician',
-  category,
-  buildingName,
-  areaName,
-  city,
-  state,
-  pincode,
-}) => {
-  const errors = [];
-
-  if (
-    !userId ||
-    !username ||
-    !phoneNumber ||
-    !password ||
-    !buildingName ||
-    !areaName ||
-    !role ||
-    !category ||
-    !city ||
-    !state ||
-    !pincode
-  ) {
+export const addGetintouch = async ({ name, phoneNumber, categoryId }) => {
+  if (!name || !phoneNumber || !categoryId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["All Fields Required."];
+    err.errors = ["Name, Phone Number, and categoryId are all required."];
     throw err;
   }
 
-  if (!/^\d{10}$/.test(phoneNumber)) {
-    errors.push("Phone number must be exactly 10 digits.");
-  }
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+        const err = new Error("Invalid Category ID format");
+        err.statusCode = 400;
+        err.errors = ["Provided Category ID is not valid."];
+        throw err;
+      }
+    
+      const category = await Category.findById(categoryId);
+      if (!category) {
+        const err = new Error("Category not found");
+        err.statusCode = 404;
+        err.errors = ["Category ID Not Found"];
+        throw err;
+      }
 
-  if (password?.length < 6 || password?.length > 20) {
-    errors.push("Password must be between 6 and 20 characters.");
-  }
+  const newGetInTouch = new getInTouch({
+    categoryId,
+    name,
+    phoneNumber,
+  });
 
-  const phoneExists = await Technician.findOne({ phoneNumber });
-  if (phoneExists) {
-    errors.push("Phone number already exists.");
-  }
-
-if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
-  }
-
-
-  const technician = new Guest({
-     userId,
-  username,
-  phoneNumber,
-  password,
-  role,
-  category,
-  buildingName,
-  areaName,
-  city,
-  state,
-  pincode 
-});
-  await technician.save();
-
+  const savedEnquiry = await newGetInTouch.save();
 
   return {
-      id: technician._id,
-      userId: technician.userId,
-      username: technician.username,
-      phoneNumber: technician.phoneNumber,
-      role: technician.role,
-      category: technician.category,
-      buildingName: technician.buildingName,
-      areaName: technician.areaName,
-      city: technician.city,
-      state: technician.state,
-      pincode: technician.pincode,
-}
+    id: savedEnquiry._id,
+    name: savedEnquiry.name,
+    phoneNumber: savedEnquiry.phoneNumber,
+    categoryId: savedEnquiry.categoryId,
+  };
+};
+
+
+export const getInTouchDetails = async () => {
+  try {
+    const touch = await getInTouch.find().sort({ createdAt: -1 });
+    return touch;
+  } catch (err) {
+    err.statusCode = 500;
+    err.errors = ["Failed to fetch franchise enquiries."];
+    throw err;
+  }
 };
