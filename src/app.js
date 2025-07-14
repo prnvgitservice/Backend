@@ -18,6 +18,7 @@ import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
 import bookingServicesRoutes from './routes/bookingServices.js';
 import guestBookingRoutes from './routes/guestBooking.js';
+import getInTouchRoutes from './routes/getInTouch.js';
 import subscriptionRoutes from './routes/subscription.route.js';
 
 import cors from 'cors';
@@ -46,6 +47,7 @@ app.use('/api/bookingServices', bookingServicesRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/franchaseEnquiry', franchaseRoutes);
 app.use('/api/guestBooking', guestBookingRoutes);
+app.use('/api/getInTouch', getInTouchRoutes);
 
 app.use(errorHandler)
 
