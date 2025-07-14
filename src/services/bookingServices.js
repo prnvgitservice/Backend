@@ -114,8 +114,18 @@ export const createBookService = async (bookings) => {
       totalPrice: bookingService.totalPrice,
     });
   }
+const bookedServiceIds = bookings.map(b => b.serviceId.toString());
 
-  await Cart.findOneAndDelete({ userId: bookings[0].userId });
+await Cart.updateOne(
+  { userId: bookings[0].userId },
+  {
+    $pull: {
+      items: {
+        serviceId: { $in: bookedServiceIds }
+      }
+    }
+  }
+);
 
   return createdBookings;
 };

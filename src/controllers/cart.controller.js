@@ -27,3 +27,16 @@ export const getCart = async (req, res, next) => {
     next(err);
   };
 }
+
+export const removeFromCartServiceCont = async (req, res, next) => {
+  try {
+    const result = await Cart.removeFromCartService(req.body);
+     res.status(201).json({
+      success: true,
+      message: "Item Removed From Cart successfully.",
+     result,
+    });
+  } catch (err) {
+    next(err);
+  };
+}

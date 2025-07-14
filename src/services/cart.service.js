@@ -102,3 +102,48 @@ export const getCartService = async ({ userId }) => {
     cart,
   };
 };
+
+export const removeFromCartService = async ({ userId, serviceId }) => {
+  if (!serviceId || !userId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Service ID and User ID are required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+    const err = new Error("Invalid Service ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Service ID is not valid."];
+    throw err;
+  }
+
+  const cart = await Cart.findOne({ userId });
+  if (!cart) {
+    const err = new Error("Cart not found for user");
+    err.statusCode = 404;
+    err.errors = ["Cart not found"];
+    throw err;
+  }
+
+  const initialLength = cart.items.length;
+  cart.items = cart.items.filter(
+    item => item.serviceId.toString() !== serviceId
+  );
+
+  if (cart.items.length === initialLength) {
+    const err = new Error("Service not found in cart");
+    err.statusCode = 404;
+    err.errors = ["Service ID not found in user's cart"];
+    throw err;
+  }
+
+  await cart.save();
+
+  return {
+    message: "Service removed from cart successfully",
+    cartId: cart._id,
+    userId: cart.userId,
+    items: cart.items,
+  };
+};

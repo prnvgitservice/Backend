@@ -19,11 +19,6 @@ const subscriptionPlanSchema = new Schema({
     maxlength: 100,
     trim: true
   },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
-  },
   originalPrice: {
     type: Number,
     default: null
@@ -32,12 +27,26 @@ const subscriptionPlanSchema = new Schema({
     type: Number,
     default: null
   },
+  discountPercentage: {
+    type: Number,
+    default: null
+  },
+    price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  gstPercentage: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   gst: {
     type: Number,
     required: true,
     min: 0
   },
-  totalPrice: {
+  finalPrice: {
     type: Number,
     required: true,
     min: 0
@@ -47,18 +56,6 @@ const subscriptionPlanSchema = new Schema({
     required: true,
     min: 1
   },
-  validityUnit: {
-    type: String,
-    default: 'days'
-  },
-  maxMembers: {
-    type: Number,
-    default: null
-  },
-  maxLeads: {
-    type: Number,
-    default: null
-  },
   features: {
     type: [featureSchema],
     required: true
@@ -66,18 +63,6 @@ const subscriptionPlanSchema = new Schema({
   fullFeatures: {
     type: [fullFeatureSchema],
     default: []
-  },
-  icon: {
-    type: String,
-    default: null
-  },
-  color: {
-    type: String,
-    default: null
-  },
-  buttonColor: {
-    type: String,
-    default: null
   },
   isPopular: {
     type: Boolean,
@@ -91,4 +76,4 @@ const subscriptionPlanSchema = new Schema({
   timestamps: true
 });
 
-export default model('plans', subscriptionPlanSchema);
+export default model('SubscriptionPlan', subscriptionPlanSchema);
