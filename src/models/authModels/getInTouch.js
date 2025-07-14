@@ -1,23 +1,27 @@
 import mongoose from 'mongoose';
 
-const { Schema, model } = mongoose;
-
-const guestSchema = new Schema({
-  username: {
+const GetInTouchSchema = new mongoose.Schema({
+      categoryId: {
+     type: mongoose.Schema.Types.ObjectId,
+    maxlength: 1000,
+    trim: true,
+  },
+  name: {
     type: String,
     required: true,
   },
   phoneNumber: {
-    type: String,
-    required: true,
-    unique: true,
-    match: [/^\d{10}$/, 'Phone number must be 10 digits']
+    type: Number,
+    default: 1,
+    // match: [/^\d{10}$/, 'Phone number must be 10 digits']
   },
-   category: {
-    type: Schema.Types.ObjectId,
-    ref: 'Category',
-  },
- 
-}, { timestamps: true });
 
-export default model("Guest", guestSchema);
+  status:{
+    type: String,
+    enum:["pending", "completed", "declined"],
+    default:"pending"
+  }
+},{ timestamps: true }
+);
+
+export default mongoose.model('GetInTouch', GetInTouchSchema);
