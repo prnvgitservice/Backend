@@ -5,15 +5,14 @@ const companyReviewSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-     required: true 
   },
    technicianId: {
     type: Schema.Types.ObjectId,
     ref: 'Technician',
-     required: true 
   },
     role: {
     type: String,
+    enum:["technician", "user"],
     required: true,
   },
   rating: {
