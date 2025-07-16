@@ -41,8 +41,8 @@ servicePrice: {
   },
   status:{
     type: String,
-    enum: ["upcomming", "cancelled", "declined", "accepted", "started", "completed"],
-    default: "upcomming"
+    enum: ["upcoming", "cancelled", "declined", "accepted", "started", "completed"],
+    default: "upcoming"
   },
  otp: {
     type: Number,

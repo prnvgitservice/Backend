@@ -83,3 +83,51 @@ export const getAllTechniciansByCateId = async (categoryId) => {
 
   return technicianData;
 };
+
+export const getAllTechByAdd = async ({ pincode, areaName, categoryId }) => {
+  if (!categoryId || !pincode || !areaName) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Category ID, Pincode, and Area fields are required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+    const err = new Error("Invalid Category ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Category ID is not valid."];
+    throw err;
+  }
+
+  const category = await Category.findById(categoryId);
+  if (!category) {
+    const err = new Error("Category Not Found");
+    err.statusCode = 404;
+    err.errors = ["Category Not Found."];
+    throw err;
+  }
+
+  const technicians = await Technician.find({
+    category: categoryId,
+    pincode: pincode,
+    areaName: areaName
+  });
+
+  const technicianData = await Promise.all(
+    technicians.map(async (technician) => {
+      const services = await Services.find({ technicianId: technician._id });
+      const technicianImages = await TechnicianImages.findOne({ technicianId: technician._id });
+      const ratings = await RatingsAndReviews.findOne({ technicianId: technician._id });
+
+      return {
+        technician,
+        services,
+        technicianImages,
+        ratings
+      };
+    })
+  );
+
+  return technicianData;
+};
+

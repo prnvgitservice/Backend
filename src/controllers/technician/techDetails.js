@@ -16,6 +16,7 @@ export const getTechAllDetailsCont = async (req, res, next) => {
     next(err);
   }
 };
+
 export const getAllTechniciansByCateIdCont = async (req, res, next) => {
   try {
     const {categoryId} = req.params;
@@ -29,6 +30,20 @@ export const getAllTechniciansByCateIdCont = async (req, res, next) => {
     });
   } catch (err) {
 
+    next(err);
+  }
+};
+
+export const getAllTechByAddCont = async (req, res, next) => {
+  try {
+
+    const result = await techDetails.getAllTechByAdd(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Technicians fetched by category and address successfully.",
+      result,
+    });
+  } catch (err) {
     next(err);
   }
 };

@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { getAllTechniciansByCateIdCont, getTechAllDetailsCont } from '../../controllers/technician/techDetails.js';
+import { getAllTechByAddCont, getAllTechniciansByCateIdCont, getTechAllDetailsCont } from '../../controllers/technician/techDetails.js';
 
 const router = Router();
 
 router.get('/getTechAllDetails/:technicianId', getTechAllDetailsCont);
 router.get('/getAllTechniciansByCateId/:categoryId', getAllTechniciansByCateIdCont);
+router.get('/getAllTechByAddress', getAllTechByAddCont);
 
 export default router;

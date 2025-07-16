@@ -170,6 +170,7 @@ export const getBookServiceByUserId = async ({ userId }) => {
 
       return {
         booking,
+        user,
         technician: technician || null,
         service: service || null
       };
@@ -177,7 +178,6 @@ export const getBookServiceByUserId = async ({ userId }) => {
   );
 
   return {
-    user,
     bookings: detailedBookings
   };
 };
@@ -218,18 +218,19 @@ export const getBookServiceByTechnicianId = async ({ technicianId }) => {
     bookings.map(async (booking) => {
       const user = await User.findById(booking.userId);
       const service = await Services.findById(booking.serviceId);
+      // const { otp, ...filteredService } = service || {};
+return {
+  booking,
+  user: user || null,
+  service: service || null,
+  technician
+};
 
-      return {
-        booking,
-        user: user || null,
-        service: service || null,
-        technician
-      };
+      
     })
   );
 
   return {
-    technician,
     bookings: detailedBookings
   };
 };
@@ -273,7 +274,7 @@ export const BookingCancleByUser = async ({ userId, orderId }) => {
   };
 };
 
-export const BookingStatusByTechnician = async ({ technicianId, orderId, status }) => {
+export const BookingStatusByTechnician = async ({ technicianId, orderId, status, otp }) => {
   if (!technicianId || !orderId || !status) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -308,8 +309,7 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status 
   }
 
   if (booking.status === "cancelled") {
-   
-     const err = new Error("Unauthorized action");
+    const err = new Error("Unauthorized action");
     err.statusCode = 403;
     err.errors = ["Booking has already been cancelled."];
     throw err;
@@ -323,11 +323,25 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status 
   }
 
   if (booking.status === normalizedStatus) {
-
-     const err = new Error("Unauthorized action");
+    const err = new Error("Unauthorized action");
     err.statusCode = 403;
     err.errors = [`Booking is already ${status}`];
     throw err;
+  }
+
+  if (normalizedStatus === "started") {
+    if (!otp) {
+      const err = new Error("OTP required");
+      err.statusCode = 400;
+      err.errors = ["OTP is required to start the booking."];
+      throw err;
+    }
+    if (booking.otp !== otp) {
+      const err = new Error("Invalid OTP");
+      err.statusCode = 401;
+      err.errors = ["Provided OTP does not match."];
+      throw err;
+    }
   }
 
   booking.status = normalizedStatus;
@@ -338,6 +352,5 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status 
     booking,
   };
 };
-
 
 
