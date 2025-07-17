@@ -24,8 +24,7 @@ const subscriptionPlanSchema = new Schema({
     default: null
   },
   discount: {
-    type: Number,
-    default: null
+    type: String,
   },
   discountPercentage: {
     type: Number,
@@ -52,9 +51,11 @@ const subscriptionPlanSchema = new Schema({
     min: 0
   },
   validity: {
-    type: Number,
+     type: String,
     required: true,
-    min: 1
+    // minlength: 3,
+    // maxlength: 100,
+    // trim: true
   },
   features: {
     type: [featureSchema],
