@@ -36,7 +36,7 @@ export const getAllTechniciansByCateIdCont = async (req, res, next) => {
 
 export const getAllTechByAddCont = async (req, res, next) => {
   try {
-
+console.log("hitting")
     const result = await techDetails.getAllTechByAdd(req.body);
     res.status(201).json({
       success: true,
