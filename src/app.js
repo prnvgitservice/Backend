@@ -20,6 +20,7 @@ import bookingServicesRoutes from './routes/bookingServices.js';
 import guestBookingRoutes from './routes/guestBooking.js';
 import subscriptionRoutes from './routes/subscription.route.js';
 import getInTouchRoutes from './routes/authRoutes/getInTouch.js';
+import searchContentDataRoutes from './routes/searchContentData.js';
 
 import cors from 'cors';
 
@@ -48,6 +49,7 @@ app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/franchaseEnquiry', franchaseRoutes);
 app.use('/api/guestBooking', guestBookingRoutes);
 app.use('/api/getInTouch', getInTouchRoutes);
+app.use('/api/searchContentData', searchContentDataRoutes);
 
 app.use(errorHandler)
 
