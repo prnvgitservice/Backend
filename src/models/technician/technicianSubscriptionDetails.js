@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const { Schema, model } = mongoose;
 
 const SubscriptionEntrySchema = new Schema({
@@ -7,13 +7,20 @@ const SubscriptionEntrySchema = new Schema({
     ref: 'SubscriptionPlan',
     required: true,
   },
+  subscriptionName: {
+    type: String
+  },
   startDate: {
-    type: String,
-    required: true
+    type: Date,
   },
   endDate: {
-    type: String,
-    required: true
+    type: Date,
+  },
+  leads: {
+type:Number
+  },
+  ordersCount: {
+type:Number
   }
 });
 
@@ -28,4 +35,4 @@ const TechSubscriptionsDetailSchema = new Schema({
   timestamps: true,
 });
 
-module.exports = model('TechSubscriptionsDetail', TechSubscriptionsDetailSchema);
+export default model('TechSubscriptionsDetail', TechSubscriptionsDetailSchema);

@@ -1,8 +1,6 @@
 import * as services from "../../services/technician/services.js";
 
 export const createServiceControl = async (req, res, next) => {
-
-      console.log("files", req.files)
     const filesArray = req.files || [];
   const filesMap = {};
 

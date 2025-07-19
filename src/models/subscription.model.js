@@ -11,12 +11,13 @@ const fullFeatureSchema = new Schema({
   text: { type: String, required: true }
 }, { _id: false });
 
-const subscriptionPlanSchema = new Schema({
+const subscriptionSchema = new Schema({
   name: {
     type: String,
     required: true,
     minlength: 3,
     maxlength: 100,
+    unique: true,
     trim: true
   },
   originalPrice: {
@@ -24,8 +25,7 @@ const subscriptionPlanSchema = new Schema({
     default: null
   },
   discount: {
-    type: Number,
-    default: null
+    type: String,
   },
   discountPercentage: {
     type: Number,
@@ -52,9 +52,10 @@ const subscriptionPlanSchema = new Schema({
     min: 0
   },
   validity: {
-    type: Number,
-    required: true,
-    min: 1
+     type: Number,
+  },
+  leads: {
+     type: Number,
   },
   features: {
     type: [featureSchema],
@@ -76,4 +77,4 @@ const subscriptionPlanSchema = new Schema({
   timestamps: true
 });
 
-export default model('SubscriptionPlan', subscriptionPlanSchema);
+export default model('Subscription', subscriptionSchema);

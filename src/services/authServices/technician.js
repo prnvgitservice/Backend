@@ -1,9 +1,11 @@
 import Technician from '../../models/authModels/technician.js'
+import SubscriptionPlan from '../../models/subscription.model.js';
 import { generateToken } from '../../utils/generateToken.js';
 import mongoose from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
-
+import { addTechSubscriptionPlan } from '../technician/technicianSubscriptionDetails.js';
+import TechSubscriptionsDetail from '../../models/technician/technicianSubscriptionDetails.js';
 
 export const registerTechnician = async ({ 
   userId,
@@ -75,20 +77,31 @@ if (errors.length > 0) {
 });
   await technician.save();
 
+  const subscription = await SubscriptionPlan.findOne({ name: "Trail Pack" });
 
+  let result = null;
+  if (subscription) {
+    result = await addTechSubscriptionPlan({
+      technicianId: technician._id,
+      subscriptionId: subscription._id,
+    });
+    console.log("i resut", result)
+  }
+  
   return {
-      id: technician._id,
-      userId: technician.userId,
-      username: technician.username,
-      phoneNumber: technician.phoneNumber,
-      role: technician.role,
-      category: technician.category,
-      buildingName: technician.buildingName,
-      areaName: technician.areaName,
-      city: technician.city,
-      state: technician.state,
-      pincode: technician.pincode,
-}
+    id: technician._id,
+    userId: technician.userId,
+    username: technician.username,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    plan: subscription?._id || null
+  };
 };
 
 
@@ -124,6 +137,25 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
 
   const token = generateToken(technician);
 
+  const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+  let planDetails = null;
+
+  if (techSubDetails && Array.isArray(techSubDetails.subscriptions) && techSubDetails.subscriptions.length > 0) {
+    const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+
+    const expired = new Date(lastSub.endDate) < new Date() || 
+                    (lastSub.leads != null && lastSub.ordersCount != null && lastSub.leads === lastSub.ordersCount);
+
+    planDetails = {
+      subscriptionId: lastSub.subscriptionId,
+      startDate: lastSub.startDate,
+      endDate: lastSub.endDate,
+      leads: lastSub.leads,
+      ordersCount: lastSub.ordersCount,
+      expired,
+    };
+  }
+
   return {
     id: technician._id,
     username: technician.username,
@@ -137,7 +169,8 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
     state: technician.state,
     pincode: technician.pincode,
     token,
-  }
+    planDetails,
+  };
 };
 
 

@@ -11,39 +11,54 @@ export const addSubscription = async ({
   gst,
   finalPrice,
   validity,
+  leads,
   features,
   fullFeatures,
   isPopular,
   isActive
 }) => {
-  
-  if (!name || originalPrice == null || price == null || gstPercentage == null || gst == null || finalPrice == null || validity == null || !Array.isArray(features)) {
+  if (
+    !name ||
+    originalPrice == null ||
+    price == null ||
+    gstPercentage == null ||
+    gst == null ||
+    finalPrice == null ||
+    !Array.isArray(features)
+  ) {
     const err = new Error("Validation failed");
     err.statusCode = 400;
     err.errors = ["Required fields are missing or invalid"];
     throw err;
   }
 
-  
+  if (validity == null && leads == null) {
+    const err = new Error("Validation failed");
+    err.statusCode = 400;
+    err.errors = ["Either 'validity' or 'leads' must be provided"];
+    throw err;
+  }
+
   for (const feature of features) {
     if (!feature.name) {
-       const err = new Error("Validation failed");
-    err.statusCode = 400;
-    err.errors = ["Each feature must have a name"];
-    throw err;
+      const err = new Error("Validation failed");
+      err.statusCode = 400;
+      err.errors = ["Each feature must have a name"];
+      throw err;
     }
   }
 
   const newPlan = new SubscriptionPlan({
     name,
     originalPrice: originalPrice ?? null,
-    discountPercentage: discountPercentage,
+    discountPercentage,
     discount: discount ?? null,
     price,
     gstPercentage,
     gst,
     finalPrice,
-    validity,
+    validity: validity ?? null,
+    leads: leads ?? null,
     features,
     fullFeatures: fullFeatures || [],
     isPopular: isPopular ?? false,
@@ -58,12 +73,12 @@ export const addSubscription = async ({
     price: newPlan.price,
     finalPrice: newPlan.finalPrice,
     validity: newPlan.validity,
+    leads: newPlan.leads,
     isPopular: newPlan.isPopular,
     isActive: newPlan.isActive,
     createdAt: newPlan.createdAt
   };
 };
-
 
 
 export const getAllActivePlansService = async () => {
@@ -98,6 +113,7 @@ export const updateSubscription = async (updateData) => {
     updateData.gst === undefined ||
     updateData.finalPrice === undefined ||
     updateData.validity === undefined ||
+    updateData.leads === undefined ||
     !Array.isArray(updateData.features)
   ) {
       const err = new Error("Validation Error");
@@ -137,6 +153,7 @@ export const updateSubscription = async (updateData) => {
     price: updatedPlan.price,
     finalPrice: updatedPlan.finalPrice,
     validity: updatedPlan.validity,
+    leads: updatedPlan.leads,
     isPopular: updatedPlan.isPopular,
     isActive: updatedPlan.isActive,
     updatedAt: updatedPlan.updatedAt

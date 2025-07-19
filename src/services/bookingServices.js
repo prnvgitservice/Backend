@@ -5,6 +5,7 @@ import User from "../models/authModels/user.js";
 import Technician from "../models/authModels/technician.js";
 import BookingService from "../models/bookingServices.js";
 
+
 export const createBookService = async (bookings) => {
   if (!Array.isArray(bookings) || bookings.length === 0) {
     const err = new Error("Validation failed");

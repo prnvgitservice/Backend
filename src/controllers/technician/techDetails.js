@@ -3,8 +3,6 @@ import * as techDetails from "../../services/technician/techDetails.js";
 export const getTechAllDetailsCont = async (req, res, next) => {
   try {
     const {technicianId} = req.params;
-
-    console.log("technicianIdtechnicianId", technicianId)
     const result = await techDetails.getTechAllDetails(technicianId);
     res.status(201).json({
       success: true,
@@ -20,8 +18,6 @@ export const getTechAllDetailsCont = async (req, res, next) => {
 export const getAllTechniciansByCateIdCont = async (req, res, next) => {
   try {
     const {categoryId} = req.params;
-
-    console.log("technicianIdtechnicianId", categoryId)
     const result = await techDetails.getAllTechniciansByCateId(categoryId);
     res.status(201).json({
       success: true,

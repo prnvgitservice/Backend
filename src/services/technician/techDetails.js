@@ -4,6 +4,7 @@ import TechnicianImages from '../../models/technician/techImgs.js';
 import Services from '../../models/technician/services.js';
 import RatingsAndReviews from '../../models/technician/reviewsAndRatings.js';
 import Category from '../../models/category.model.js';
+import TechSubscriptionsDetail from '../../models/technician/technicianSubscriptionDetails.js';
 
 export const getTechAllDetails = async (technicianId) => {
   if (!technicianId) {
@@ -66,22 +67,38 @@ export const getAllTechniciansByCateId = async (categoryId) => {
 
   const technicians = await Technician.find({ category: categoryId });
 
-  const technicianData = await Promise.all(
-    technicians.map(async (technician) => {
+   const validTechnicians = [];
+
+  for (const technician of technicians) {
+    const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+
+    let isExpired = true;
+
+    if (techSubDetails && Array.isArray(techSubDetails.subscriptions) && techSubDetails.subscriptions.length > 0) {
+      const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+
+      const expired =
+        new Date(lastSub.endDate) < new Date() ||
+        (lastSub.leads != null && lastSub.ordersCount != null && lastSub.leads === lastSub.ordersCount);
+
+      isExpired = expired;
+    }
+
+    if (!isExpired) {
       const services = await Services.find({ technicianId: technician._id });
       const technicianImages = await TechnicianImages.findOne({ technicianId: technician._id });
       const ratings = await RatingsAndReviews.findOne({ technicianId: technician._id });
 
-      return {
+      validTechnicians.push({
         technician,
         services,
         technicianImages,
         ratings
-      };
-    })
-  );
+      });
+    }
+  }
 
-  return technicianData;
+  return validTechnicians;
 };
 
 export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) => {
@@ -115,21 +132,41 @@ export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) =
     city: city
   });
 
-  const technicianData = await Promise.all(
-    technicians.map(async (technician) => {
+
+ const validTechnicians = [];
+
+  for (const technician of technicians) {
+    const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+
+    let isExpired = true;
+
+    if (
+      techSubDetails &&
+      Array.isArray(techSubDetails.subscriptions) &&
+      techSubDetails.subscriptions.length > 0
+    ) {
+      const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+
+      isExpired =
+        new Date(lastSub.endDate) < new Date() ||
+        (lastSub.leads != null &&
+          lastSub.ordersCount != null &&
+          lastSub.leads === lastSub.ordersCount);
+    }
+
+    if (!isExpired) {
       const services = await Services.find({ technicianId: technician._id });
       const technicianImages = await TechnicianImages.findOne({ technicianId: technician._id });
       const ratings = await RatingsAndReviews.findOne({ technicianId: technician._id });
 
-      return {
+      validTechnicians.push({
         technician,
         services,
         technicianImages,
         ratings
-      };
-    })
-  );
+      });
+    }
+  }
 
-  return technicianData;
+  return validTechnicians;
 };
-
