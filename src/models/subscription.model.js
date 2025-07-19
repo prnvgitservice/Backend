@@ -26,6 +26,7 @@ const subscriptionSchema = new Schema({
   },
   discount: {
     type: String,
+    type: String,
   },
   discountPercentage: {
     type: Number,
