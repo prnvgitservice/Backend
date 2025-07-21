@@ -4,6 +4,7 @@ import Services from '../models/technician/services.js';
 import User from "../models/authModels/user.js";
 import Technician from "../models/authModels/technician.js";
 import BookingService from "../models/bookingServices.js";
+import TechSubscriptionsDetail from '../models/technician/technicianSubscriptionDetails.js';
 
 
 export const createBookService = async (bookings) => {
@@ -294,7 +295,6 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
   }
 
   const booking = await BookingService.findById(orderId);
-
   if (!booking) {
     const err = new Error("Booking not found");
     err.statusCode = 404;
@@ -345,13 +345,59 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
     }
   }
 
+  let updatedSubInfo = null;
+
+  if (normalizedStatus === "completed") {
+    const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId });
+    if (!techSubDetails || !techSubDetails.subscriptions?.length) {
+      const err = new Error("Subscription not found");
+      err.statusCode = 404;
+      err.errors = ["No subscription found for the technician."];
+      throw err;
+    }
+console.log("techSubDetails", techSubDetails)
+    const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+console.log("lastSub", lastSub)
+    if (lastSub.endDate && !lastSub.leads) {
+      return;
+    }
+
+    if (lastSub.leads && !lastSub.endDate) {
+      const allBookings = await BookingService.find({
+        technicianId,
+        createdAt: { $gte: new Date(lastSub.startDate) },
+      });
+console.log("allBookings", allBookings)
+      const completedOrStartedBookings = allBookings.filter(b =>
+        ["completed", "started"].includes(b.status)
+      );
+console.log("completedOrStartedBookings", completedOrStartedBookings)
+      const currentCount = completedOrStartedBookings.length;
+console.log("currentCount", currentCount)
+      if (currentCount >= lastSub.leads) {
+        const err = new Error("Lead limit exceeded");
+        err.statusCode = 403;
+        err.errors = [`Lead limit of ${lastSub.leads} exceeded. Cannot complete more bookings.`];
+        throw err;
+      }
+
+      lastSub.ordersCount = currentCount + 1;
+      await techSubDetails.save();
+
+      updatedSubInfo = lastSub;
+      console.log("updatedSubInfo", updatedSubInfo)
+    }
+  }
+
   booking.status = normalizedStatus;
   await booking.save();
 
   return {
     message: `Booking status successfully updated to ${status}.`,
     booking,
+    updatedSubscription: updatedSubInfo,
   };
 };
+
 
 
