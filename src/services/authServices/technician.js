@@ -77,7 +77,7 @@ if (errors.length > 0) {
 });
   await technician.save();
 
-  const subscription = await SubscriptionPlan.findOne({ name: "Trail Pack" });
+  const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
 
   let result = null;
   if (subscription) {

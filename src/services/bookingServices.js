@@ -355,9 +355,9 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
       err.errors = ["No subscription found for the technician."];
       throw err;
     }
-console.log("techSubDetails", techSubDetails)
+    
     const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
-console.log("lastSub", lastSub)
+
     if (lastSub.endDate && !lastSub.leads) {
       return;
     }
@@ -367,13 +367,13 @@ console.log("lastSub", lastSub)
         technicianId,
         createdAt: { $gte: new Date(lastSub.startDate) },
       });
-console.log("allBookings", allBookings)
+      
       const completedOrStartedBookings = allBookings.filter(b =>
         ["completed", "started"].includes(b.status)
       );
-console.log("completedOrStartedBookings", completedOrStartedBookings)
+      
       const currentCount = completedOrStartedBookings.length;
-console.log("currentCount", currentCount)
+
       if (currentCount >= lastSub.leads) {
         const err = new Error("Lead limit exceeded");
         err.statusCode = 403;

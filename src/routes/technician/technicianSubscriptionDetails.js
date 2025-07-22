@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { addTechSubscriptionPlanCont } from '../../controllers/technician/technicianSubscriptionDetails.js';
+import { addTechSubscriptionPlanCont, getTechSubscriptionPlanComp } from '../../controllers/technician/technicianSubscriptionDetails.js';
 
 const router = Router();
 
 router.post('/addTechSubscriptionPlan', addTechSubscriptionPlanCont);
 // router.put('/updateServiceControl', uploadWithValidation, updateServiceControl);
-// router.get('/getTechImagesByTechId/:technicianId', getTechImagesByTechIdControl);
+router.get('/getTechSubscriptionPlan/:technicianId', getTechSubscriptionPlanComp);
 // router.delete('/deleteAllImgsByTechnId/:technicianId', deleteAllImgsByTechnId);
 // router.delete('/deleteSingletechImg', deleteSingleTechnicianImageControl);
 

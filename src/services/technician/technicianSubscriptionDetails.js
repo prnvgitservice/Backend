@@ -3,6 +3,7 @@ import SubscriptionPlan from '../../models/subscription.model.js';
 import Technician from '../../models/authModels/technician.js';
 import mongoose from 'mongoose';
 
+
 export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) => {
   if (!technicianId || !subscriptionId) {
     const err = new Error('Validation failed');
@@ -45,7 +46,7 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
   };
 
   if (subscription.validity) {
-    newSubscription.endDate = new Date(now.getTime() + subscription.validity * 24 * 60 * 60 * 1000); 
+    newSubscription.endDate = new Date(now.getTime() + subscription.validity * 24 * 60 * 60 * 1000);
   }
 
   if (subscription.leads != null) {
@@ -58,30 +59,36 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
     const lastSub = techSubscriptionDetail.subscriptions?.[techSubscriptionDetail.subscriptions.length - 1];
 
     let isExpired = false;
-
     if (lastSub?.endDate && new Date(lastSub.endDate) < now) {
       isExpired = true;
     }
 
     let isLeadsExhausted = false;
-
     if (lastSub?.leads != null && lastSub.ordersCount >= lastSub.leads) {
       isLeadsExhausted = true;
     }
 
-    if (!isExpired && !isLeadsExhausted) {
-      const err = new Error('Technician already has an active subscription');
+    const isFreePlan = lastSub?.subscriptionName?.toLowerCase() === 'free plan';
+    const isTryingToBuyFreePlan = subscription.name?.toLowerCase() === 'free plan';
+
+
+    if (isFreePlan && isTryingToBuyFreePlan) {
+      const err = new Error('Free Plan already activated');
       err.statusCode = 409;
-      err.errors = ['Current plan is still valid or leads not yet exhausted.'];
+      err.errors = ['Cannot subscribe to Free Plan again.'];
       throw err;
     }
 
-    // Add new subscription
+    if (!isFreePlan && !isExpired && !isLeadsExhausted) {
+      const err = new Error('Technician already has an active paid subscription');
+      err.statusCode = 409;
+      err.errors = ['Paid plan is still valid or leads not yet exhausted.'];
+      throw err;
+    }
+
     techSubscriptionDetail.subscriptions.push(newSubscription);
     await techSubscriptionDetail.save();
   } else {
-    // Create new subscription detail
-    
     const newTechSubDetail = new TechSubscriptionsDetail({
       technicianId,
       subscriptions: [newSubscription],
@@ -93,5 +100,46 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
     success: true,
     message: 'Subscription plan added successfully',
     subscription: newSubscription,
+  };
+};
+
+
+
+export const getTechSubscriptionPlan = async (technicianId) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician Id is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId });
+  if (!techSubDetails || !techSubDetails.subscriptions?.length) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["No subscription found for the technician."];
+    throw err;
+  }
+
+  const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+
+  return {
+    success: true,
+    message: "Latest subscription plan fetched successfully",
+    subscription: lastSub,
   };
 };
