@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 
 import authUserRoutes from './routes/authRoutes/user.js';
+import authAdminRoutes from './routes/authRoutes/admin.js';
 import authTechRoutes from './routes/authRoutes/technician.js';
 import categoryRoutes from './routes/category.route.js';
 import reviewRoutes from './routes/reviews.route.js';
@@ -34,6 +35,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/api/userAuth', authUserRoutes);
+app.use('/api/adminAuth', authAdminRoutes);
 app.use('/api/techAuth', authTechRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);

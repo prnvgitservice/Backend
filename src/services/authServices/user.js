@@ -165,7 +165,7 @@ export const getProfile = async (userId) => {
 
 
 
- export const editProfile = async (userId, updateData) => {
+ export const editProfile = async (updateData) => {
   const errors = [];
 
   const {

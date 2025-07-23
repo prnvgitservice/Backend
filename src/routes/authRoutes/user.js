@@ -5,6 +5,6 @@ const router = Router();
       
 router.post('/register', register);
 router.post('/login', login);
-router.get('/profile/:id', getProfile); //api/auth/profile/:id
-router.put('/editProfile', editProfile); //api/auth/profile/:id
+router.get('/profile/:id', getProfile);
+router.put('/editProfile', editProfile);
 export default router;

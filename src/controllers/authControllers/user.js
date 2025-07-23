@@ -45,8 +45,7 @@ export const getProfile = async (req, res, next) => {
 
 export const editProfile = async (req, res, next) => {
   try {
-    const userId = req.params.id; 
-    const result = await authService.editProfile(userId, req.body);
+    const result = await authService.editProfile(req.body);
     res.status(201).json({
       success: true,
       message: req.body.newPassword ? "Password updated successfully." : "User profile updated successfully.",
