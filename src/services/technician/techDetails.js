@@ -93,6 +93,7 @@ export const getAllTechniciansByCateId = async (categoryId) => {
         technician,
         services,
         technicianImages,
+        techSubDetails,
         ratings
       });
     }
