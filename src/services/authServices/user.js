@@ -1,12 +1,12 @@
 import User from "../../models/authModels/user.js";
 import { generateToken } from "../../utils/generateToken.js";
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export const register = async ({
   username,
   phoneNumber,
   password,
-  role = 'user',
+  role = "user",
   buildingName,
   areaName,
   city,
@@ -24,8 +24,7 @@ export const register = async ({
     !city ||
     !state ||
     !pincode
-  ) 
-  {
+  ) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = ["All Fields Required."];
@@ -45,7 +44,7 @@ export const register = async ({
     errors.push("Phone number already exists.");
   }
 
-if (errors.length > 0) {
+  if (errors.length > 0) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = errors;
@@ -80,23 +79,22 @@ if (errors.length > 0) {
 };
 
 export const login = async ({ phoneNumber, password }) => {
-  if (!phoneNumber || !password) 
-     {
+  if (!phoneNumber || !password) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = ["Phone number and password are required."];
     throw err;
   }
-   const errors = [];
-  const user = await User.findOne({ phoneNumber }).select('+password');
+  const errors = [];
+  const user = await User.findOne({ phoneNumber }).select("+password");
 
   if (!user) {
     errors.push("User not found with this phone number.");
   }
 
-    let isMatch = false;
+  let isMatch = false;
 
-     if (user) {
+  if (user) {
     isMatch = await user.isPasswordMatch(password);
     if (!isMatch) {
       errors.push("Invalid credentials.");
@@ -163,11 +161,8 @@ export const getProfile = async (userId) => {
   };
 };
 
-
-
- export const editProfile = async (updateData) => {
+export const editProfile = async (updateData) => {
   const errors = [];
-
   const {
     id,
     username,
@@ -178,16 +173,23 @@ export const getProfile = async (userId) => {
     state,
     pincode,
     phoneNumber,
-    role, 
+    role,
+    files,
   } = updateData;
- if (phoneNumber || role) 
-     {
+
+  if (phoneNumber) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Phone number cant be Updated."];
+    err.errors = ["Phone number can't be updated."];
     throw err;
   }
 
+  if (role) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Role can't be updated."];
+    throw err;
+  }
 
   if (!id) {
     const err = new Error("ID is required.");
@@ -206,10 +208,28 @@ export const getProfile = async (userId) => {
     errors.push("Username must be a string.");
   }
 
-  if (password) {
-    if (password.length < 6 || password.length > 20) {
-      errors.push("Password must be between 6 and 20 characters.");
+  if (password && (password.length < 6 || password.length > 20)) {
+    errors.push("Password must be between 6 and 20 characters.");
+  }
+
+  if (files?.profileImage?.[0]) {
+    const filePath = files.profileImage[0].path;
+
+    const oldUrl = user.profileImage;
+    if (oldUrl) {
+      const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+      const publicId = match ? `UserProfiles/${match[1]}` : null;
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
     }
+
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "UserProfiles",
+    });
+    fs.unlinkSync(filePath);
+
+    user.profileImage = uploadResult.secure_url;
   }
 
   if (errors.length > 0) {
@@ -239,5 +259,6 @@ export const getProfile = async (userId) => {
     city: user.city,
     state: user.state,
     pincode: user.pincode,
+    profileImage: user.profileImage,
   };
 };

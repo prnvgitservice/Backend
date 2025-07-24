@@ -44,8 +44,24 @@ export const getProfile = async (req, res, next) => {
 };
 
 export const editProfile = async (req, res, next) => {
+   const filesArray = req.files || [];
+  const filesMap = {};
+
+  filesArray.forEach((file) => {
+    if (!filesMap[file.fieldname]) {
+      filesMap[file.fieldname] = [];
+    }
+    filesMap[file.fieldname].push(file);
+  });
+
+  const userData = {
+    ...req.body,
+    files: filesMap,
+  };
+
+  console.log("userData", userData)
   try {
-    const result = await authService.editProfile(req.body);
+    const result = await authService.editProfile(userData);
     res.status(201).json({
       success: true,
       message: req.body.newPassword ? "Password updated successfully." : "User profile updated successfully.",

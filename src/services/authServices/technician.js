@@ -1,18 +1,18 @@
-import Technician from '../../models/authModels/technician.js'
-import SubscriptionPlan from '../../models/subscription.model.js';
-import { generateToken } from '../../utils/generateToken.js';
-import mongoose from 'mongoose';
-import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs';
-import { addTechSubscriptionPlan } from '../technician/technicianSubscriptionDetails.js';
-import TechSubscriptionsDetail from '../../models/technician/technicianSubscriptionDetails.js';
+import Technician from "../../models/authModels/technician.js";
+import SubscriptionPlan from "../../models/subscription.model.js";
+import { generateToken } from "../../utils/generateToken.js";
+import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
+import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
+import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 
-export const registerTechnician = async ({ 
+export const registerTechnician = async ({
   userId,
   username,
   phoneNumber,
   password,
-  role = 'technician',
+  role = "technician",
   category,
   buildingName,
   areaName,
@@ -54,27 +54,26 @@ export const registerTechnician = async ({
     errors.push("Phone number already exists.");
   }
 
-if (errors.length > 0) {
+  if (errors.length > 0) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = errors;
     throw err;
   }
 
-
   const technician = new Technician({
-     userId,
-  username,
-  phoneNumber,
-  password,
-  role,
-  category,
-  buildingName,
-  areaName,
-  city,
-  state,
-  pincode 
-});
+    userId,
+    username,
+    phoneNumber,
+    password,
+    role,
+    category,
+    buildingName,
+    areaName,
+    city,
+    state,
+    pincode,
+  });
   await technician.save();
 
   const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
@@ -85,9 +84,9 @@ if (errors.length > 0) {
       technicianId: technician._id,
       subscriptionId: subscription._id,
     });
-    console.log("i resut", result)
+    console.log("i resut", result);
   }
-  
+
   return {
     id: technician._id,
     userId: technician.userId,
@@ -100,10 +99,9 @@ if (errors.length > 0) {
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
-    plan: subscription?._id || null
+    plan: subscription?._id || null,
   };
 };
-
 
 export const loginTechnician = async ({ phoneNumber, password }) => {
   if (!phoneNumber || !password) {
@@ -115,7 +113,9 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
 
   const errors = [];
 
-  const technician = await Technician.findOne({ phoneNumber }).select('+password');
+  const technician = await Technician.findOne({ phoneNumber }).select(
+    "+password"
+  );
   if (!technician) {
     errors.push("Technician not found with this phone number.");
   }
@@ -137,14 +137,24 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
 
   const token = generateToken(technician);
 
-  const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+  const techSubDetails = await TechSubscriptionsDetail.findOne({
+    technicianId: technician._id,
+  });
   let planDetails = null;
 
-  if (techSubDetails && Array.isArray(techSubDetails.subscriptions) && techSubDetails.subscriptions.length > 0) {
-    const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+  if (
+    techSubDetails &&
+    Array.isArray(techSubDetails.subscriptions) &&
+    techSubDetails.subscriptions.length > 0
+  ) {
+    const lastSub =
+      techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
 
-    const expired = new Date(lastSub.endDate) < new Date() || 
-                    (lastSub.leads != null && lastSub.ordersCount != null && lastSub.leads === lastSub.ordersCount);
+    const expired =
+      new Date(lastSub.endDate) < new Date() ||
+      (lastSub.leads != null &&
+        lastSub.ordersCount != null &&
+        lastSub.leads === lastSub.ordersCount);
 
     planDetails = {
       subscriptionId: lastSub.subscriptionId,
@@ -173,87 +183,83 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
   };
 };
 
-
-
-export const updateTechnician = async ({ 
-   technicianId,
-    username,
-    password,
-    buildingName,
-    areaName,
-    city,
-    state,
-    pincode,
-    description,
-    service,
-    files,
+export const updateTechnician = async ({
+  technicianId,
+  username,
+  password,
+  buildingName,
+  areaName,
+  city,
+  state,
+  pincode,
+  description,
+  service,
+  files,
 }) => {
-   const errors = [];
-  console.log("service", service)
-    if (!technicianId) {
-      const err = new Error("Validation failed");
-      err.statusCode = 401;
-      err.errors = ["technicianId are required."];
-      throw err;
-    }
+  const errors = [];
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["technicianId are required."];
+    throw err;
+  }
 
-    if (!mongoose.Types.ObjectId.isValid(technicianId)) {
-        const err = new Error("Technician ID format.");
-        err.statusCode = 400;
-        err.errors = ["Provided Technician ID is not valid."];
-        throw err;
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Technician ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found."];
+    throw err;
+  }
+
+  if (files.profileImage?.[0]) {
+    const filePath = files.profileImage[0].path;
+
+    const oldUrl = technician.profileImage;
+    if (oldUrl) {
+      const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+      const publicId = match ? `TechProfiles/${match[1]}` : null;
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
       }
-
-    const technician = await Technician.findById(technicianId);
-    if (!technician) {
-      const err = new Error("Technician not found");
-      err.statusCode = 404;
-      err.errors = ["Technician ID Not Found."];
-      throw err;
     }
 
-    if (files.profileImage?.[0]) {
-      const filePath = files.profileImage[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProfiles",
+    });
+    fs.unlinkSync(filePath);
 
-      const oldUrl = technician.profileImage;
-      if (oldUrl) {
-        const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
-        const publicId = match ? `TechProfiles/${match[1]}` : null;
-        if (publicId) {
-          await cloudinary.uploader.destroy(publicId);
-        }
-      }
+    technician.profileImage = uploadResult.secure_url;
+  }
 
-      const uploadResult = await cloudinary.uploader.upload(filePath, {
-        folder: "TechProfiles",
-      });
-      fs.unlinkSync(filePath);
+  if (username) technician.username = username;
+  if (password) technician.password = password;
+  if (buildingName) technician.buildingName = buildingName;
+  if (areaName) technician.areaName = areaName;
+  if (city) technician.city = city;
+  if (state) technician.state = state;
+  if (pincode) technician.pincode = pincode;
+  if (service) technician.service = service;
+  if (description) technician.description = description;
 
-      technician.profileImage = uploadResult.secure_url;
-    }
+  await technician.save();
 
-    if (username) technician.username = username;
-    if (password) technician.password = password;
-    if (buildingName) technician.buildingName = buildingName;
-    if (areaName) technician.areaName = areaName;
-    if (city) technician.city = city;
-    if (state) technician.state = state;
-    if (pincode) technician.pincode = pincode;
-    if (service) technician.service = service;
-    if (description) technician.description = description;
-
-    await technician.save();
-
-     if (errors.length > 0) {
+  if (errors.length > 0) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = errors;
     throw err;
   }
 
-
-return {
-   id: technician._id,
+  return {
+    id: technician._id,
     username: technician.username,
     userId: technician.userId,
     phoneNumber: technician.phoneNumber,
@@ -267,11 +273,11 @@ return {
     description: technician.description,
     service: technician.service,
     profileImage: technician.profileImage,
-}
+  };
 };
 
 export const getTechnicianProfile = async (technicianId) => {
-  console.log("technicianId", technicianId)
+  console.log("technicianId", technicianId);
   if (!technicianId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -295,7 +301,7 @@ export const getTechnicianProfile = async (technicianId) => {
   }
 
   return {
-     id: technician._id,
+    id: technician._id,
     username: technician.username,
     userId: technician.userId,
     phoneNumber: technician.phoneNumber,
@@ -311,5 +317,3 @@ export const getTechnicianProfile = async (technicianId) => {
     profileImage: technician.profileImage,
   };
 };
-
-

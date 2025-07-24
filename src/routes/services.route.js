@@ -22,7 +22,7 @@ router.patch('/:id', authMiddleware, updateService);                   // Update
 router.delete('/:id', authMiddleware, deleteService);                  // Delete service by ID
 
 // 🌐 Public access
-router.get('/top-rated', getTopRatedServices);               // Get top rated services
+ router.get('/top-rated', getTopRatedServices);               // Get top rated services
 router.get('/popular', getMostPopularServices);              // Get most popular services
 router.get('/:id', getServiceById);                          // Get service by ID (public view)
 router.get('/:company/services', getServicesByCompanyId);
