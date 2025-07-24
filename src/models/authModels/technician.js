@@ -61,4 +61,4 @@ technicianSchema.methods.isPasswordMatch = function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-export default model('Technician', technicianSchema);
+export default model('PrnvTechnician', technicianSchema);
