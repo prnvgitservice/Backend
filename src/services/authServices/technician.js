@@ -6,6 +6,7 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
+import Franchise from "../../models/authModels/franchise.js";
 
 export const registerTechnician = async ({
   userId,
@@ -103,6 +104,136 @@ export const registerTechnician = async ({
   };
 };
 
+export const registerTechnicianByFranchaise = async ({
+  userId,
+  username,
+  phoneNumber,
+  password,
+  role = "technician",
+  category,
+  buildingName,
+  areaName,
+  city,
+  state,
+  pincode,
+  franchiseId,
+  subscriptionId
+}) => {
+  const errors = [];
+
+  if (
+    !userId ||
+    !username ||
+    !phoneNumber ||
+    !password ||
+    !buildingName ||
+    !areaName ||
+    !role ||
+    !category ||
+    !city ||
+    !state ||
+    !pincode ||
+    !franchiseId ||
+    !subscriptionId
+  ) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["All Fields Required."];
+    throw err;
+  }
+
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    errors.push("Phone number must be exactly 10 digits.");
+  }
+
+  if (password?.length < 6 || password?.length > 20) {
+    errors.push("Password must be between 6 and 20 characters.");
+  }
+
+  const phoneExists = await Technician.findOne({ phoneNumber });
+  if (phoneExists) {
+    errors.push("Phone number already exists.");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+    const err = new Error("Invalid Franchise ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Franchise ID is not valid."];
+    throw err;
+  }
+
+  const franchise = await Franchise.findById(franchiseId);
+  if (!franchise) {
+    const err = new Error("Franchise not found");
+    err.statusCode = 404;
+    err.errors = ["Franchise ID not found."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    const err = new Error("Invalid Subscription ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Subscription ID is not valid."];
+    throw err;
+  }
+
+  const subscription = await SubscriptionPlan.findById(subscriptionId);
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID not found."];
+    throw err;
+  }
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+  const technician = new Technician({
+    franchiseId,
+    userId,
+    username,
+    phoneNumber,
+    password,
+    role,
+    category,
+    buildingName,
+    areaName,
+    city,
+    state,
+    pincode,
+  });
+  await technician.save();
+
+
+  let result = null;
+  if (subscription) {
+    result = await addTechSubscriptionPlan({
+      technicianId: technician._id,
+      subscriptionId: subscription._id,
+    });
+  }
+console.log("result", result)
+  return {
+    id: technician._id,
+    franchiseId: technician.franchiseId,
+    userId: technician.userId,
+    username: technician.username,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    plan: subscription?._id || null,
+  };
+};
+
 export const loginTechnician = async ({ phoneNumber, password }) => {
   if (!phoneNumber || !password) {
     const err = new Error("Validation failed");
@@ -168,6 +299,7 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
 
   return {
     id: technician._id,
+    franchiseId: technician.franchiseId,
     username: technician.username,
     userId: technician.userId,
     phoneNumber: technician.phoneNumber,
@@ -277,7 +409,6 @@ export const updateTechnician = async ({
 };
 
 export const getTechnicianProfile = async (technicianId) => {
-  console.log("technicianId", technicianId);
   if (!technicianId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -300,8 +431,20 @@ export const getTechnicianProfile = async (technicianId) => {
     throw err;
   }
 
+  const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId });
+
+  let lastSubscription = null;
+  if (
+    techSubDetails &&
+    Array.isArray(techSubDetails.subscriptions) &&
+    techSubDetails.subscriptions.length > 0
+  ) {
+    lastSubscription = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+  }
+
   return {
     id: technician._id,
+    franchiseId: technician.franchiseId,
     username: technician.username,
     userId: technician.userId,
     phoneNumber: technician.phoneNumber,
@@ -315,5 +458,68 @@ export const getTechnicianProfile = async (technicianId) => {
     description: technician.description,
     service: technician.service,
     profileImage: technician.profileImage,
+    subscription: lastSubscription || null,
   };
+};
+
+
+export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
+  if (!franchiseId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Franchise ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+    const err = new Error("Invalid Franchise ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Franchise ID is not valid."];
+    throw err;
+  }
+
+  const technicians = await Technician.find({ franchiseId });
+
+  if (!technicians || technicians.length === 0) {
+    const err = new Error("No technicians found for this franchise.");
+    err.statusCode = 404;
+    err.errors = ["No technician profiles associated with this Franchise ID."];
+    throw err;
+  }
+
+  const results = await Promise.all(
+    technicians.map(async (technician) => {
+      const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+
+      let lastSubscription = null;
+      if (
+        techSubDetails &&
+        Array.isArray(techSubDetails.subscriptions) &&
+        techSubDetails.subscriptions.length > 0
+      ) {
+        lastSubscription = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+      }
+
+      return {
+        id: technician._id,
+        franchiseId: technician.franchiseId,
+        username: technician.username,
+        userId: technician.userId,
+        phoneNumber: technician.phoneNumber,
+        role: technician.role,
+        category: technician.category,
+        buildingName: technician.buildingName,
+        areaName: technician.areaName,
+        city: technician.city,
+        state: technician.state,
+        pincode: technician.pincode,
+        description: technician.description,
+        service: technician.service,
+        profileImage: technician.profileImage,
+        subscription: lastSubscription || null,
+      };
+    })
+  );
+
+  return results;
 };

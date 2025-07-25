@@ -52,3 +52,9 @@ export const technicianMiddleware = (req, res, next) => {
     }
     next();
 };
+export const franchaiseMiddleware = (req, res, next) => {
+    if (req.user.role !== "franchise") {
+        return res.status(403).json({ message: "Franchise access denied" });
+    }
+    next();
+};

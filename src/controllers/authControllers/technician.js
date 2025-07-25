@@ -40,6 +40,22 @@ export const registerTechnicianController = async (req, res, next) => {
    next(err);
   }
 };
+export const registerTechnicianByFranchaiseController = async (req, res, next) => {
+  try {
+     const technicianData = {
+      ...req.body,
+      userId: generateSequrityCode(),
+    };
+    const result = await technician.registerTechnicianByFranchaise(technicianData);
+    res.status(201).json({
+      success: true,
+      message: "Technician Registered By Franchaise successfully.",
+      result,
+    });
+  } catch (err) {
+   next(err);
+  }
+};
 
 export const loginTechnicianController = async (req, res, next) => {
   try {
@@ -87,12 +103,25 @@ export const updateTechnicianControl = async (req, res, next) => {
 export const getTechProfileControl = async (req, res, next) => {
   try {
     const {technicianId} = req.params;
-
-    console.log("technicianIdtechnicianId", technicianId)
     const result = await technician.getTechnicianProfile(technicianId);
     res.status(201).json({
       success: true,
       message: "Technician profile fetched successfully.",
+      result,
+    });
+  } catch (err) {
+
+    next(err);
+  }
+};
+
+export const getTechnicianProfilesByFranchiseIdCont = async (req, res, next) => {
+  try {
+    const {franchiseId} = req.params;
+    const result = await technician.getTechnicianProfilesByFranchiseId(franchiseId);
+    res.status(201).json({
+      success: true,
+      message: "Technicians profile fetched by Franchise successfully.",
       result,
     });
   } catch (err) {
