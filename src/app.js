@@ -14,6 +14,7 @@ import techImagesRoutes from './routes/technician/techImgs.js';
 import techReviewRoutes from './routes/technician/reviewsAndRatings.js';
 import techDetailsRoutes from './routes/technician/techDetails.js';
 import franchaseRoutes from './routes/franchase/franchaseEnqury.js';
+import franchiseSubscriptionRoutes from './routes/franchase/franchiseSubscription.js';
 import pincodeRoutes from './routes/pincodes.route.js';
 import companyReviewRoutes from './routes/companyReview.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
@@ -56,6 +57,7 @@ app.use('/api/guestBooking', guestBookingRoutes);
 app.use('/api/getInTouch', getInTouchRoutes);
 app.use('/api/searchContentData', searchContentDataRoutes);
 app.use('/api/technicianSubscription', technicianSubscriptionRoutes);
+app.use('/api/franchiseSubscription', franchiseSubscriptionRoutes);
 
 app.use(errorHandler)
 

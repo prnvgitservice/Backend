@@ -1,8 +1,10 @@
 import Franchise from "../../models/authModels/franchise.js";
+import FranchiseSubscription from "../../models/franchase/franchiseSubscriptions.js";
 import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { addFranchiseSubscriptionPlan } from "../franchase/franchiseSubscriptionDetails.js";
 
 export const registerFranchise = async ({
   franchiseId,
@@ -32,7 +34,7 @@ export const registerFranchise = async ({
   ) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["All Fields Required."];
+    err.errors = ["All fields are required."];
     throw err;
   }
 
@@ -56,6 +58,17 @@ export const registerFranchise = async ({
     throw err;
   }
 
+  const franchiseSubscription = await FranchiseSubscription.find();
+  console.log("franchiseSubscription", franchiseSubscription);
+
+  if (!franchiseSubscription.length) {
+    const err = new Error("Franchise Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Franchise Subscription list is empty."];
+    throw err;
+  }
+  const firstPlanId = franchiseSubscription[0]._id.toString();
+
   const franchise = new Franchise({
     franchiseId,
     username,
@@ -70,6 +83,11 @@ export const registerFranchise = async ({
   });
   await franchise.save();
 
+  const addFranchisePlan = await addFranchiseSubscriptionPlan({
+    franchiseId: franchise._id.toString(),
+    franchiseSubscriptionId: firstPlanId,
+  });
+
   return {
     id: franchise._id,
     franchiseId: franchise.franchiseId,
@@ -81,7 +99,7 @@ export const registerFranchise = async ({
     city: franchise.city,
     state: franchise.state,
     pincode: franchise.pincode,
-    plan: franchise?._id || null,
+    plan: addFranchisePlan || null,
   };
 };
 
@@ -300,4 +318,3 @@ export const deleteFranchise = async (franchiseId) => {
     id: franchise._id,
   };
 };
-

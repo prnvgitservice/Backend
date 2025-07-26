@@ -216,7 +216,6 @@ export const registerTechnicianByFranchaise = async ({
       subscriptionId: subscription._id,
     });
   }
-console.log("result", result)
   return {
     id: technician._id,
     franchiseId: technician.franchiseId,
