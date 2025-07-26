@@ -1,10 +1,10 @@
 import Franchise from "../../models/authModels/franchise.js";
-import FranchiseSubscription from "../../models/franchase/franchiseSubscriptions.js";
 import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import { addFranchiseSubscriptionPlan } from "../franchase/franchiseSubscriptionDetails.js";
+import FranchiseSubscription from "../../models/franchase/franchiseSubscriptions.js";
 
 export const registerFranchise = async ({
   franchiseId,
@@ -264,6 +264,18 @@ export const getFranchiseProfile = async (franchiseId) => {
     throw err;
   }
 
+
+   const franchiseSubDetails = await FranchiseSubscription.findOne({ franchiseId });
+  
+    let lastSubscription = null;
+    if (
+      franchiseSubDetails &&
+      Array.isArray(franchiseSubDetails.subscriptions) &&
+      franchiseSubDetails.subscriptions.length > 0
+    ) {
+      lastSubscription = franchiseSubDetails.subscriptions[franchiseSubDetails.subscriptions.length - 1];
+    }
+
   return {
     id: franchise._id,
     username: franchise.username,
@@ -277,6 +289,7 @@ export const getFranchiseProfile = async (franchiseId) => {
     pincode: franchise.pincode,
     description: franchise.description,
     profileImage: franchise.profileImage,
+    lastSubscription: lastSubscription
   };
 };
 
