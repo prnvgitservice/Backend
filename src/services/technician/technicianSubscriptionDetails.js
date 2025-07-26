@@ -26,7 +26,7 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
     err.errors = ['Technician ID Not Found'];
     throw err;
   }
-
+  
   const subscription = await SubscriptionPlan.findById(subscriptionId);
   if (!subscription) {
     const err = new Error('Subscription not found');
