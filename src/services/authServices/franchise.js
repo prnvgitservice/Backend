@@ -59,7 +59,6 @@ export const registerFranchise = async ({
   }
 
   const franchiseSubscription = await FranchiseSubscription.find();
-  console.log("franchiseSubscription", franchiseSubscription);
 
   if (!franchiseSubscription.length) {
     const err = new Error("Franchise Subscription not found");

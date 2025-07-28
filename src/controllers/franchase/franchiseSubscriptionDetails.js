@@ -1,4 +1,4 @@
-import * as FranchiseSubscriptionDetails from "../../services/franchase/franchiseSubscriptionDetails";
+import * as FranchiseSubscriptionDetails from "../../services/franchase/franchiseSubscriptionDetails.js";
 
 export const addFranchiseSubscriptionPlanCont = async (req, res, next) => {
   try {
@@ -16,10 +16,10 @@ export const addFranchiseSubscriptionPlanCont = async (req, res, next) => {
 };
 
 export const getFranchiseSubscriptionPlanCot = async (req, res, next) => {
-  const { technicianId } = req.params;
+  const { franchiseId } = req.params;
   try {
     const result = await FranchiseSubscriptionDetails.getFranchiseSubscriptionPlan(
-      technicianId
+      franchiseId
     );
     res.status(201).json({
       success: true,

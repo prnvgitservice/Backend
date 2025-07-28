@@ -36,7 +36,6 @@ export const addFranchiseSubscriptionPlan = async ({
     err.errors = ["Franchise ID Not Found"];
     throw err;
   }
-  console.log("franchise", franchise);
   const subscription = await FranchiseSubscriptionPlan.findById(
     franchiseSubscriptionId
   );
@@ -46,7 +45,7 @@ export const addFranchiseSubscriptionPlan = async ({
     err.errors = ["Subscription ID Not Found"];
     throw err;
   }
-  console.log("subscription", subscription);
+
   const now = new Date();
   const newSubscription = {
     franchiseSubscriptionId: subscription._id,
@@ -54,8 +53,6 @@ export const addFranchiseSubscriptionPlan = async ({
     startDate: now,
     endDate: null,
   };
-
-  console.log("newSubscription", newSubscription);
 
   if (subscription.validity) {
     newSubscription.endDate = new Date(

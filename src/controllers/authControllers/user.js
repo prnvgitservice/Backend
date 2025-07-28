@@ -3,7 +3,6 @@ import * as authService from "../../services/authServices/user.js";
 export const register = async (req, res, next) => {
   try {
     const result = await authService.register(req.body);
-     console.log("result", result)
     res.status(201).json({
       success: true,
       message: "User Registered successfully.",
@@ -59,7 +58,6 @@ export const editProfile = async (req, res, next) => {
     files: filesMap,
   };
 
-  console.log("userData", userData)
   try {
     const result = await authService.editProfile(userData);
     res.status(201).json({

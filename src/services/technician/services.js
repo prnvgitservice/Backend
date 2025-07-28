@@ -10,8 +10,6 @@ export const createService = async ({
   servicePrice,
   files,
 }) => {
-  console.log("files", files);
-
   if (!technicianId || !serviceName || !servicePrice) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -41,7 +39,6 @@ export const createService = async ({
       folder: "TechServiceImages",
     });
     fs.unlinkSync(filePath);
-    console.log("uploadResult", uploadResult);
     serviceImg = uploadResult.secure_url;
   }
 
@@ -209,7 +206,6 @@ export const deleteServicesById = async (serviceId) => {
 export const getServicesByTechId = async ({
   technicianId,
 }) => {
-  console.log("hello", technicianId)
   if (!technicianId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;

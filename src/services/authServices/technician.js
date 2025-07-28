@@ -7,6 +7,7 @@ import fs from "fs";
 import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import Franchise from "../../models/authModels/franchise.js";
+import { addFranchiseAccount } from "../franchase/franchiseAccount.js";
 
 export const registerTechnician = async ({
   userId,
@@ -85,7 +86,6 @@ export const registerTechnician = async ({
       technicianId: technician._id,
       subscriptionId: subscription._id,
     });
-    console.log("i resut", result);
   }
 
   return {
@@ -117,7 +117,7 @@ export const registerTechnicianByFranchaise = async ({
   state,
   pincode,
   franchiseId,
-  subscriptionId
+  subscriptionId,
 }) => {
   const errors = [];
 
@@ -208,7 +208,6 @@ export const registerTechnicianByFranchaise = async ({
   });
   await technician.save();
 
-
   let result = null;
   if (subscription) {
     result = await addTechSubscriptionPlan({
@@ -216,6 +215,18 @@ export const registerTechnicianByFranchaise = async ({
       subscriptionId: subscription._id,
     });
   }
+
+  let franhiseAccount = null;
+  if (result) {
+    franhiseAccount = await addFranchiseAccount({
+      franchiseId,
+      technicianId: technician._id.toString(),
+      subscriptionId,
+    });
+  }
+
+  console.log("franhiseAccount", franhiseAccount)
+
   return {
     id: technician._id,
     franchiseId: technician.franchiseId,
@@ -230,6 +241,8 @@ export const registerTechnicianByFranchaise = async ({
     state: technician.state,
     pincode: technician.pincode,
     plan: subscription?._id || null,
+    result: result.subscription,
+    franhiseAccount: franhiseAccount.newAccountDetails,
   };
 };
 
@@ -430,7 +443,9 @@ export const getTechnicianProfile = async (technicianId) => {
     throw err;
   }
 
-  const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId });
+  const techSubDetails = await TechSubscriptionsDetail.findOne({
+    technicianId,
+  });
 
   let lastSubscription = null;
   if (
@@ -438,7 +453,8 @@ export const getTechnicianProfile = async (technicianId) => {
     Array.isArray(techSubDetails.subscriptions) &&
     techSubDetails.subscriptions.length > 0
   ) {
-    lastSubscription = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+    lastSubscription =
+      techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
   }
 
   return {
@@ -460,7 +476,6 @@ export const getTechnicianProfile = async (technicianId) => {
     subscription: lastSubscription || null,
   };
 };
-
 
 export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
   if (!franchiseId) {
@@ -488,7 +503,9 @@ export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
 
   const results = await Promise.all(
     technicians.map(async (technician) => {
-      const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+      const techSubDetails = await TechSubscriptionsDetail.findOne({
+        technicianId: technician._id,
+      });
 
       let lastSubscription = null;
       if (
@@ -496,7 +513,8 @@ export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
         Array.isArray(techSubDetails.subscriptions) &&
         techSubDetails.subscriptions.length > 0
       ) {
-        lastSubscription = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+        lastSubscription =
+          techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
       }
 
       return {

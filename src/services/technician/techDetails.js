@@ -103,7 +103,6 @@ export const getAllTechniciansByCateId = async (categoryId) => {
 };
 
 export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) => {
-  console.log("aadddasd",  pincode, areaName, categoryId, city)
   if (!categoryId || !pincode || !areaName || !city) {
     const err = new Error("Validation failed");
     err.statusCode = 401;

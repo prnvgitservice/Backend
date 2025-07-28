@@ -385,7 +385,6 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
       await techSubDetails.save();
 
       updatedSubInfo = lastSub;
-      console.log("updatedSubInfo", updatedSubInfo)
     }
   }
 

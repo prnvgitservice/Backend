@@ -34,7 +34,6 @@ export const getTechImagesByTechIdControl = async (req, res, next) => {
   try {
     const {technicianId} = req.params;
 
-    console.log("technicianIdtechnicianId", technicianId)
     const result = await techImgs.getTechImagesByTechId(technicianId);
     res.status(201).json({
       success: true,

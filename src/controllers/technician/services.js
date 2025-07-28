@@ -31,7 +31,6 @@ export const createServiceControl = async (req, res, next) => {
 
 export const updateServiceControl = async (req, res, next) => {
 
-      console.log("files", req.files)
     const filesArray = req.files || [];
   const filesMap = {};
 
@@ -46,8 +45,6 @@ export const updateServiceControl = async (req, res, next) => {
     ...req.body,
     files: filesMap,
   };
-
-  console.log("req.body", req.body)
 
   try {
     const result = await services.updateService(serviceData);
@@ -95,7 +92,6 @@ export const deleteAllServicesControl = async (req, res, next) => {
 export const deleteServicesControl = async (req, res, next) => {
   try {
     const {serviceId} = req.params;
-    console.log("serviceId", serviceId)
     const result = await services.deleteServicesById(serviceId);
     res.status(201).json({
       success: true,

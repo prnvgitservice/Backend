@@ -66,7 +66,6 @@ export const createTechProfile = async (req) => {
     throw err;
   }
 
-  console.log("Uploaded files:");
   console.dir(req.files, { depth: null });
 
   let profileImageUrl = "";
@@ -77,7 +76,6 @@ export const createTechProfile = async (req) => {
       folder: "TechProfiles",
     });
     profileImageUrl = uploadResult.secure_url;
-    console.log("Profile image uploaded:", profileImageUrl);
     fs.unlinkSync(filePath);
   }
 
@@ -93,7 +91,6 @@ export const createTechProfile = async (req) => {
         folder: "TechUploadedPhotos",
       });
       uploadedPhotos.push({ imageUrl: upload.secure_url });
-      console.log("Uploaded photo:", upload.secure_url);
       fs.unlinkSync(photo.path);
     }
   }

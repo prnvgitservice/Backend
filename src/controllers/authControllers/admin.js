@@ -3,7 +3,6 @@ import * as adminService from "../../services/authServices/admin.js";
 export const adminRegisterCont = async (req, res, next) => {
   try {
     const result = await adminService.adminRegister(req.body);
-     console.log("result", result)
     res.status(201).json({
       success: true,
       message: "Admin Registered successfully.",

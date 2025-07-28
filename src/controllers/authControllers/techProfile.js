@@ -1,9 +1,6 @@
 import * as techProfile from "../../services/authServices/techProfile.js";
 
 export const creatingTechProfile = async (req, res, next) => {
-  console.log("Creating Tech Profile");
-  console.log("req.body", req.body);
-
   try {
     const result = await techProfile.createTechProfile(req);
     res.status(201).json({
