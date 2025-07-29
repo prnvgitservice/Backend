@@ -225,7 +225,102 @@ export const registerTechnicianByFranchaise = async ({
     });
   }
 
-  console.log("franhiseAccount", franhiseAccount)
+  console.log("franhiseAccount", franhiseAccount);
+
+  return {
+    id: technician._id,
+    franchiseId: technician.franchiseId,
+    userId: technician.userId,
+    username: technician.username,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    plan: subscription?._id || null,
+    result: result.subscription,
+    franhiseAccount: franhiseAccount.newAccountDetails,
+  };
+};
+
+export const renewTechnicianByFranchaise = async ({
+  technicianId,
+  franchiseId,
+  subscriptionId,
+}) => {
+  const errors = [];
+
+  if (!technicianId || !franchiseId || !subscriptionId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["All Fields Required."];
+    throw err;
+  }
+
+if (
+    !mongoose.Types.ObjectId.isValid(technicianId) ||
+    !mongoose.Types.ObjectId.isValid(franchiseId) ||
+    !mongoose.Types.ObjectId.isValid(subscriptionId) 
+  ) {
+    const err = new Error("Invalid Technician or Franchise or Subscription ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician or Franchise or Subscription ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID not found."];
+    throw err;
+  }
+
+  const franchise = await Franchise.findById(franchiseId);
+  if (!franchise) {
+    const err = new Error("Franchise not found");
+    err.statusCode = 404;
+    err.errors = ["Franchise ID not found."];
+    throw err;
+  }
+
+  const subscription = await SubscriptionPlan.findById(subscriptionId);
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID not found."];
+    throw err;
+  }
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+
+  let result = null;
+  if (subscription) {
+    result = await addTechSubscriptionPlan({
+      technicianId: technician._id,
+      subscriptionId: subscription._id,
+    });
+  }
+
+  let franhiseAccount = null;
+  if (result) {
+    franhiseAccount = await addFranchiseAccount({
+      franchiseId,
+      technicianId: technician._id.toString(),
+      subscriptionId,
+    });
+  }
+
+  console.log("franhiseAccount", franhiseAccount);
 
   return {
     id: technician._id,

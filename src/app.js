@@ -15,6 +15,7 @@ import techReviewRoutes from './routes/technician/reviewsAndRatings.js';
 import techDetailsRoutes from './routes/technician/techDetails.js';
 import franchaseRoutes from './routes/franchase/franchaseEnqury.js';
 import franchiseSubscriptionRoutes from './routes/franchase/franchiseSubscription.js';
+import franchiseAccountsRoutes from './routes/franchase/franchiseAccount.js';
 import franchiseSubscriptionDetailsRoutes from './routes/franchase/franchiseSubscriptionDetails.js';
 import pincodeRoutes from './routes/pincodes.route.js';
 import companyReviewRoutes from './routes/companyReview.route.js';
@@ -60,6 +61,7 @@ app.use('/api/searchContentData', searchContentDataRoutes);
 app.use('/api/technicianSubscription', technicianSubscriptionRoutes);
 app.use('/api/franchiseSubscription', franchiseSubscriptionRoutes);
 app.use('/api/franchiseSubscriptionDetails', franchiseSubscriptionDetailsRoutes);
+app.use('/api/franchiseAccounts', franchiseAccountsRoutes);
 
 app.use(errorHandler)
 

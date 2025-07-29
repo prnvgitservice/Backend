@@ -4,6 +4,7 @@ import SubscriptionPlan from "../../models/subscription.model.js";
 import Technician from "../../models/authModels/technician.js";
 import Franchise from "../../models/authModels/franchise.js";
 import mongoose from "mongoose";
+import moment from "moment";
 
 export const addFranchiseAccount = async ({
   franchiseId,
@@ -13,11 +14,12 @@ export const addFranchiseAccount = async ({
   if (!franchiseId || !technicianId || !subscriptionId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["FranchiseId, TechnicianId, and SubscriptionId are required."];
+    err.errors = [
+      "FranchiseId, TechnicianId, and SubscriptionId are required.",
+    ];
     throw err;
   }
 
-  // Validate ObjectId formats
   if (
     !mongoose.Types.ObjectId.isValid(franchiseId) ||
     !mongoose.Types.ObjectId.isValid(technicianId) ||
@@ -29,7 +31,6 @@ export const addFranchiseAccount = async ({
     throw err;
   }
 
-  // Check for franchise existence
   const franchise = await Franchise.findById(franchiseId);
   if (!franchise) {
     const err = new Error("Franchise not found");
@@ -38,7 +39,6 @@ export const addFranchiseAccount = async ({
     throw err;
   }
 
-  // Check for technician existence
   const technician = await Technician.findById(technicianId);
   if (!technician) {
     const err = new Error("Technician not found");
@@ -47,7 +47,6 @@ export const addFranchiseAccount = async ({
     throw err;
   }
 
-  // Check for subscription existence
   const subscription = await SubscriptionPlan.findById(subscriptionId);
   if (!subscription) {
     const err = new Error("Subscription not found");
@@ -56,15 +55,18 @@ export const addFranchiseAccount = async ({
     throw err;
   }
 
-  // Get the last subscription detail for the technician
-  const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({ technicianId });
+  const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({
+    technicianId,
+  });
   let planId = null;
   if (techSubscriptionDetail?.subscriptions?.length > 0) {
-    const lastSub = techSubscriptionDetail.subscriptions[techSubscriptionDetail.subscriptions.length - 1];
+    const lastSub =
+      techSubscriptionDetail.subscriptions[
+        techSubscriptionDetail.subscriptions.length - 1
+      ];
     planId = lastSub?._id?.toString();
   }
 
-  // Calculate amount based on subscription name
   let amount = null;
   switch (subscription.name) {
     case "Economy Plan":
@@ -77,9 +79,7 @@ export const addFranchiseAccount = async ({
       amount = 1000;
       break;
   }
-
-  // Create new account document
-  const newAccount = new Account({
+  const newAccount = new FranchiseAccount({
     franchiseId,
     technicianId,
     subscriptionId,
@@ -95,7 +95,6 @@ export const addFranchiseAccount = async ({
     newAccountDetails: newAccount,
   };
 };
-
 
 export const getFranchiseAccount = async (franchiseId) => {
   if (!franchiseId) {
@@ -119,22 +118,106 @@ export const getFranchiseAccount = async (franchiseId) => {
     throw err;
   }
 
-  const techSubDetails = await TechSubscriptionsDetail.findOne({
-    franchiseId,
-  });
-  if (!techSubDetails || !techSubDetails.subscriptions?.length) {
-    const err = new Error("Subscription not found");
+  const franchiseAccountsDetails = await FranchiseAccount.find({ franchiseId });
+  if (!franchiseAccountsDetails || !franchiseAccountsDetails.length) {
+    const err = new Error("Franchise Accounts not found");
     err.statusCode = 404;
-    err.errors = ["No subscription found for the Franchise."];
+    err.errors = ["No Franchise Accounts found for the Franchise."];
     throw err;
   }
 
-  const lastSub =
-    techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+  const enhancedAccounts = await Promise.all(
+    franchiseAccountsDetails.map(async (account) => {
+      const technician = await Technician.findById(account.technicianId).select(
+        "username"
+      );
+      const subscription = await SubscriptionPlan.findById(
+        account.subscriptionId
+      ).select("name");
+
+      return {
+        ...account._doc,
+        technicianName: technician?.username || "N/A",
+        subscriptionName: subscription?.name || "N/A",
+      };
+    })
+  );
 
   return {
-    success: true,
-    message: "Latest subscription plan fetched successfully",
-    subscription: lastSub,
+    franchiseAccountsDetails: enhancedAccounts,
+  };
+};
+
+export const getFranchiseAccountValues = async (franchiseId) => {
+  if (!franchiseId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Franchise Id is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+    const err = new Error("Invalid Franchise ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Franchise ID is not valid."];
+    throw err;
+  }
+
+  const franchise = await Franchise.findById(franchiseId);
+  if (!franchise) {
+    const err = new Error("Franchise not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const franchiseAccountsDetails = await FranchiseAccount.find({ franchiseId });
+  if (!franchiseAccountsDetails || !franchiseAccountsDetails.length) {
+    const err = new Error("Franchise Accounts not found");
+    err.statusCode = 404;
+    err.errors = ["No Franchise Accounts found for the Franchise."];
+    throw err;
+  }
+
+  const totalEarnings = franchiseAccountsDetails.reduce(
+    (sum, acc) => sum + (acc.amount || 0),
+    0
+  );
+
+  const currentMonth = moment().month();
+  const currentYear = moment().year();
+  const totalThisMonthEarnings = franchiseAccountsDetails.reduce((sum, acc) => {
+    const date = moment(acc.createdAt);
+    if (date.month() === currentMonth && date.year() === currentYear) {
+      return sum + (acc.amount || 0);
+    }
+    return sum;
+  }, 0);
+
+  const monthlyEarnings = Array(12).fill(0);
+  franchiseAccountsDetails.forEach((acc) => {
+    const date = moment(acc.createdAt);
+    if (date.year() === currentYear) {
+      monthlyEarnings[date.month()] += acc.amount || 0;
+    }
+  });
+
+  const technicianIds = new Set(
+    franchiseAccountsDetails.map((acc) => acc.technicianId?.toString())
+  );
+  const totalNoOfTechnicians = technicianIds.size;
+
+  const totalNoOfSubscriptions = franchiseAccountsDetails.reduce(
+    (count, acc) => {
+      return acc.subscriptionId ? count + 1 : count;
+    },
+    0
+  );
+
+  return {
+    totalEarnings,
+    totalThisMonthEarnings,
+    earningsByMonth: monthlyEarnings,
+    totalNoOfTechnicians,
+    totalNoOfSubscriptions,
   };
 };

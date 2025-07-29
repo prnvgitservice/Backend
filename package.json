@@ -21,6 +21,7 @@
     "fs": "^0.0.1-security",
     "india-pincode-lookup": "^1.0.3",
     "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
     "mongoose": "^8.16.2",
     "multer": "^2.0.1",
     "postal-codes-js": "^2.5.2"

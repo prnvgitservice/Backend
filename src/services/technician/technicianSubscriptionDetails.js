@@ -104,7 +104,6 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
 };
 
 
-
 export const getTechSubscriptionPlan = async (technicianId) => {
   if (!technicianId) {
     const err = new Error("Validation failed");

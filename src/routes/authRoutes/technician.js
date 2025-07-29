@@ -5,6 +5,7 @@ import {
   loginTechnicianController,
   registerTechnicianByFranchaiseController,
   registerTechnicianController,
+  renewTechnicianByFranchaiseController,
   updateTechnicianControl,
 } from "../../controllers/authControllers/technician.js";
 import { uploadWithValidation } from "../../middleware/uploads.js";
@@ -17,6 +18,10 @@ const router = Router();
 
 router.post("/register", registerTechnicianController);
 router.post("/registerByFranchise", registerTechnicianByFranchaiseController);
+router.put(
+  "/renewTechnicianByFranchaise",
+  renewTechnicianByFranchaiseController
+);
 router.post("/login", loginTechnicianController);
 router.put(
   "/updateTechnicianControl",
