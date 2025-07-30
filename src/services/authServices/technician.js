@@ -260,14 +260,18 @@ export const renewTechnicianByFranchaise = async ({
     throw err;
   }
 
-if (
+  if (
     !mongoose.Types.ObjectId.isValid(technicianId) ||
     !mongoose.Types.ObjectId.isValid(franchiseId) ||
-    !mongoose.Types.ObjectId.isValid(subscriptionId) 
+    !mongoose.Types.ObjectId.isValid(subscriptionId)
   ) {
-    const err = new Error("Invalid Technician or Franchise or Subscription ID format");
+    const err = new Error(
+      "Invalid Technician or Franchise or Subscription ID format"
+    );
     err.statusCode = 400;
-    err.errors = ["Provided Technician or Franchise or Subscription ID is not valid."];
+    err.errors = [
+      "Provided Technician or Franchise or Subscription ID is not valid.",
+    ];
     throw err;
   }
 
@@ -301,7 +305,6 @@ if (
     err.errors = errors;
     throw err;
   }
-
 
   let result = null;
   if (subscription) {
@@ -634,4 +637,40 @@ export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
   );
 
   return results;
+};
+
+export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
+  const totalTechnicians = await Technician.countDocuments({});
+  const technicians = await Technician.find({})
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 });
+
+  return {
+    total: totalTechnicians,
+    offset: skip,
+    limit: pageSize,
+    technicians: technicians.map((technician) => ({
+      id: technician._id,
+      username: technician.username,
+      phoneNumber: technician.phoneNumber,
+      role: technician.role,
+      buildingName: technician.buildingName,
+      areaName: technician.areaName,
+      city: technician.city,
+      state: technician.state,
+      pincode: technician.pincode,
+      profileImage: technician.profileImage,
+    })),
+  };
 };

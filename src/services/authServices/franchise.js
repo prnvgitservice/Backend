@@ -330,3 +330,41 @@ export const deleteFranchise = async (franchiseId) => {
     id: franchise._id,
   };
 };
+
+export const getAllFranchises = async ({ offset = 0, limit = 10 }) => {
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
+  const totalFranchises = await Franchise.countDocuments({});
+  const franchises = await Franchise.find({})
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 });
+
+  return {
+    total: totalFranchises,
+    offset: skip,
+    limit: pageSize,
+    franchises: franchises.map((franchise) => ({
+      id: franchise._id,
+      franchiseId: franchise.franchiseId,
+      username: franchise.username,
+      phoneNumber: franchise.phoneNumber,
+      role: franchise.role,
+      buildingName: franchise.buildingName,
+      areaName: franchise.areaName,
+      city: franchise.city,
+      state: franchise.state,
+      pincode: franchise.pincode,
+      description: franchise.description,
+      profileImage: franchise.profileImage,
+    })),
+  };
+};

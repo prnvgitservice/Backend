@@ -262,3 +262,40 @@ export const editProfile = async (updateData) => {
     profileImage: user.profileImage,
   };
 };
+
+
+export const getAllUsers = async ({ offset = 0, limit = 10 }) => {
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
+  const totalUsers = await User.countDocuments({});
+  const users = await User.find({})
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 });
+
+  return {
+    total: totalUsers,
+    offset: skip,
+    limit: pageSize,
+    users: users.map((user) => ({
+      id: user._id,
+      username: user.username,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      buildingName: user.buildingName,
+      areaName: user.areaName,
+      city: user.city,
+      state: user.state,
+      pincode: user.pincode,
+      profileImage: user.profileImage,
+    })),
+  };
+};

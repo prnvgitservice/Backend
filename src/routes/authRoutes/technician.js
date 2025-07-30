@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getAllTechnicianController,
   getTechnicianProfilesByFranchiseIdCont,
   getTechProfileControl,
   loginTechnicianController,
@@ -29,6 +30,7 @@ router.put(
   uploadWithValidation,
   updateTechnicianControl
 );
+router.get("/getAllTechnicians", getAllTechnicianController);
 router.get("/getTechProfile/:technicianId", getTechProfileControl);
 router.get(
   "/getTechProfileByFranchise/:technicianId",

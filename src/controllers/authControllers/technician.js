@@ -149,3 +149,14 @@ export const getTechnicianProfilesByFranchiseIdCont = async (
     next(err);
   }
 };
+
+
+export const getAllTechnicianController = async (req, res, next) => {
+  try {
+    const { offset, limit } = req.query;
+    const result = await technician.getAllTechnicians({ offset, limit });
+    res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+};

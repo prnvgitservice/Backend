@@ -113,3 +113,13 @@ export const deleteFranchiseProfileControl = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAllFranchisesController = async (req, res, next) => {
+  try {
+    const { offset, limit } = req.query;
+    const result = await franchise.getAllFranchises({ offset, limit });
+    res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+};

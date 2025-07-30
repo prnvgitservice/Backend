@@ -9,7 +9,7 @@ export const register = async (req, res, next) => {
       result,
     });
   } catch (err) {
-   next(err);
+    next(err);
   }
 };
 
@@ -21,7 +21,6 @@ export const login = async (req, res, next) => {
       message: "User Login successfully.",
       result,
     });
-
   } catch (err) {
     next(err);
   }
@@ -37,13 +36,12 @@ export const getProfile = async (req, res, next) => {
       result,
     });
   } catch (err) {
-
     next(err);
   }
 };
 
 export const editProfile = async (req, res, next) => {
-   const filesArray = req.files || [];
+  const filesArray = req.files || [];
   const filesMap = {};
 
   filesArray.forEach((file) => {
@@ -62,9 +60,21 @@ export const editProfile = async (req, res, next) => {
     const result = await authService.editProfile(userData);
     res.status(201).json({
       success: true,
-      message: req.body.newPassword ? "Password updated successfully." : "User profile updated successfully.",
+      message: req.body.newPassword
+        ? "Password updated successfully."
+        : "User profile updated successfully.",
       result,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllUsersController = async (req, res, next) => {
+  try {
+    const { offset, limit } = req.query;
+    const result = await authService.getAllUsers({ offset, limit });
+    res.status(200).json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
