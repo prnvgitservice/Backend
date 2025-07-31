@@ -150,12 +150,27 @@ export const getTechnicianProfilesByFranchiseIdCont = async (
   }
 };
 
-
 export const getAllTechnicianController = async (req, res, next) => {
   try {
     const { offset, limit } = req.query;
     const result = await technician.getAllTechnicians({ offset, limit });
     res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteTechnicianByIdController = async (req, res, next) => {
+  try {
+    const { technicianId } = req.params;
+    const result = await technician.deleteTechnicianById(technicianId);
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Technician Deleted Successfully",
+        result,
+      });
   } catch (err) {
     next(err);
   }

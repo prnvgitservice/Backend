@@ -299,3 +299,41 @@ export const getAllUsers = async ({ offset = 0, limit = 10 }) => {
     })),
   };
 };
+
+export const deleteUserById = async (userId) => {
+  if (!userId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["User ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    const err = new Error("Invalid User ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided User ID is not valid."];
+    throw err;
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    const err = new Error("User not found.");
+    err.statusCode = 404;
+    err.errors = ["User not found."];
+    throw err;
+  }
+
+  if (user.profileImage) {
+    const match = user.profileImage.match(/\/([^/]+)\.[a-z]+$/i);
+    const publicId = match ? `UserProfiles/${match[1]}` : null;
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+  }
+
+  await User.findByIdAndDelete(userId);
+
+  return {
+    id: userId,
+  };
+};

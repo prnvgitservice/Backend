@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteTechnicianByIdController,
   getAllTechnicianController,
   getTechnicianProfilesByFranchiseIdCont,
   getTechProfileControl,
@@ -11,6 +12,7 @@ import {
 } from "../../controllers/authControllers/technician.js";
 import { uploadWithValidation } from "../../middleware/uploads.js";
 import {
+  adminMiddleware,
   franchaiseMiddleware,
   requireSignIn,
 } from "../../utils/generateToken.js";
@@ -50,6 +52,16 @@ router.put(
   //   franchaiseMiddleware,
   uploadWithValidation,
   updateTechnicianControl
+);
+router.delete(
+  "/deleteTechnician/:technicianId",
+  deleteTechnicianByIdController
+);
+router.delete(
+  "/deleteTechnicianByAdmin/:technicianId",
+  requireSignIn,
+  adminMiddleware,
+  deleteTechnicianByIdController
 );
 
 export default router;

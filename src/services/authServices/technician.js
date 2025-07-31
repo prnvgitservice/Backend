@@ -674,3 +674,41 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
     })),
   };
 };
+
+export const deleteTechnicianById = async (technicianId) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found.");
+    err.statusCode = 404;
+    err.errors = ["Technician not found."];
+    throw err;
+  }
+
+  if (technician.profileImage) {
+    const match = technician.profileImage.match(/\/([^/]+)\.[a-z]+$/i);
+    const publicId = match ? `TechProfiles/${match[1]}` : null;
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+  }
+
+  await Technician.findByIdAndDelete(technicianId);
+
+  return {
+    id: technicianId,
+  };
+};

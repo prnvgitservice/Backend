@@ -79,3 +79,19 @@ export const getAllUsersController = async (req, res, next) => {
     next(err);
   }
 };
+
+export const deleteUserByIdController = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const result = await authService.deleteUserById(userId);
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "User Deleted Successfully",
+        result,
+      });
+  } catch (err) {
+    next(err);
+  }
+};
