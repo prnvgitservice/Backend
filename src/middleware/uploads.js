@@ -62,6 +62,10 @@ export const uploadWithValidation = (req, res, next) => {
         req.uploadError = "Only one serviceImg allowed.";
         return next();
       }
+      if (grouped.category_image && grouped.category_image.length > 1) {
+        req.uploadError = "Only one category_image allowed.";
+        return next();
+      }
       if (grouped.profileImage && grouped.profileImage.length > 1) {
         req.uploadError = "Only one profileImage allowed.";
         return next();

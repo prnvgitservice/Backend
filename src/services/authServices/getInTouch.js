@@ -1,4 +1,4 @@
-import Category from '../../models/category.model.js';
+import Category from '../../models/category.js';
 import mongoose from "mongoose";
 import getInTouch from '../../models/authModels/getInTouch.js';
 

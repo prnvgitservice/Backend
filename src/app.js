@@ -5,7 +5,7 @@ import authUserRoutes from './routes/authRoutes/user.js';
 import authAdminRoutes from './routes/authRoutes/admin.js';
 import authTechRoutes from './routes/authRoutes/technician.js';
 import authFranchiseRoutes from './routes/authRoutes/franchise.js';
-import categoryRoutes from './routes/category.route.js';
+import categoryRoutes from './routes/category.js';
 import reviewRoutes from './routes/reviews.route.js';
 import connectDB from './config/db.js';
 import { errorHandler } from './middleware/errorMiddleware.js';

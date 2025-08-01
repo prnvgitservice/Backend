@@ -3,7 +3,7 @@ import Technician from '../../models/authModels/technician.js';
 import TechnicianImages from '../../models/technician/techImgs.js';
 import Services from '../../models/technician/services.js';
 import RatingsAndReviews from '../../models/technician/reviewsAndRatings.js';
-import Category from '../../models/category.model.js';
+import Category from '../../models/category.js';
 import TechSubscriptionsDetail from '../../models/technician/technicianSubscriptionDetails.js';
 
 export const getTechAllDetails = async (technicianId) => {

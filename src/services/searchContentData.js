@@ -1,5 +1,5 @@
 import SearchContentData from '../models/searchContentData.js';
-import Category from '../models/category.model.js';
+import Category from '../models/category.js';
 import mongoose from "mongoose";
 
 export const addCagegorySearchDetails = async ({
