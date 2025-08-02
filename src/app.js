@@ -21,7 +21,7 @@ import pincodeRoutes from './routes/pincodes.route.js';
 import companyReviewRoutes from './routes/companyReview.route.js';
 import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
-import bookingServicesRoutes from './routes/bookingServices.js';
+import bookingServicesRoutes from './routes/booking.js';
 import guestBookingRoutes from './routes/guestBooking.js';
 import subscriptionRoutes from './routes/subscription.route.js';
 import getInTouchRoutes from './routes/authRoutes/getInTouch.js';

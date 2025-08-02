@@ -52,3 +52,53 @@ export const getAllGuestBooking = async () => {
     throw err;
   }
 };
+
+
+export const updateGuestBookingStatus = async ({ bookingId, status }) => {
+  if (!bookingId || !status) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Booking ID and status are required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    const err = new Error("Invalid Booking ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Booking ID is not valid."];
+    throw err;
+  }
+
+  const allowedStatuses = ["pending", "completed", "declined"];
+  const normalizedStatus = status.toLowerCase();
+
+  if (!allowedStatuses.includes(normalizedStatus)) {
+    const err = new Error("Invalid status value");
+    err.statusCode = 400;
+    err.errors = [`Status must be one of: ${allowedStatuses.join(", ")}`];
+    throw err;
+  }
+
+  const booking = await GuestBooking.findById(bookingId);
+  if (!booking) {
+    const err = new Error("Booking not found");
+    err.statusCode = 404;
+    err.errors = ["Booking not found for the provided ID"];
+    throw err;
+  }
+
+  if (booking.status === normalizedStatus) {
+    return {
+      message: `Booking is already marked as '${status}'`,
+      booking,
+    };
+  }
+
+  booking.status = normalizedStatus;
+  await booking.save();
+
+  return {
+    message: `Guest booking status updated to '${status}' successfully.`,
+    booking,
+  };
+};

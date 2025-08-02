@@ -1,12 +1,12 @@
-import * as BookingService from "../services/bookingServices.js";
+import * as BookingService from "../services/booking.js";
 
 export const createBookServiceCont = async (req, res, next) => {
   try {
     const result = await BookingService.createBookService(req.body);
-      res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Booking Service Created successfully.",
-     result,
+      result,
     });
   } catch (err) {
     next(err);
@@ -15,13 +15,13 @@ export const createBookServiceCont = async (req, res, next) => {
 
 export const getBookServiceByUserIdCont = async (req, res, next) => {
   try {
-    const {userId} = req.params;
+    const { userId } = req.params;
 
-    const result = await BookingService.getBookServiceByUserId({userId});
-     res.status(201).json({
+    const result = await BookingService.getBookServiceByUserId({ userId });
+    res.status(201).json({
       success: true,
       message: "Bookings fetched successfully.",
-     result,
+      result,
     });
   } catch (err) {
     next(err);
@@ -30,13 +30,15 @@ export const getBookServiceByUserIdCont = async (req, res, next) => {
 
 export const getBookServiceByTechnicianIdCont = async (req, res, next) => {
   try {
-    const {technicianId} = req.params;
+    const { technicianId } = req.params;
 
-    const result = await BookingService.getBookServiceByTechnicianId({technicianId});
-     res.status(201).json({
+    const result = await BookingService.getBookServiceByTechnicianId({
+      technicianId,
+    });
+    res.status(201).json({
       success: true,
       message: "Bookings fetched successfully.",
-     result,
+      result,
     });
   } catch (err) {
     next(err);
@@ -46,10 +48,10 @@ export const getBookServiceByTechnicianIdCont = async (req, res, next) => {
 export const BookingCancleByUserCont = async (req, res, next) => {
   try {
     const result = await BookingService.BookingCancleByUser(req.body);
-   res.status(201).json({
+    res.status(201).json({
       success: true,
       message: "Bookings Cancelled Successfully.",
-     result: result.booking,
+      result: result.booking,
     });
   } catch (err) {
     next(err);
@@ -59,11 +61,25 @@ export const BookingCancleByUserCont = async (req, res, next) => {
 export const BookingStatusByTechnicianCont = async (req, res, next) => {
   try {
     const result = await BookingService.BookingStatusByTechnician(req.body);
-   res.status(201).json({
+    res.status(201).json({
       success: true,
       message: result.message,
-     result: result.booking,
+      result: result.booking,
       updatedSubscription: result.updatedSubscription || null,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllBookingsController = async (req, res, next) => {
+  const { offset, limit } = req.query;
+  try {
+    const result = await BookingService.getAllBookings({ offset, limit });
+    res.status(201).json({
+      success: true,
+      message: result.message,
+      result: result,
     });
   } catch (err) {
     next(err);

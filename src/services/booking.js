@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
-import Cart from '../models/cart.model.js';
-import Services from '../models/technician/services.js';
+import Cart from "../models/cart.model.js";
+import Services from "../models/technician/services.js";
 import User from "../models/authModels/user.js";
 import Technician from "../models/authModels/technician.js";
 import BookingService from "../models/bookingServices.js";
-import TechSubscriptionsDetail from '../models/technician/technicianSubscriptionDetails.js';
-
+import TechSubscriptionsDetail from "../models/technician/technicianSubscriptionDetails.js";
 
 export const createBookService = async (bookings) => {
   if (!Array.isArray(bookings) || bookings.length === 0) {
@@ -26,10 +25,19 @@ export const createBookService = async (bookings) => {
       bookingDate,
       servicePrice,
       gst,
-      totalPrice
+      totalPrice,
     } = bookingData;
 
-    if (!serviceId || !userId || !technicianId || !quantity || !bookingDate || !servicePrice || !gst || !totalPrice) {
+    if (
+      !serviceId ||
+      !userId ||
+      !technicianId ||
+      !quantity ||
+      !bookingDate ||
+      !servicePrice ||
+      !gst ||
+      !totalPrice
+    ) {
       const err = new Error("Validation failed");
       err.statusCode = 401;
       err.errors = ["All fields are required for each booking."];
@@ -101,7 +109,7 @@ export const createBookService = async (bookings) => {
       bookingDate,
       servicePrice,
       gst,
-      totalPrice
+      totalPrice,
     });
 
     await bookingService.save();
@@ -116,23 +124,21 @@ export const createBookService = async (bookings) => {
       totalPrice: bookingService.totalPrice,
     });
   }
-const bookedServiceIds = bookings.map(b => b.serviceId.toString());
+  const bookedServiceIds = bookings.map((b) => b.serviceId.toString());
 
-await Cart.updateOne(
-  { userId: bookings[0].userId },
-  {
-    $pull: {
-      items: {
-        serviceId: { $in: bookedServiceIds }
-      }
+  await Cart.updateOne(
+    { userId: bookings[0].userId },
+    {
+      $pull: {
+        items: {
+          serviceId: { $in: bookedServiceIds },
+        },
+      },
     }
-  }
-);
+  );
 
   return createdBookings;
 };
-
-
 
 export const getBookServiceByUserId = async ({ userId }) => {
   if (!userId) {
@@ -174,16 +180,15 @@ export const getBookServiceByUserId = async ({ userId }) => {
         booking,
         user,
         technician: technician || null,
-        service: service || null
+        service: service || null,
       };
     })
   );
 
   return {
-    bookings: detailedBookings
+    bookings: detailedBookings,
   };
 };
-
 
 export const getBookServiceByTechnicianId = async ({ technicianId }) => {
   if (!technicianId) {
@@ -221,22 +226,19 @@ export const getBookServiceByTechnicianId = async ({ technicianId }) => {
       const user = await User.findById(booking.userId);
       const service = await Services.findById(booking.serviceId);
       // const { otp, ...filteredService } = service || {};
-return {
-  booking,
-  user: user || null,
-  service: service || null,
-  technician
-};
-
-      
+      return {
+        booking,
+        user: user || null,
+        service: service || null,
+        technician,
+      };
     })
   );
 
   return {
-    bookings: detailedBookings
+    bookings: detailedBookings,
   };
 };
-
 
 export const BookingCancleByUser = async ({ userId, orderId }) => {
   if (!userId || !orderId) {
@@ -276,7 +278,12 @@ export const BookingCancleByUser = async ({ userId, orderId }) => {
   };
 };
 
-export const BookingStatusByTechnician = async ({ technicianId, orderId, status, otp }) => {
+export const BookingStatusByTechnician = async ({
+  technicianId,
+  orderId,
+  status,
+  otp,
+}) => {
   if (!technicianId || !orderId || !status) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -348,15 +355,18 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
   let updatedSubInfo = null;
 
   if (normalizedStatus === "completed") {
-    const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId });
+    const techSubDetails = await TechSubscriptionsDetail.findOne({
+      technicianId,
+    });
     if (!techSubDetails || !techSubDetails.subscriptions?.length) {
       const err = new Error("Subscription not found");
       err.statusCode = 404;
       err.errors = ["No subscription found for the technician."];
       throw err;
     }
-    
-    const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+
+    const lastSub =
+      techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
 
     if (lastSub.endDate && !lastSub.leads) {
       return;
@@ -367,17 +377,19 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
         technicianId,
         createdAt: { $gte: new Date(lastSub.startDate) },
       });
-      
-      const completedOrStartedBookings = allBookings.filter(b =>
+
+      const completedOrStartedBookings = allBookings.filter((b) =>
         ["completed", "started"].includes(b.status)
       );
-      
+
       const currentCount = completedOrStartedBookings.length;
 
       if (currentCount >= lastSub.leads) {
         const err = new Error("Lead limit exceeded");
         err.statusCode = 403;
-        err.errors = [`Lead limit of ${lastSub.leads} exceeded. Cannot complete more bookings.`];
+        err.errors = [
+          `Lead limit of ${lastSub.leads} exceeded. Cannot complete more bookings.`,
+        ];
         throw err;
       }
 
@@ -398,5 +410,64 @@ export const BookingStatusByTechnician = async ({ technicianId, orderId, status,
   };
 };
 
+export const getAllBookings = async ({ offset = 0, limit = 10 }) => {
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
 
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
 
+  const totalBookings = await BookingService.countDocuments({});
+  const bookings = await BookingService.find({})
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 });
+
+  const detailedBookings = await Promise.all(
+    bookings.map(async (booking) => {
+      const user = await User.findById(booking.userId);
+      const technician = await Technician.findById(booking.technicianId);
+      const service = await Services.findById(booking.serviceId);
+
+      return {
+        id: booking._id,
+        user: user
+          ? {
+              id: user._id,
+              username: user.username,
+              phoneNumber: user.phoneNumber,
+            }
+          : null,
+        technician: technician
+          ? {
+              id: technician._id,
+              name: technician.username,
+              phoneNumber: technician.phoneNumber,
+            }
+          : null,
+        service: service
+          ? {
+              id: service._id,
+              serviceName: service.serviceName,
+            }
+          : null,
+        quantity: booking.quantity,
+        bookingDate: booking.bookingDate,
+        status: booking.status,
+        totalPrice: booking.totalPrice,
+        createdAt: booking.createdAt,
+      };
+    })
+  );
+
+  return {
+    total: totalBookings,
+    offset: skip,
+    limit: pageSize,
+    bookings: detailedBookings,
+  };
+};
