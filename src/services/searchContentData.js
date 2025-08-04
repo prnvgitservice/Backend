@@ -1,5 +1,5 @@
-import SearchContentData from '../models/searchContentData.js';
-import Category from '../models/category.js';
+import SearchContentData from "../models/searchContentData.js";
+import Category from "../models/category.js";
 import mongoose from "mongoose";
 
 export const addCagegorySearchDetails = async ({
@@ -8,12 +8,25 @@ export const addCagegorySearchDetails = async ({
   city,
   state,
   pincode,
-  data
+  meta_title,
+  meta_description,
+  seo_content,
 }) => {
-  if (!categoryId || !areaName || !city || !state || !pincode || !data) {
+  if (
+    !categoryId ||
+    !areaName ||
+    !city ||
+    !state ||
+    !pincode ||
+    !meta_title ||
+    !meta_description ||
+    !seo_content
+  ) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["CategoryId, Area, City, State, Pincode and Data fields are all required."];
+    err.errors = [
+      "CategoryId, Area, City, State, Pincode and Data fields are all required.",
+    ];
     throw err;
   }
 
@@ -37,7 +50,7 @@ export const addCagegorySearchDetails = async ({
     areaName,
     city,
     state,
-    pincode
+    pincode,
   });
 
   if (existingSearch) {
@@ -53,7 +66,9 @@ export const addCagegorySearchDetails = async ({
     city,
     state,
     pincode,
-    data
+    meta_title,
+    meta_description,
+    seo_content,
   });
 
   await searchData.save();
@@ -65,24 +80,27 @@ export const addCagegorySearchDetails = async ({
     city: searchData.city,
     state: searchData.state,
     pincode: searchData.pincode,
-    data: searchData.data,
+    meta_title: searchData.meta_title,
+    meta_description: searchData.meta_description,
+    seo_content: searchData.seo_content,
     createdAt: searchData.createdAt,
-    updatedAt: searchData.updatedAt
+    updatedAt: searchData.updatedAt,
   };
 };
-
 
 export const getSearchContentByLocation = async ({
   categoryId,
   areaName,
   city,
   state,
-  pincode
+  pincode,
 }) => {
   if (!categoryId || !areaName || !city || !state || !pincode) {
     const err = new Error("Validation failed");
     err.statusCode = 400;
-    err.errors = ["All location parameters (categoryId, areaName, city, state, pincode) are required"];
+    err.errors = [
+      "All location parameters (categoryId, areaName, city, state, pincode) are required",
+    ];
     throw err;
   }
 
@@ -93,34 +111,36 @@ export const getSearchContentByLocation = async ({
     throw err;
   }
 
-    const searchContent = await SearchContentData.findOne({
-      categoryId,
-      areaName,
-      city, 
-      state,
-      pincode
-    });
+  const searchContent = await SearchContentData.findOne({
+    categoryId,
+    areaName,
+    city,
+    state,
+    pincode,
+  });
 
-    if (!searchContent) {
-      const err = new Error("Search content not found");
-      err.statusCode = 404;
-      err.errors = ["No content found for the specified location and category"];
-      throw err;
-    }
+  if (!searchContent) {
+    const err = new Error("Search content not found");
+    err.statusCode = 404;
+    err.errors = ["No content found for the specified location and category"];
+    throw err;
+  }
 
-    return {
-      id: searchContent._id,
-      categoryId: searchContent.categoryId,
-      areaName: searchContent.areaName,
-      city: searchContent.city,
-      state: searchContent.state,
-      pincode: searchContent.pincode,
-      data: searchContent.data,
-      createdAt: searchContent.createdAt,
-      updatedAt: searchContent.updatedAt
-    };
-  
+  return {
+    id: searchContent._id,
+    categoryId: searchContent.categoryId,
+    areaName: searchContent.areaName,
+    city: searchContent.city,
+    state: searchContent.state,
+    pincode: searchContent.pincode,
+    meta_title: searchContent.meta_title,
+    meta_description: searchContent.meta_description,
+    seo_content: searchContent.seo_content,
+    createdAt: searchContent.createdAt,
+    updatedAt: searchContent.updatedAt,
+  };
 };
+
 
 export const updateCagegorySearchDetails = async ({
   searchContentDataId,
@@ -129,7 +149,9 @@ export const updateCagegorySearchDetails = async ({
   city,
   state,
   pincode,
-  data
+  meta_title,
+  meta_description,
+  seo_content,
 }) => {
   if (!searchContentDataId) {
     const err = new Error("Validation failed");
@@ -158,7 +180,10 @@ export const updateCagegorySearchDetails = async ({
   if (city) existingData.city = city;
   if (state) existingData.state = state;
   if (pincode) existingData.pincode = pincode;
-  if (data) existingData.data = data;
+  if (meta_title) existingData.meta_title = meta_title;
+  if (meta_description) existingData.meta_description = meta_description;
+  if (seo_content) existingData.seo_content = seo_content;
+
 
   await existingData.save();
 
@@ -169,13 +194,15 @@ export const updateCagegorySearchDetails = async ({
     city: existingData.city,
     state: existingData.state,
     pincode: existingData.pincode,
-    data: existingData.data,
+    meta_title: existingData.meta_title,
+    meta_description: existingData.meta_description,
+    seo_content: existingData.seo_content,
     createdAt: existingData.createdAt,
-    updatedAt: existingData.updatedAt
+    updatedAt: existingData.updatedAt,
   };
 };
 
-export const deleteCategorySearchDetails = async ({searchContentDataId}) => {
+export const deleteCategorySearchDetails = async ({ searchContentDataId }) => {
   if (!searchContentDataId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -201,6 +228,46 @@ export const deleteCategorySearchDetails = async ({searchContentDataId}) => {
   await SearchContentData.deleteOne({ _id: searchContentDataId });
 
   return {
-    id: searchContentDataId
+    id: searchContentDataId,
   };
 };
+
+export const getAllSearchContents = async ({ offset = 0, limit = 10 }) => {
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
+  const total = await SearchContentData.countDocuments({});
+  const data = await SearchContentData.find({})
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 })
+    .populate("categoryId", "category_name"); // Optional: populate category name
+
+  return {
+    total,
+    offset: skip,
+    limit: pageSize,
+    results: data.map((item) => ({
+      id: item._id,
+      categoryId: item.categoryId?._id || null,
+      categoryName: item.categoryId?.category_name || null,
+      areaName: item.areaName,
+      city: item.city,
+      state: item.state,
+      pincode: item.pincode,
+      meta_title: item.meta_title,
+      meta_description: item.meta_description,
+      seo_content: item.seo_content,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    })),
+  };
+};
+

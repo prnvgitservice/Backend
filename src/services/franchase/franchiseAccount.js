@@ -70,7 +70,7 @@ export const addFranchiseAccount = async ({
   let amount = null;
   switch (subscription.name) {
     case "Economy Plan":
-      amount = 100;
+      amount = 300;
       break;
     case "Gold Plan":
       amount = 300;
