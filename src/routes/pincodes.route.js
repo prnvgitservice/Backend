@@ -7,6 +7,6 @@ router.get('/areas', getPincodeAreaNames);
 router.put('/:code', updatePincode);
 router.post('/create', createPincode);
 router.get('/allAreas', getAllPincodes);
-router.delete('/:code', deletePincode);
+router.delete('/delete', deletePincode);
 
 export default router;

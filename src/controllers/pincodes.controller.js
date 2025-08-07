@@ -38,14 +38,8 @@ export const createPincode = async (req, res) => {
 
 export const updatePincode = async (req, res) => {
   try {
-    const { code } = req.params;
-    const updatedData = req.body;
 
-    if (!code || !updatedData) {
-      return res.status(400).json({ success: false, message: 'Code and data required' });
-    }
-
-    const result = await updatePincodeService(code, updatedData);
+    const result = await updatePincodeService(req.body);
     res.status(200).json({ success: true, data: result });
   } catch (error) {
     console.error('Error updating pincode:', error.message);
@@ -55,13 +49,7 @@ export const updatePincode = async (req, res) => {
 
 export const deletePincode = async (req, res) => {
   try {
-    const { code } = req.params;
-
-    if (!code) {
-      return res.status(400).json({ success: false, message: 'Pincode code is required' });
-    }
-
-    const result = await deletePincodeService(code);
+    const result = await deletePincodeService(req.body);
     res.status(200).json({ success: true, message: 'Pincode deleted', data: result });
   } catch (error) {
     console.error('Error deleting pincode:', error.message);
