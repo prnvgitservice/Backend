@@ -44,4 +44,4 @@ const searchContentDataSchema = new Schema(
   { timestamps: true }
 );
 
-export default model("SearchContentData", searchContentDataSchema);
+export default model("SEOContent", searchContentDataSchema);
