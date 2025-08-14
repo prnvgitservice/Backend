@@ -221,7 +221,7 @@ export const getServicesByTechId = async ({
   }
 
   const category = await Category.findById(categoryId);
-  if (!categoryategory) {
+  if (!category) {
     const err = new Error("Category not found");
     err.statusCode = 404;
     throw err;

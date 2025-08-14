@@ -61,7 +61,7 @@ export const updateServiceControl = async (req, res, next) => {
 
 
 
-export const getServicesByTechIdControl = async (req, res, next) => {
+export const getServicesByCateIdControl = async (req, res, next) => {
   try {
     const {categoryId} = req.params;
     const result = await caregoryServices.getServicesByTechId({categoryId});
