@@ -51,6 +51,7 @@ const technicianSchema = new Schema(
     },
     buildingName: { type: String, required: true },
     areaName: { type: String, required: true },
+    subAreaName: { type: String },
     city: { type: String, required: true },
     state: { type: String, required: true },
     pincode: { type: String, required: true },

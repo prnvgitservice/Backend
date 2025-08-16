@@ -27,6 +27,10 @@ const CategorySchema = new Schema(
       type: String,
       default: "",
     },
+    seo_content: {
+      type: String,
+      default: "",
+    },
     status: {
       type: Number,
       default: 1,
@@ -44,4 +48,4 @@ const CategorySchema = new Schema(
   }
 );
 
-export default model("Category", CategorySchema);
+export default model("CategoryData", CategorySchema);

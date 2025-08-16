@@ -18,6 +18,7 @@ export const registerTechnician = async ({
   category,
   buildingName,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
@@ -72,6 +73,7 @@ export const registerTechnician = async ({
     category,
     buildingName,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -97,6 +99,7 @@ export const registerTechnician = async ({
     category: technician.category,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
@@ -113,6 +116,7 @@ export const registerTechnicianByFranchaise = async ({
   category,
   buildingName,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
@@ -202,6 +206,7 @@ export const registerTechnicianByFranchaise = async ({
     category,
     buildingName,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -237,6 +242,7 @@ export const registerTechnicianByFranchaise = async ({
     category: technician.category,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
@@ -323,8 +329,6 @@ export const renewTechnicianByFranchaise = async ({
     });
   }
 
-  console.log("franhiseAccount", franhiseAccount);
-
   return {
     id: technician._id,
     franchiseId: technician.franchiseId,
@@ -335,6 +339,7 @@ export const renewTechnicianByFranchaise = async ({
     category: technician.category,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
@@ -417,6 +422,7 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
     category: technician.category,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
@@ -431,6 +437,7 @@ export const updateTechnician = async ({
   password,
   buildingName,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
@@ -485,6 +492,7 @@ export const updateTechnician = async ({
   if (password) technician.password = password;
   if (buildingName) technician.buildingName = buildingName;
   if (areaName) technician.areaName = areaName;
+  if (subAreaName) technician.subAreaName = subAreaName;
   if (city) technician.city = city;
   if (state) technician.state = state;
   if (pincode) technician.pincode = pincode;
@@ -509,6 +517,7 @@ export const updateTechnician = async ({
     category: technician.category,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
@@ -565,6 +574,7 @@ export const getTechnicianProfile = async (technicianId) => {
     category: technician.category,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
@@ -625,6 +635,7 @@ export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
         category: technician.category,
         buildingName: technician.buildingName,
         areaName: technician.areaName,
+        subAreaName: technician.subAreaName,
         city: technician.city,
         state: technician.state,
         pincode: technician.pincode,
@@ -667,6 +678,7 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
       role: technician.role,
       buildingName: technician.buildingName,
       areaName: technician.areaName,
+      subAreaName: technician.subAreaName,
       city: technician.city,
       state: technician.state,
       pincode: technician.pincode,

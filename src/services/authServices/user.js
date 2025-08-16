@@ -9,6 +9,7 @@ export const register = async ({
   role = "user",
   buildingName,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
@@ -58,6 +59,7 @@ export const register = async ({
     role,
     buildingName,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -72,6 +74,7 @@ export const register = async ({
     role: user.role,
     buildingName: user.buildingName,
     areaName: user.areaName,
+    subAreaName: user.subAreaName,
     city: user.city,
     state: user.state,
     pincode: user.pincode,
@@ -118,6 +121,7 @@ export const login = async ({ phoneNumber, password }) => {
     category: user.category,
     buildingName: user.buildingName,
     areaName: user.areaName,
+    subAreaName: user.subAreaName,
     city: user.city,
     state: user.state,
     pincode: user.pincode,
@@ -155,6 +159,7 @@ export const getProfile = async (userId) => {
     role: user.role,
     buildingName: user.buildingName,
     areaName: user.areaName,
+    subAreaName: user.subAreaName,
     city: user.city,
     state: user.state,
     pincode: user.pincode,
@@ -169,6 +174,7 @@ export const editProfile = async (updateData) => {
     password,
     buildingName,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -243,6 +249,7 @@ export const editProfile = async (updateData) => {
   if (password) user.password = password;
   if (buildingName) user.buildingName = buildingName;
   if (areaName) user.areaName = areaName;
+  if (subAreaName) user.subAreaName = subAreaName;
   if (city) user.city = city;
   if (state) user.state = state;
   if (pincode) user.pincode = pincode;
@@ -256,6 +263,7 @@ export const editProfile = async (updateData) => {
     role: user.role,
     buildingName: user.buildingName,
     areaName: user.areaName,
+    subAreaName: user.subAreaName,
     city: user.city,
     state: user.state,
     pincode: user.pincode,
@@ -292,6 +300,7 @@ export const getAllUsers = async ({ offset = 0, limit = 10 }) => {
       role: user.role,
       buildingName: user.buildingName,
       areaName: user.areaName,
+      subAreaName: user.subAreaName,
       city: user.city,
       state: user.state,
       pincode: user.pincode,

@@ -1,4 +1,6 @@
 import CompanyReview from '../models/companyReview.model.js';
+import User from "../models/authModels/user.js";
+import Technician from "../models/authModels/technician.js";
 
 // export const createReview = async ({ userId, technicianId, role, rating, comment }) => {
 
@@ -83,18 +85,41 @@ function createError(message, statusCode, errors = []) {
   return err;
 }
 
+
+
 export const getCompanyReviews = async () => {
   const reviews = await CompanyReview.find()
-    .sort({ rating: -1, createdAt: -1 }) 
+    .sort({ rating: -1, createdAt: -1 })
     .limit(15);
+
   if (!reviews || reviews.length === 0) {
     const err = new Error("No Reviews Found");
     err.statusCode = 400;
     err.errors = ["No reviews found."];
     throw err;
   }
-  return reviews;
+
+  // Enrich reviews with user/technician details
+  const enrichedReviews = await Promise.all(
+    reviews.map(async (review) => {
+      let reviewerDetails = null;
+
+      if (review.userId) {
+        reviewerDetails = await User.findById(review.userId)
+      } else if (review.technicianId) {
+        reviewerDetails = await Technician.findById(review.technicianId)
+      }
+
+      return {
+        ...review.toObject(),
+        reviewer: reviewerDetails, 
+      };
+    })
+  );
+
+  return enrichedReviews;
 };
+
 
 // export const getCompanyReviews = async () => {
 //   const reviews = await CompanyReview.find({ rating: { $in: [4, 5] } });
