@@ -8,6 +8,8 @@ import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDet
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import Franchise from "../../models/authModels/franchise.js";
 import { addFranchiseAccount } from "../franchase/franchiseAccount.js";
+import CaregoryServices from "../../models/caregoryServices.js";
+import { getServicesByTechId } from "../caregoryServices.js";
 
 export const registerTechnician = async ({
   userId,
@@ -64,6 +66,11 @@ export const registerTechnician = async ({
     throw err;
   }
 
+  let caregoryServices = [];
+  if (category) {
+    caregoryServices = await getServicesByTechId({ categoryId: category });
+  }
+
   const technician = new Technician({
     userId,
     username,
@@ -78,6 +85,14 @@ export const registerTechnician = async ({
     state,
     pincode,
   });
+
+  if (caregoryServices?.service?.length > 0) {
+    technician.categoryServices = caregoryServices.service.map((srv) => ({
+      categoryServiceId: srv._id,
+      status: true,
+    }));
+  }
+
   await technician.save();
 
   const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
@@ -104,6 +119,7 @@ export const registerTechnician = async ({
     state: technician.state,
     pincode: technician.pincode,
     plan: subscription?._id || null,
+    categoryServices: technician.categoryServices,
   };
 };
 
@@ -189,6 +205,11 @@ export const registerTechnicianByFranchaise = async ({
     throw err;
   }
 
+  let caregoryServices = [];
+  if (category) {
+    caregoryServices = await getServicesByTechId({ categoryId: category });
+  }
+
   if (errors.length > 0) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -211,6 +232,14 @@ export const registerTechnicianByFranchaise = async ({
     state,
     pincode,
   });
+
+  if (caregoryServices?.service?.length > 0) {
+    technician.categoryServices = caregoryServices.service.map((srv) => ({
+      categoryServiceId: srv._id,
+      status: true,
+    }));
+  }
+
   await technician.save();
 
   let result = null;
@@ -230,8 +259,6 @@ export const registerTechnicianByFranchaise = async ({
     });
   }
 
-  console.log("franhiseAccount", franhiseAccount);
-
   return {
     id: technician._id,
     franchiseId: technician.franchiseId,
@@ -247,6 +274,166 @@ export const registerTechnicianByFranchaise = async ({
     state: technician.state,
     pincode: technician.pincode,
     plan: subscription?._id || null,
+    categoryServices: technician.categoryServices,
+    result: result.subscription,
+    franhiseAccount: franhiseAccount.newAccountDetails,
+  };
+};
+
+export const registerTechnicianByAdmin = async ({
+  userId,
+  username,
+  phoneNumber,
+  password,
+  role = "technician",
+  category,
+  buildingName,
+  areaName,
+  subAreaName,
+  city,
+  state,
+  pincode,
+  franchiseId,
+  subscriptionId,
+}) => {
+  const errors = [];
+
+  if (
+    !userId ||
+    !username ||
+    !phoneNumber ||
+    !password ||
+    !buildingName ||
+    !areaName ||
+    !role ||
+    !category ||
+    !city ||
+    !state ||
+    !pincode ||
+    !franchiseId ||
+    !subscriptionId
+  ) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["All Fields Required."];
+    throw err;
+  }
+
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    errors.push("Phone number must be exactly 10 digits.");
+  }
+
+  if (password?.length < 6 || password?.length > 20) {
+    errors.push("Password must be between 6 and 20 characters.");
+  }
+
+  const phoneExists = await Technician.findOne({ phoneNumber });
+  if (phoneExists) {
+    errors.push("Phone number already exists.");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+    const err = new Error("Invalid Franchise ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Franchise ID is not valid."];
+    throw err;
+  }
+
+  const franchise = await Franchise.findById(franchiseId);
+  if (!franchise) {
+    const err = new Error("Franchise not found");
+    err.statusCode = 404;
+    err.errors = ["Franchise ID not found."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    const err = new Error("Invalid Subscription ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Subscription ID is not valid."];
+    throw err;
+  }
+
+  const subscription = await SubscriptionPlan.findById(subscriptionId);
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID not found."];
+    throw err;
+  }
+
+  let caregoryServices = [];
+  if (category) {
+    caregoryServices = await getServicesByTechId({ categoryId: category });
+  }
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+  const technician = new Technician({
+    franchiseId,
+    userId,
+    username,
+    phoneNumber,
+    password,
+    role,
+    category,
+    buildingName,
+    areaName,
+    subAreaName,
+    city,
+    state,
+    pincode,
+    admin: true,
+  });
+
+  if (caregoryServices?.service?.length > 0) {
+    technician.categoryServices = caregoryServices.service.map((srv) => ({
+      categoryServiceId: srv._id,
+      status: true,
+    }));
+  }
+
+  await technician.save();
+
+  let result = null;
+  if (subscription) {
+    result = await addTechSubscriptionPlan({
+      technicianId: technician._id,
+      subscriptionId: subscription._id,
+    });
+  }
+
+  let franhiseAccount = null;
+  if (result) {
+    franhiseAccount = await addFranchiseAccount({
+      franchiseId,
+      technicianId: technician._id.toString(),
+      subscriptionId,
+    });
+  }
+
+  return {
+    id: technician._id,
+    franchiseId: technician.franchiseId,
+    userId: technician.userId,
+    username: technician.username,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    admin: technician.admin,
+    plan: subscription?._id || null,
+    categoryServices: technician.categoryServices,
     result: result.subscription,
     franhiseAccount: franhiseAccount.newAccountDetails,
   };
@@ -582,6 +769,8 @@ export const getTechnicianProfile = async (technicianId) => {
     service: technician.service,
     profileImage: technician.profileImage,
     subscription: lastSubscription || null,
+    admin: technician.admin,
+    categoryServices: technician.categoryServices,
   };
 };
 
@@ -643,6 +832,8 @@ export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
         service: technician.service,
         profileImage: technician.profileImage,
         subscription: lastSubscription || null,
+        admin: technician.admin,
+        categoryServices: technician.categoryServices,
       };
     })
   );
@@ -683,9 +874,47 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
       state: technician.state,
       pincode: technician.pincode,
       profileImage: technician.profileImage,
+      admin: technician.admin,
+      categoryServices: technician.categoryServices,
     })),
   };
 };
+
+export const changeServiceStatus = async ({technicianId, categoryServiceId}) => {
+  if (!technicianId || !categoryServiceId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 400;
+    err.errors = ["TechnicianId and CategoryServiceId are required"];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const service = technician.categoryServices.find(
+    (s) => s.categoryServiceId.toString() === categoryServiceId.toString()
+  );
+
+  if (!service) {
+    const err = new Error("Service not found for this technician");
+    err.statusCode = 404;
+    throw err;
+  }
+  service.status = !service.status;
+
+  await technician.save();
+
+  return {
+    technicianId: technician._id,
+    categoryServiceId: service.categoryServiceId,
+    status: service.status,
+  };
+};
+
 
 export const deleteTechnicianById = async (technicianId) => {
   if (!technicianId) {

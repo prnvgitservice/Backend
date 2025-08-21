@@ -5,9 +5,11 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import { addFranchiseSubscriptionPlan } from "../franchase/franchiseSubscriptionDetails.js";
 import FranchiseSubscription from "../../models/franchase/franchiseSubscriptions.js";
+import FranchiseSubscriptionPlan from "../../models/franchase/franchiseSubscriptions.js";
 
 export const registerFranchise = async ({
   franchiseId,
+  franchiseSubscriptionId,
   username,
   phoneNumber,
   password,
@@ -22,6 +24,7 @@ export const registerFranchise = async ({
 
   if (
     !franchiseId ||
+    !franchiseSubscriptionId ||
     !username ||
     !phoneNumber ||
     !password ||
@@ -35,6 +38,22 @@ export const registerFranchise = async ({
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = ["All fields are required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(franchiseSubscriptionId)) {
+    const err = new Error("Invalid Franchise Subscription ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Franchise Subscription ID is not valid."];
+    throw err;
+  }
+  const subscription = await FranchiseSubscriptionPlan.findById(
+    franchiseSubscriptionId
+  );
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID Not Found"];
     throw err;
   }
 
@@ -58,15 +77,15 @@ export const registerFranchise = async ({
     throw err;
   }
 
-  const franchiseSubscription = await FranchiseSubscription.find();
+  // const franchiseSubscription = await FranchiseSubscription.find();
 
-  if (!franchiseSubscription.length) {
-    const err = new Error("Franchise Subscription not found");
-    err.statusCode = 404;
-    err.errors = ["Franchise Subscription list is empty."];
-    throw err;
-  }
-  const firstPlanId = franchiseSubscription[0]._id.toString();
+  // if (!franchiseSubscription.length) {
+  //   const err = new Error("Franchise Subscription not found");
+  //   err.statusCode = 404;
+  //   err.errors = ["Franchise Subscription list is empty."];
+  //   throw err;
+  // }
+  // const firstPlanId = franchiseSubscription[0]._id.toString();
 
   const franchise = new Franchise({
     franchiseId,
@@ -84,7 +103,7 @@ export const registerFranchise = async ({
 
   const addFranchisePlan = await addFranchiseSubscriptionPlan({
     franchiseId: franchise._id.toString(),
-    franchiseSubscriptionId: firstPlanId,
+    franchiseSubscriptionId: franchiseSubscriptionId,
   });
 
   return {
@@ -263,17 +282,21 @@ export const getFranchiseProfile = async (franchiseId) => {
     throw err;
   }
 
+  const franchiseSubDetails = await FranchiseSubscription.findOne({
+    franchiseId,
+  });
 
-   const franchiseSubDetails = await FranchiseSubscription.findOne({ franchiseId });
-  
-    let lastSubscription = null;
-    if (
-      franchiseSubDetails &&
-      Array.isArray(franchiseSubDetails.subscriptions) &&
-      franchiseSubDetails.subscriptions.length > 0
-    ) {
-      lastSubscription = franchiseSubDetails.subscriptions[franchiseSubDetails.subscriptions.length - 1];
-    }
+  let lastSubscription = null;
+  if (
+    franchiseSubDetails &&
+    Array.isArray(franchiseSubDetails.subscriptions) &&
+    franchiseSubDetails.subscriptions.length > 0
+  ) {
+    lastSubscription =
+      franchiseSubDetails.subscriptions[
+        franchiseSubDetails.subscriptions.length - 1
+      ];
+  }
 
   return {
     id: franchise._id,
@@ -288,7 +311,7 @@ export const getFranchiseProfile = async (franchiseId) => {
     pincode: franchise.pincode,
     description: franchise.description,
     profileImage: franchise.profileImage,
-    lastSubscription: lastSubscription
+    lastSubscription: lastSubscription,
   };
 };
 

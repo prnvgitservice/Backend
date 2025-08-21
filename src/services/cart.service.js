@@ -1,5 +1,6 @@
 import Cart from '../models/cart.model.js';
 import Services from '../models/technician/services.js';
+import CaregoryServices from '../models/caregoryServices.js';
 import mongoose from "mongoose";
 import User from "../models/authModels/user.js";
 
@@ -13,13 +14,14 @@ export const addToCartService = async ({userId, serviceId, quantity}) => {
     }
   
     if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+      
       const err = new Error("Invalid Service ID format");
       err.statusCode = 400;
       err.errors = ["Provided Service ID is not valid."];
       throw err;
     }
   
-    const service = await Services.findById(serviceId);
+    const service = await CaregoryServices.findById(serviceId);
     if (!service) {
       const err = new Error("Service not found");
       err.statusCode = 404;

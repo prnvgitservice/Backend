@@ -7,11 +7,6 @@ export const addFranchiseSubscriptionPlan = async ({
   franchiseId,
   franchiseSubscriptionId,
 }) => {
-  console.log(
-    "franchiseId, franchiseSubscriptionId",
-    franchiseId,
-    franchiseSubscriptionId
-  );
   if (!franchiseId || !franchiseSubscriptionId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;

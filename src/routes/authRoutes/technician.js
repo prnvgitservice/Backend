@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  changeServiceStatusController,
   deleteTechnicianByIdController,
   getAllTechnicianController,
   getTechnicianProfilesByFranchiseIdCont,
@@ -52,6 +53,12 @@ router.put(
   //   franchaiseMiddleware,
   uploadWithValidation,
   updateTechnicianControl
+);
+router.put(
+  "/changeServiceStatus",
+  //   requireSignIn
+  //   franchaiseMiddleware,
+  changeServiceStatusController
 );
 router.delete(
   "/deleteTechnician/:technicianId",

@@ -3,6 +3,18 @@ import bcrypt from "bcryptjs";
 
 const { Schema, model } = mongoose;
 
+const categoryServicesSchema = new Schema({
+  categoryServiceId: {
+    type: Schema.Types.ObjectId,
+    ref: "Technician",
+    required: true,
+  },
+  status: {
+    type: Boolean,
+    default: 0,
+  },
+});
+
 const technicianSchema = new Schema(
   {
     franchiseId: {
@@ -55,6 +67,11 @@ const technicianSchema = new Schema(
     city: { type: String, required: true },
     state: { type: String, required: true },
     pincode: { type: String, required: true },
+    admin: {
+      type: Boolean,
+      default: false,
+    },
+    categoryServices: [categoryServicesSchema],
   },
   { timestamps: true }
 );

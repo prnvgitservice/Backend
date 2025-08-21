@@ -29,7 +29,7 @@ export const registerTechnicianController = async (req, res, next) => {
       ...req.body,
       userId: generateSequrityCode(),
     };
-    const result = await technician.registerTechnician(technicianData);
+    const result = await technician.registerTechnicianByAdmin(technicianData);
     res.status(201).json({
       success: true,
       message: "Technician Registered successfully.",
@@ -160,17 +160,24 @@ export const getAllTechnicianController = async (req, res, next) => {
   }
 };
 
+export const changeServiceStatusController = async (req, res, next) => {
+  try {
+    const result = await technician.changeServiceStatus(req.body);
+    res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteTechnicianByIdController = async (req, res, next) => {
   try {
     const { technicianId } = req.params;
     const result = await technician.deleteTechnicianById(technicianId);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Technician Deleted Successfully",
-        result,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Technician Deleted Successfully",
+      result,
+    });
   } catch (err) {
     next(err);
   }
