@@ -1,37 +1,42 @@
-import TechSubscriptionsDetail from '../../models/technician/technicianSubscriptionDetails.js';
-import SubscriptionPlan from '../../models/subscription.model.js';
-import Technician from '../../models/authModels/technician.js';
-import mongoose from 'mongoose';
+import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
+import SubscriptionPlan from "../../models/subscription.js";
+import Technician from "../../models/authModels/technician.js";
+import mongoose from "mongoose";
 
-
-export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) => {
+export const addTechSubscriptionPlan = async ({
+  technicianId,
+  subscriptionId,
+}) => {
   if (!technicianId || !subscriptionId) {
-    const err = new Error('Validation failed');
+    const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ['TechnicianId and SubscriptionId are required.'];
+    err.errors = ["TechnicianId and SubscriptionId are required."];
     throw err;
   }
 
-  if (!mongoose.Types.ObjectId.isValid(technicianId) || !mongoose.Types.ObjectId.isValid(subscriptionId)) {
-    const err = new Error('Invalid Technician or Subscription ID format');
+  if (
+    !mongoose.Types.ObjectId.isValid(technicianId) ||
+    !mongoose.Types.ObjectId.isValid(subscriptionId)
+  ) {
+    const err = new Error("Invalid Technician or Subscription ID format");
     err.statusCode = 400;
-    err.errors = ['Provided Technician or Subscription ID is not valid.'];
+    err.errors = ["Provided Technician or Subscription ID is not valid."];
     throw err;
   }
 
   const technician = await Technician.findById(technicianId);
   if (!technician) {
-    const err = new Error('Technician not found');
+    const err = new Error("Technician not found");
     err.statusCode = 404;
-    err.errors = ['Technician ID Not Found'];
+    err.errors = ["Technician ID Not Found"];
     throw err;
   }
-  
+
   const subscription = await SubscriptionPlan.findById(subscriptionId);
   if (!subscription) {
-    const err = new Error('Subscription not found');
+    const err = new Error("Subscription not found");
     err.statusCode = 404;
-    err.errors = ['Subscription ID Not Found'];
+    err.errors = ["Subscription ID Not Found"];
     throw err;
   }
 
@@ -46,17 +51,24 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
   };
 
   if (subscription.validity) {
-    newSubscription.endDate = new Date(now.getTime() + subscription.validity * 24 * 60 * 60 * 1000);
+    newSubscription.endDate = new Date(
+      now.getTime() + subscription.validity * 24 * 60 * 60 * 1000
+    );
   }
 
   if (subscription.leads != null) {
     newSubscription.leads = subscription.leads;
   }
 
-  let techSubscriptionDetail = await TechSubscriptionsDetail.findOne({ technicianId });
+  let techSubscriptionDetail = await TechSubscriptionsDetail.findOne({
+    technicianId,
+  });
 
   if (techSubscriptionDetail) {
-    const lastSub = techSubscriptionDetail.subscriptions?.[techSubscriptionDetail.subscriptions.length - 1];
+    const lastSub =
+      techSubscriptionDetail.subscriptions?.[
+        techSubscriptionDetail.subscriptions.length - 1
+      ];
 
     let isExpired = false;
     if (lastSub?.endDate && new Date(lastSub.endDate) < now) {
@@ -68,21 +80,23 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
       isLeadsExhausted = true;
     }
 
-    const isFreePlan = lastSub?.subscriptionName?.toLowerCase() === 'free plan';
-    const isTryingToBuyFreePlan = subscription.name?.toLowerCase() === 'free plan';
-
+    const isFreePlan = lastSub?.subscriptionName?.toLowerCase() === "free plan";
+    const isTryingToBuyFreePlan =
+      subscription.name?.toLowerCase() === "free plan";
 
     if (isFreePlan && isTryingToBuyFreePlan) {
-      const err = new Error('Free Plan already activated');
+      const err = new Error("Free Plan already activated");
       err.statusCode = 409;
-      err.errors = ['Cannot subscribe to Free Plan again.'];
+      err.errors = ["Cannot subscribe to Free Plan again."];
       throw err;
     }
 
     if (!isFreePlan && !isExpired && !isLeadsExhausted) {
-      const err = new Error('Technician already has an active paid subscription');
+      const err = new Error(
+        "Technician already has an active paid subscription"
+      );
       err.statusCode = 409;
-      err.errors = ['Paid plan is still valid or leads not yet exhausted.'];
+      err.errors = ["Paid plan is still valid or leads not yet exhausted."];
       throw err;
     }
 
@@ -98,11 +112,10 @@ export const addTechSubscriptionPlan = async ({ technicianId, subscriptionId }) 
 
   return {
     success: true,
-    message: 'Subscription plan added successfully',
+    message: "Subscription plan added successfully",
     subscription: newSubscription,
   };
 };
-
 
 export const getTechSubscriptionPlan = async (technicianId) => {
   if (!technicianId) {
@@ -126,7 +139,9 @@ export const getTechSubscriptionPlan = async (technicianId) => {
     throw err;
   }
 
-  const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId });
+  const techSubDetails = await TechSubscriptionsDetail.findOne({
+    technicianId,
+  });
   if (!techSubDetails || !techSubDetails.subscriptions?.length) {
     const err = new Error("Subscription not found");
     err.statusCode = 404;
@@ -134,7 +149,8 @@ export const getTechSubscriptionPlan = async (technicianId) => {
     throw err;
   }
 
-  const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+  const lastSub =
+    techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
 
   return {
     success: true,

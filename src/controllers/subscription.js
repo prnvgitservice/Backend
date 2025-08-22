@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { activeAndInActiveSubscription, addSubscription, deleteSubscription, getAllActivePlansService, getPlanById, updateSubscription } from '../services/subscription.service.js';
+import { activeAndInActiveSubscription, addSubscription, deleteSubscription, getAllActivePlansService, getPlanById, updateSubscription } from '../services/subscription.js';
 
 export const addSubscriptionCont = async (req, res, next) => {
   try {

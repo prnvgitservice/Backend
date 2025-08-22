@@ -73,6 +73,12 @@ const subscriptionSchema = new Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  endUpPrice: {
+    type: Number,
+  },
+  commisionAmount: {
+    type: Number
   }
 }, {
   timestamps: true

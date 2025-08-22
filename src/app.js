@@ -24,7 +24,7 @@ import techProfileRoutes from './routes/authRoutes/techProfile.js';
 import cartRoutes from './routes/cart.route.js';
 import bookingServicesRoutes from './routes/booking.js';
 import guestBookingRoutes from './routes/guestBooking.js';
-import subscriptionRoutes from './routes/subscription.route.js';
+import subscriptionRoutes from './routes/subscription.js';
 import getInTouchRoutes from './routes/authRoutes/getInTouch.js';
 import searchContentDataRoutes from './routes/searchContentData.js';
 import technicianSubscriptionRoutes from './routes/technician/technicianSubscriptionDetails.js';

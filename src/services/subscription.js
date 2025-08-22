@@ -1,5 +1,5 @@
-import SubscriptionPlan from '../models/subscription.model.js';
-import createError from 'http-errors';
+import SubscriptionPlan from "../models/subscription.js";
+import createError from "http-errors";
 
 export const addSubscription = async ({
   name,
@@ -12,10 +12,12 @@ export const addSubscription = async ({
   finalPrice,
   validity,
   leads,
+  endUpPrice,
+  commisionAmount,
   features,
   fullFeatures,
   isPopular,
-  isActive
+  isActive,
 }) => {
   if (
     !name ||
@@ -57,12 +59,14 @@ export const addSubscription = async ({
     gstPercentage,
     gst,
     finalPrice,
+    endUpPrice,
+    commisionAmount,
     validity: validity ?? null,
     leads: leads ?? null,
     features,
     fullFeatures: fullFeatures || [],
     isPopular: isPopular ?? false,
-    isActive: isActive ?? true
+    isActive: isActive ?? true,
   });
 
   await newPlan.save();
@@ -74,12 +78,13 @@ export const addSubscription = async ({
     finalPrice: newPlan.finalPrice,
     validity: newPlan.validity,
     leads: newPlan.leads,
+    endUpPrice: newPlan.endUpPrice,
+    commisionAmount: newPlan.commisionAmount,
     isPopular: newPlan.isPopular,
     isActive: newPlan.isActive,
-    createdAt: newPlan.createdAt
+    createdAt: newPlan.createdAt,
   };
 };
-
 
 export const getAllActivePlansService = async () => {
   return await SubscriptionPlan.find({ isActive: true });
@@ -88,7 +93,7 @@ export const getAllActivePlansService = async () => {
 export const getPlanById = async (id) => {
   const plan = await SubscriptionPlan.findById(id);
   if (!plan) {
-     const err = new Error("Not Found");
+    const err = new Error("Not Found");
     err.statusCode = 400;
     err.errors = ["Subscription plan not found"];
     throw err;
@@ -116,7 +121,7 @@ export const updateSubscription = async (updateData) => {
     updateData.leads === undefined ||
     !Array.isArray(updateData.features)
   ) {
-      const err = new Error("Validation Error");
+    const err = new Error("Validation Error");
     err.statusCode = 400;
     err.errors = ["Required fields are missing or invalid"];
     throw err;
@@ -125,9 +130,9 @@ export const updateSubscription = async (updateData) => {
   for (const feature of updateData.features) {
     if (!feature.name) {
       const err = new Error("Features Eroor");
-    err.statusCode = 400;
-    err.errors = ["Each feature must have a name"];
-    throw err;
+      err.statusCode = 400;
+      err.errors = ["Each feature must have a name"];
+      throw err;
     }
   }
 
@@ -135,13 +140,13 @@ export const updateSubscription = async (updateData) => {
     id,
     {
       ...updateData,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
     { new: true }
   );
 
   if (!updatedPlan) {
-     const err = new Error("Not Found");
+    const err = new Error("Not Found");
     err.statusCode = 400;
     err.errors = ["Subscription plan not found"];
     throw err;
@@ -156,10 +161,9 @@ export const updateSubscription = async (updateData) => {
     leads: updatedPlan.leads,
     isPopular: updatedPlan.isPopular,
     isActive: updatedPlan.isActive,
-    updatedAt: updatedPlan.updatedAt
+    updatedAt: updatedPlan.updatedAt,
   };
 };
-
 
 export const deleteSubscription = async (id) => {
   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
@@ -177,7 +181,7 @@ export const deleteSubscription = async (id) => {
   }
 
   return {
-    id: deletedPlan._id
+    id: deletedPlan._id,
   };
 };
 
@@ -200,8 +204,8 @@ export const activeAndInActiveSubscription = async ({ id, status }) => {
   return {
     id: plan._id,
     isActive: plan.isActive,
-    message: `Subscription plan has been ${status ? 'activated' : 'deactivated'}`
+    message: `Subscription plan has been ${
+      status ? "activated" : "deactivated"
+    }`,
   };
 };
-
-

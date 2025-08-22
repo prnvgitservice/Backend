@@ -1,6 +1,6 @@
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import FranchiseAccount from "../../models/franchase/franchiseAccount.js";
-import SubscriptionPlan from "../../models/subscription.model.js";
+import SubscriptionPlan from "../../models/subscription.js";
 import Technician from "../../models/authModels/technician.js";
 import Franchise from "../../models/authModels/franchise.js";
 import mongoose from "mongoose";

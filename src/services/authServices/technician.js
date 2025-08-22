@@ -1,5 +1,5 @@
 import Technician from "../../models/authModels/technician.js";
-import SubscriptionPlan from "../../models/subscription.model.js";
+import SubscriptionPlan from "../../models/subscription.js";
 import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
@@ -310,7 +310,6 @@ export const registerTechnicianByAdmin = async ({
     !city ||
     !state ||
     !pincode ||
-    !franchiseId ||
     !subscriptionId
   ) {
     const err = new Error("Validation failed");
@@ -332,19 +331,21 @@ export const registerTechnicianByAdmin = async ({
     errors.push("Phone number already exists.");
   }
 
-  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-    const err = new Error("Invalid Franchise ID format.");
-    err.statusCode = 400;
-    err.errors = ["Provided Franchise ID is not valid."];
-    throw err;
-  }
+  if (franchiseId) {
+    if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+      const err = new Error("Invalid Franchise ID format.");
+      err.statusCode = 400;
+      err.errors = ["Provided Franchise ID is not valid."];
+      throw err;
+    }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found");
-    err.statusCode = 404;
-    err.errors = ["Franchise ID not found."];
-    throw err;
+    const franchise = await Franchise.findById(franchiseId);
+    if (!franchise) {
+      const err = new Error("Franchise not found");
+      err.statusCode = 404;
+      err.errors = ["Franchise ID not found."];
+      throw err;
+    }
   }
 
   if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
@@ -375,7 +376,7 @@ export const registerTechnicianByAdmin = async ({
   }
 
   const technician = new Technician({
-    franchiseId,
+    franchiseId: franchiseId || null,
     userId,
     username,
     phoneNumber,
@@ -409,7 +410,7 @@ export const registerTechnicianByAdmin = async ({
   }
 
   let franhiseAccount = null;
-  if (result) {
+  if (result && franchiseId) {
     franhiseAccount = await addFranchiseAccount({
       franchiseId,
       technicianId: technician._id.toString(),
@@ -434,8 +435,8 @@ export const registerTechnicianByAdmin = async ({
     admin: technician.admin,
     plan: subscription?._id || null,
     categoryServices: technician.categoryServices,
-    result: result.subscription,
-    franhiseAccount: franhiseAccount.newAccountDetails,
+    result: result?.subscription || null,
+    franhiseAccount: franhiseAccount?.newAccountDetails || null,
   };
 };
 
@@ -880,7 +881,10 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
   };
 };
 
-export const changeServiceStatus = async ({technicianId, categoryServiceId}) => {
+export const changeServiceStatus = async ({
+  technicianId,
+  categoryServiceId,
+}) => {
   if (!technicianId || !categoryServiceId) {
     const err = new Error("Validation failed");
     err.statusCode = 400;
@@ -914,7 +918,6 @@ export const changeServiceStatus = async ({technicianId, categoryServiceId}) => 
     status: service.status,
   };
 };
-
 
 export const deleteTechnicianById = async (technicianId) => {
   if (!technicianId) {
