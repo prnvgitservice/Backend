@@ -32,7 +32,7 @@ export const getAllPincodesService = async () => {
 
 export const createPincodeService = async (pincodeData) => {
   try {
-    const existingPincode = await Pincodes.findOne({ code: pincodeData.code });
+    const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
 
     if (!existingPincode) {
       const newPincode = new Pincodes(pincodeData);
@@ -90,7 +90,7 @@ export const createPincodeService = async (pincodeData) => {
 
 export const updatePincodeService = async (pincodeData) => {
   try {
-    const existingPincode = await Pincodes.findOne({ code: pincodeData.code });
+    const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
 
     if (!existingPincode) {
       return {
@@ -153,10 +153,10 @@ console.log("existingPincode",existingPincode)
 
 export const deletePincodeService = async (pincodeData) => {
   try {
-    const existingPincode = await Pincodes.findOne({ code: pincodeData.code });
+    const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
 
     if (!existingPincode) {
-      return { notFound: true, message: `Pincode ${pincodeData.code} not found.` };
+      return { notFound: true, message: `Pincode ${pincodeData?.code} not found.` };
     }
 
     if (!pincodeData.areas || pincodeData.areas.length === 0) {
@@ -167,7 +167,7 @@ export const deletePincodeService = async (pincodeData) => {
           data: existingPincode
         };
       } else {
-        await Pincodes.deleteOne({ code: pincodeData.code });
+        await Pincodes.deleteOne({ code: pincodeData?.code });
         return {
           deleted: true,
           message: `Pincode ${pincodeData.code} deleted as it had no areas.`,

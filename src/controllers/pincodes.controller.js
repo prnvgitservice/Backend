@@ -23,9 +23,10 @@ export const getAllPincodes = async (req, res) => {
 export const createPincode = async (req, res) => {
   try {
     const pincodeData = req.body;
+    console.log(pincodeData,"pincodeData")
 
-    if (!pincodeData.code || !pincodeData.areas?.length) {
-      return res.status(400).json({ success: false, message: 'Code and areas are required' });
+    if (!pincodeData?.code || !pincodeData.areas?.length) {
+      return res.status(400).json({ success: false, message: 'Pincode and areas are required' });
     }
 
     const result = await createPincodeService(pincodeData);
