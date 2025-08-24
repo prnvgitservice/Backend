@@ -1,8 +1,9 @@
-import mongoose from 'mongoose';
-import CaregoryServices from '../models/caregoryServices.js';
-import Category from '../models/category.js';
-import { v2 as cloudinary } from 'cloudinary';
-import fs from 'fs';
+import mongoose from "mongoose";
+import CaregoryServices from "../models/caregoryServices.js";
+import Technician from "../models/authModels/technician.js";
+import Category from "../models/category.js";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
 export const createService = async ({
   categoryId,
@@ -51,8 +52,23 @@ export const createService = async ({
 
   await newService.save();
 
+  const technicians = await Technician.find({ category: categoryId });
+
+  const updatePromises = technicians.map((technician) =>
+    Technician.findByIdAndUpdate(technician._id, {
+      $push: {
+        categoryServices: {
+          categoryServiceId: newService._id,
+          status: true,
+        },
+      },
+    })
+  );
+
+  await Promise.all(updatePromises);
+
   return {
- id: newService._id,
+    id: newService._id,
     serviceName: newService.serviceName,
     servicePrice: newService.servicePrice,
     serviceImg: newService.serviceImg,
@@ -65,7 +81,6 @@ export const updateService = async ({
   servicePrice,
   files,
 }) => {
-
   if (!serviceId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -87,42 +102,40 @@ export const updateService = async ({
     throw err;
   }
 
-   if (files.serviceImg?.[0]) {
-        const filePath = files.serviceImg[0].path;
-  
-        const oldUrl = service.serviceImg;
-        if (oldUrl) {
-          const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
-          const publicId = match ? `TechServiceImages/${match[1]}` : null;
-          if (publicId) {
-            await cloudinary.uploader.destroy(publicId);
-          }
-        }
-  
-        const uploadResult = await cloudinary.uploader.upload(filePath, {
-          folder: "TechServiceImages",
-        });
-        fs.unlinkSync(filePath);
-  
-        service.serviceImg = uploadResult.secure_url;
+  if (files.serviceImg?.[0]) {
+    const filePath = files.serviceImg[0].path;
+
+    const oldUrl = service.serviceImg;
+    if (oldUrl) {
+      const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+      const publicId = match ? `TechServiceImages/${match[1]}` : null;
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
       }
+    }
+
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechServiceImages",
+    });
+    fs.unlinkSync(filePath);
+
+    service.serviceImg = uploadResult.secure_url;
+  }
 
   if (serviceName) service.serviceName = serviceName;
-    if (servicePrice) service.servicePrice = servicePrice;
-   
+  if (servicePrice) service.servicePrice = servicePrice;
 
-    await service.save();
+  await service.save();
 
-return {
-   id: service._id,
+  return {
+    id: service._id,
     serviceName: service.serviceName,
     servicePrice: service.servicePrice,
     serviceImg: service.serviceImg,
-}
-}
+  };
+};
 
-
-export const deleteAllServices = async (categoryId ) => {
+export const deleteAllServices = async (categoryId) => {
   if (!categoryId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -144,7 +157,7 @@ export const deleteAllServices = async (categoryId ) => {
     err.statusCode = 404;
     throw err;
   }
-  
+
   for (const service of services) {
     if (service.serviceImg) {
       const match = service.serviceImg.match(/\/([^/]+)\.[a-z]+$/i);
@@ -202,10 +215,7 @@ export const deleteServicesById = async (serviceId) => {
   };
 };
 
-
-export const getServicesByTechId = async ({
-  categoryId,
-}) => {
+export const getServicesByTechId = async ({ categoryId }) => {
   if (!categoryId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -227,15 +237,14 @@ export const getServicesByTechId = async ({
     throw err;
   }
 
-    const service = await CaregoryServices.find({categoryId});
-    if (!service || service.length === 0) {
+  const service = await CaregoryServices.find({ categoryId });
+  if (!service || service.length === 0) {
     const err = new Error("Service not found For this Category Id");
     err.statusCode = 404;
     throw err;
   }
 
   return {
-   service
+    service,
   };
 };
-

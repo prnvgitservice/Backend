@@ -1,10 +1,10 @@
-import mongoose from 'mongoose';
-import Technician from '../../models/authModels/technician.js';
-import TechnicianImages from '../../models/technician/techImgs.js';
-import Services from '../../models/technician/services.js';
-import RatingsAndReviews from '../../models/technician/reviewsAndRatings.js';
-import Category from '../../models/category.js';
-import TechSubscriptionsDetail from '../../models/technician/technicianSubscriptionDetails.js';
+import mongoose, { Types } from "mongoose";
+import Technician from "../../models/authModels/technician.js";
+import TechnicianImages from "../../models/technician/techImgs.js";
+import Services from "../../models/technician/services.js";
+import RatingsAndReviews from "../../models/technician/reviewsAndRatings.js";
+import Category from "../../models/category.js";
+import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 
 export const getTechAllDetails = async (technicianId) => {
   if (!technicianId) {
@@ -21,9 +21,9 @@ export const getTechAllDetails = async (technicianId) => {
     throw err;
   }
 
-  const technician = await Technician.findById(technicianId );
-  if(!technician){
-      const err = new Error("Not Fond");
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Not Fond");
     err.statusCode = 401;
     err.errors = ["Technician Not Found."];
     throw err;
@@ -32,17 +32,31 @@ export const getTechAllDetails = async (technicianId) => {
   const services = await Services.find({ technicianId });
   const technicianImages = await TechnicianImages.findOne({ technicianId });
   const ratings = await RatingsAndReviews.findOne({ technicianId });
-  
 
   return {
     technician,
     services,
     technicianImages,
-    ratings
+    ratings,
   };
 };
 
-export const getAllTechniciansByCateId = async (categoryId) => {
+export const getAllTechniciansByCateId = async ({
+  categoryId,
+  offset = 0,
+  limit = 10,
+}) => {
+  // Validate pagination parameters
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
   if (!categoryId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -65,44 +79,78 @@ export const getAllTechniciansByCateId = async (categoryId) => {
     throw err;
   }
 
+  // Get all technicians for the category first
   const technicians = await Technician.find({ category: categoryId });
 
-   const validTechnicians = [];
+  const validTechnicians = [];
+  const allTechniciansWithDetails = [];
 
+  // First, collect all valid technicians with their details
   for (const technician of technicians) {
-    const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+    const techSubDetails = await TechSubscriptionsDetail.findOne({
+      technicianId: technician._id,
+    });
 
     let isExpired = true;
 
-    if (techSubDetails && Array.isArray(techSubDetails.subscriptions) && techSubDetails.subscriptions.length > 0) {
-      const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+    if (
+      techSubDetails &&
+      Array.isArray(techSubDetails.subscriptions) &&
+      techSubDetails.subscriptions.length > 0
+    ) {
+      const lastSub =
+        techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
 
-      const expired =
-        new Date(lastSub.endDate) < new Date() ||
-        (lastSub.leads != null && lastSub.ordersCount != null && lastSub.leads === lastSub.ordersCount);
-
-      isExpired = expired;
+      if (lastSub.endDate !== null && lastSub.leads === null) {
+        isExpired = new Date(lastSub.endDate) < new Date();
+      } else if (lastSub.endDate === null && lastSub.leads !== null) {
+        const currentOrders = lastSub.ordersCount || 0;
+        isExpired = currentOrders >= lastSub.leads;
+      } else {
+        isExpired = true;
+      }
     }
 
     if (!isExpired) {
       const services = await Services.find({ technicianId: technician._id });
-      const technicianImages = await TechnicianImages.findOne({ technicianId: technician._id });
-      const ratings = await RatingsAndReviews.findOne({ technicianId: technician._id });
+      const technicianImages = await TechnicianImages.findOne({
+        technicianId: technician._id,
+      });
+      const ratings = await RatingsAndReviews.findOne({
+        technicianId: technician._id,
+      });
 
-      validTechnicians.push({
+      allTechniciansWithDetails.push({
         technician,
         services,
         technicianImages,
         techSubDetails,
-        ratings
+        ratings,
       });
     }
   }
 
-  return validTechnicians;
+  // Apply pagination to the filtered results
+  const totalValidTechnicians = allTechniciansWithDetails.length;
+  const paginatedTechnicians = allTechniciansWithDetails.slice(
+    skip,
+    skip + pageSize
+  );
+
+  return {
+    total: totalValidTechnicians,
+    offset: skip,
+    limit: pageSize,
+    technicians: paginatedTechnicians,
+  };
 };
 
-export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) => {
+export const getAllTechByAdd = async ({
+  pincode,
+  areaName,
+  categoryId,
+  city,
+}) => {
   if (!categoryId || !pincode || !areaName || !city) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -129,14 +177,15 @@ export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) =
     category: categoryId,
     pincode: pincode,
     areaName: areaName,
-    city: city
+    city: city,
   });
 
-
- const validTechnicians = [];
+  const validTechnicians = [];
 
   for (const technician of technicians) {
-    const techSubDetails = await TechSubscriptionsDetail.findOne({ technicianId: technician._id });
+    const techSubDetails = await TechSubscriptionsDetail.findOne({
+      technicianId: technician._id,
+    });
 
     let isExpired = true;
 
@@ -145,7 +194,8 @@ export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) =
       Array.isArray(techSubDetails.subscriptions) &&
       techSubDetails.subscriptions.length > 0
     ) {
-      const lastSub = techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+      const lastSub =
+        techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
 
       isExpired =
         new Date(lastSub.endDate) < new Date() ||
@@ -156,14 +206,18 @@ export const getAllTechByAdd = async ({ pincode, areaName, categoryId, city }) =
 
     if (!isExpired) {
       const services = await Services.find({ technicianId: technician._id });
-      const technicianImages = await TechnicianImages.findOne({ technicianId: technician._id });
-      const ratings = await RatingsAndReviews.findOne({ technicianId: technician._id });
+      const technicianImages = await TechnicianImages.findOne({
+        technicianId: technician._id,
+      });
+      const ratings = await RatingsAndReviews.findOne({
+        technicianId: technician._id,
+      });
 
       validTechnicians.push({
         technician,
         services,
         technicianImages,
-        ratings
+        ratings,
       });
     }
   }
