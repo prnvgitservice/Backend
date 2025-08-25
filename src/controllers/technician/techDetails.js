@@ -2,7 +2,7 @@ import * as techDetails from "../../services/technician/techDetails.js";
 
 export const getTechAllDetailsCont = async (req, res, next) => {
   try {
-    const {technicianId} = req.params;
+    const { technicianId } = req.params;
     const result = await techDetails.getTechAllDetails(technicianId);
     res.status(201).json({
       success: true,
@@ -10,29 +10,28 @@ export const getTechAllDetailsCont = async (req, res, next) => {
       result,
     });
   } catch (err) {
-
     next(err);
   }
 };
 
 export const getAllTechniciansByCateIdCont = async (req, res, next) => {
+  const { offset, limit } = req.query;
   try {
-    const {categoryId} = req.params;
-    const result = await techDetails.getAllTechniciansByCateId(categoryId);
+    const { categoryId } = req.params;
+    const result = await techDetails.getAllTechniciansByCateId({categoryId, offset, limit});
     res.status(201).json({
       success: true,
       message: "Technicians fetched by category successfully.",
       result,
     });
   } catch (err) {
-
     next(err);
   }
 };
 
 export const getAllTechByAddCont = async (req, res, next) => {
   try {
-console.log("hitting")
+    console.log("hitting");
     const result = await techDetails.getAllTechByAdd(req.body);
     res.status(201).json({
       success: true,

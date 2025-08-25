@@ -24,6 +24,7 @@ export const registerTechnician = async ({
   city,
   state,
   pincode,
+  subscriptionId,
 }) => {
   const errors = [];
 
@@ -38,11 +39,26 @@ export const registerTechnician = async ({
     !category ||
     !city ||
     !state ||
+    !subscriptionId ||
     !pincode
   ) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = ["All Fields Required."];
+    throw err;
+  }
+  if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    const err = new Error("Invalid Subscription ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Subscription ID is not valid."];
+    throw err;
+  }
+
+  const subscription = await SubscriptionPlan.findById(subscriptionId);
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID not found."];
     throw err;
   }
 
@@ -95,7 +111,7 @@ export const registerTechnician = async ({
 
   await technician.save();
 
-  const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
+  // const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
 
   let result = null;
   if (subscription) {
@@ -120,6 +136,7 @@ export const registerTechnician = async ({
     pincode: technician.pincode,
     plan: subscription?._id || null,
     categoryServices: technician.categoryServices,
+    result: result.subscription,
   };
 };
 

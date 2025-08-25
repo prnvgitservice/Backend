@@ -44,6 +44,22 @@ export const getBookServiceByTechnicianIdCont = async (req, res, next) => {
     next(err);
   }
 };
+export const getBookServiceByTechnicianIdDashboardCont = async (req, res, next) => {
+  try {
+    const { technicianId } = req.params;
+
+    const result = await BookingService.getBookServiceByTechnicianIdDashboard({
+      technicianId,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Bookings fetched successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const BookingCancleByUserCont = async (req, res, next) => {
   try {

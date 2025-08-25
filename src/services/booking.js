@@ -471,3 +471,65 @@ export const getAllBookings = async ({ offset = 0, limit = 10 }) => {
     bookings: detailedBookings,
   };
 };
+
+
+export const getBookServiceByTechnicianIdDashboard = async ({ technicianId }) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician Id is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found"];
+    throw err;
+  }
+
+  const bookings = await BookingService.find({ technicianId });
+  if (!bookings || bookings.length === 0) {
+    const err = new Error("Bookings not found");
+    err.statusCode = 404;
+    err.errors = ["Bookings Not Found For This Technician ID"];
+    throw err;
+  }
+
+  // Calculate stats
+  const totalBookings = bookings.length;
+  const completedBookings = bookings.filter(b => b.status === "completed");
+  const totalCompleted = completedBookings.length;
+  const totalEarns = completedBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+  // Populate booking details with user + service
+  const detailedBookings = await Promise.all(
+    bookings.map(async (booking) => {
+      const user = await User.findById(booking.userId);
+      const service = await Services.findById(booking.serviceId);
+
+      return {
+        booking,
+        user: user || null,
+        service: service || null,
+        technician
+      };
+    })
+  );
+
+  return {
+    technician,
+    totalBookings,
+    totalCompleted,
+    totalEarns,
+    bookings: detailedBookings,
+  };
+};
