@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Cart from "../models/cart.model.js";
 import Services from "../models/technician/services.js";
+import CaregoryServices from "../models/caregoryServices.js";
 import User from "../models/authModels/user.js";
 import Technician from "../models/authModels/technician.js";
 import BookingService from "../models/bookingServices.js";
@@ -78,7 +79,7 @@ export const createBookService = async (bookings) => {
       throw err;
     }
 
-    const service = await Services.findById(serviceId);
+    const service = await CaregoryServices.findById(serviceId);
     if (!service) {
       const err = new Error("Service not found");
       err.statusCode = 404;
@@ -174,7 +175,7 @@ export const getBookServiceByUserId = async ({ userId }) => {
   const detailedBookings = await Promise.all(
     bookings.map(async (booking) => {
       const technician = await Technician.findById(booking.technicianId);
-      const service = await Services.findById(booking.serviceId);
+      const service = await CaregoryServices.findById(booking.serviceId);
 
       return {
         booking,
@@ -224,7 +225,7 @@ export const getBookServiceByTechnicianId = async ({ technicianId }) => {
   const detailedBookings = await Promise.all(
     bookings.map(async (booking) => {
       const user = await User.findById(booking.userId);
-      const service = await Services.findById(booking.serviceId);
+      const service = await CaregoryServices.findById(booking.serviceId);
       // const { otp, ...filteredService } = service || {};
       return {
         booking,
@@ -431,7 +432,7 @@ export const getAllBookings = async ({ offset = 0, limit = 10 }) => {
     bookings.map(async (booking) => {
       const user = await User.findById(booking.userId);
       const technician = await Technician.findById(booking.technicianId);
-      const service = await Services.findById(booking.serviceId);
+      const service = await CaregoryServices.findById(booking.serviceId);
 
       return {
         id: booking._id,
@@ -472,8 +473,9 @@ export const getAllBookings = async ({ offset = 0, limit = 10 }) => {
   };
 };
 
-
-export const getBookServiceByTechnicianIdDashboard = async ({ technicianId }) => {
+export const getBookServiceByTechnicianIdDashboard = async ({
+  technicianId,
+}) => {
   if (!technicianId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -506,21 +508,24 @@ export const getBookServiceByTechnicianIdDashboard = async ({ technicianId }) =>
 
   // Calculate stats
   const totalBookings = bookings.length;
-  const completedBookings = bookings.filter(b => b.status === "completed");
+  const completedBookings = bookings.filter((b) => b.status === "completed");
   const totalCompleted = completedBookings.length;
-  const totalEarns = completedBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+  const totalEarns = completedBookings.reduce(
+    (sum, b) => sum + (b.totalPrice || 0),
+    0
+  );
 
   // Populate booking details with user + service
   const detailedBookings = await Promise.all(
     bookings.map(async (booking) => {
       const user = await User.findById(booking.userId);
-      const service = await Services.findById(booking.serviceId);
+      const service = await CaregoryServices.findById(booking.serviceId);
 
       return {
         booking,
         user: user || null,
         service: service || null,
-        technician
+        technician,
       };
     })
   );
@@ -531,5 +536,150 @@ export const getBookServiceByTechnicianIdDashboard = async ({ technicianId }) =>
     totalCompleted,
     totalEarns,
     bookings: detailedBookings,
+  };
+};
+
+export const getMonthlyEarningsByTechnicianId = async ({
+  technicianId,
+  year
+}) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician Id is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found"];
+    throw err;
+  }
+
+  const bookings = await BookingService.find({
+    technicianId,
+    status: "completed",
+    createdAt: {
+      $gte: new Date(`${year}-01-01`),
+      $lte: new Date(`${year}-12-31T23:59:59.999Z`)
+    }
+  });
+
+  const monthlyEarnings = Array(12).fill(0).map((_, index) => ({
+    month: index + 1,
+    monthName: new Date(year, index, 1).toLocaleString('default', { month: 'long' }),
+    totalEarnings: 0,
+    bookingCount: 0
+  }));
+
+  bookings.forEach(booking => {
+    const month = new Date(booking.createdAt).getMonth();
+    monthlyEarnings[month].totalEarnings += booking.totalPrice || 0;
+    monthlyEarnings[month].bookingCount += 1;
+  });
+
+  const totalEarnings = monthlyEarnings.reduce((sum, month) => sum + month.totalEarnings, 0);
+  const totalBookings = monthlyEarnings.reduce((sum, month) => sum + month.bookingCount, 0);
+  const averageEarningsPerMonth = totalBookings > 0 ? totalEarnings / 12 : 0;
+  const averageBookingsPerMonth = totalBookings > 0 ? totalBookings / 12 : 0;
+
+  return {
+    technician,
+    year,
+    monthlyEarnings,
+    totalEarnings,
+    totalBookings,
+    averageEarningsPerMonth: Math.round(averageEarningsPerMonth * 100) / 100,
+    averageBookingsPerMonth: Math.round(averageBookingsPerMonth * 100) / 100
+  };
+};
+
+export const getTodaysBookingsByTechnicianId = async ({
+  technicianId
+}) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician Id is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found"];
+    throw err;
+  }
+
+  const today = new Date();
+  const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+  const todaysBookings = await BookingService.find({
+    technicianId,
+    createdAt: {
+      $gte: startOfDay,
+      $lte: endOfDay
+    }
+  }).sort({ createdAt: -1 });
+
+  if (!todaysBookings || todaysBookings.length === 0) {
+    return {
+      technician,
+      todaysBookings: [],
+      totalBookings: 0,
+      message: "No bookings found for today"
+    };
+  }
+
+  const detailedBookings = await Promise.all(
+    todaysBookings.map(async (booking) => {
+      const user = await User.findById(booking.userId);
+      const service = await CaregoryServices.findById(booking.serviceId);
+
+      return {
+        booking,
+        user: user || null,
+        service: service || null,
+        technician
+      };
+    })
+  );
+
+  const totalBookings = todaysBookings.length;
+  const completedBookings = todaysBookings.filter(b => b.status === "completed");
+  const pendingBookings = todaysBookings.filter(b => b.status === "pending" || b.status === "confirmed");
+  const cancelledBookings = todaysBookings.filter(b => b.status === "cancelled");
+
+  const totalEarnings = completedBookings.reduce(
+    (sum, b) => sum + (b.totalPrice || 0),
+    0
+  );
+
+  return {
+    technician,
+    todaysBookings: detailedBookings,
+    totalBookings,
+    completedBookings: completedBookings.length,
+    pendingBookings: pendingBookings.length,
+    cancelledBookings: cancelledBookings.length,
+    totalEarnings
   };
 };

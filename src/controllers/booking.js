@@ -44,7 +44,11 @@ export const getBookServiceByTechnicianIdCont = async (req, res, next) => {
     next(err);
   }
 };
-export const getBookServiceByTechnicianIdDashboardCont = async (req, res, next) => {
+export const getBookServiceByTechnicianIdDashboardCont = async (
+  req,
+  res,
+  next
+) => {
   try {
     const { technicianId } = req.params;
 
@@ -54,6 +58,41 @@ export const getBookServiceByTechnicianIdDashboardCont = async (req, res, next) 
     res.status(201).json({
       success: true,
       message: "Bookings fetched successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMonthlyEarningsByTechnicianIdCont = async (req, res, next) => {
+  try {
+    const { technicianId, year } = req.params;
+
+    const result = await BookingService.getMonthlyEarningsByTechnicianId({
+      technicianId,
+      year
+    });
+    res.status(201).json({
+      success: true,
+      message: "Monthly earnings fetched successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTodaysBookingsByTechnicianIdCont = async (req, res, next) => {
+  try {
+    const { technicianId } = req.params;
+
+    const result = await BookingService.getTodaysBookingsByTechnicianId({
+      technicianId,
+    });
+    res.status(201).json({
+      success: true,
+      message: "Todays Bookings fetched successfully.",
       result,
     });
   } catch (err) {
