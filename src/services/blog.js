@@ -4,6 +4,7 @@ import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
 export const createBlog = async ({ name, title, description, tags, files }) => {
+  console.log("file", files)
   if (!name) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -12,8 +13,8 @@ export const createBlog = async ({ name, title, description, tags, files }) => {
   }
 
   let image = "";
-  if (files?.image?.[0]) {
-    const filePath = files.image[0].path;
+  if (files?.blog_image?.[0]) {
+    const filePath = files.blog_image[0].path;
     const uploadResult = await cloudinary.uploader.upload(filePath, {
       folder: "BlogImages",
     });
@@ -63,8 +64,8 @@ export const updateBlog = async ({ blogId, name, title, description, tags, files
     throw err;
   }
 
-  if (files?.image?.[0]) {
-    const filePath = files.image[0].path;
+  if (files?.blog_image?.[0]) {
+    const filePath = files.blog_image[0].path;
 
     const oldUrl = blog.image;
     if (oldUrl) {

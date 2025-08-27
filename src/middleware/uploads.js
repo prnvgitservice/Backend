@@ -66,6 +66,10 @@ export const uploadWithValidation = (req, res, next) => {
         req.uploadError = "Only one category_image allowed.";
         return next();
       }
+      if (grouped.blog_image && grouped.blog_image.length > 1) {
+        req.uploadError = "Only one blog_image allowed.";
+        return next();
+      }
       if (grouped.profileImage && grouped.profileImage.length > 1) {
         req.uploadError = "Only one profileImage allowed.";
         return next();
