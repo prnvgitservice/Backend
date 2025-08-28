@@ -6,7 +6,20 @@ export const getTechAllDetailsCont = async (req, res, next) => {
     const result = await techDetails.getTechAllDetails(technicianId);
     res.status(201).json({
       success: true,
-      message: "Technician Images fetched successfully.",
+      message: "Technician bio fetched successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+export const getCategoryServicesByTechIdCont = async (req, res, next) => {
+  try {
+    const { technicianId } = req.params;
+    const result = await techDetails.getCategoryServicesByTechId(technicianId);
+    res.status(201).json({
+      success: true,
+      message: "Technician bio fetched successfully.",
       result,
     });
   } catch (err) {

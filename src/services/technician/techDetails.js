@@ -5,6 +5,7 @@ import Services from "../../models/technician/services.js";
 import RatingsAndReviews from "../../models/technician/reviewsAndRatings.js";
 import Category from "../../models/category.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
+import CategoryServices from "../../models/caregoryServices.js";
 
 export const getTechAllDetails = async (technicianId) => {
   if (!technicianId) {
@@ -23,18 +24,39 @@ export const getTechAllDetails = async (technicianId) => {
 
   const technician = await Technician.findById(technicianId);
   if (!technician) {
-    const err = new Error("Not Fond");
-    err.statusCode = 401;
+    const err = new Error("Not Found");
+    err.statusCode = 404;
     err.errors = ["Technician Not Found."];
     throw err;
   }
+
+  const categoryServiceIds = technician.categoryServices.map(
+    (cs) => cs.categoryServiceId
+  );
+
+  const categoryServices = await CategoryServices.find({
+    _id: { $in: categoryServiceIds },
+  }).lean();
+
+  const populatedCategoryServices = technician.categoryServices.map((cs) => {
+    const serviceDetails = categoryServices.find(
+      (svc) => svc._id.toString() === cs.categoryServiceId.toString()
+    );
+    return {
+      ...cs.toObject(),
+      details: serviceDetails || null,
+    };
+  });
 
   const services = await Services.find({ technicianId });
   const technicianImages = await TechnicianImages.findOne({ technicianId });
   const ratings = await RatingsAndReviews.findOne({ technicianId });
 
   return {
-    technician,
+    technician: {
+      ...technician.toObject(),
+      categoryServices: populatedCategoryServices,
+    },
     services,
     technicianImages,
     ratings,
@@ -223,4 +245,46 @@ export const getAllTechByAdd = async ({
   }
 
   return validTechnicians;
+};
+
+export const getCategoryServicesByTechId = async (technicianId) => {
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Technician ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Not Found");
+    err.statusCode = 404;
+    err.errors = ["Technician Not Found."];
+    throw err;
+  }
+
+  const categoryServiceIds = technician.categoryServices.map(
+    (cs) => cs.categoryServiceId
+  );
+
+  const categoryServices = await CategoryServices.find({
+    _id: { $in: categoryServiceIds },
+  }).lean();
+
+  return technician.categoryServices.map((cs) => {
+    const serviceDetails = categoryServices.find(
+      (svc) => svc._id.toString() === cs.categoryServiceId.toString()
+    );
+    return {
+      ...cs.toObject(),
+      details: serviceDetails || null,
+    };
+  });
 };

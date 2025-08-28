@@ -6,7 +6,7 @@ const { Schema, model } = mongoose;
 const categoryServicesSchema = new Schema({
   categoryServiceId: {
     type: Schema.Types.ObjectId,
-    ref: "Technician",
+    ref: "CategoryService",
     required: true,
   },
   status: {
