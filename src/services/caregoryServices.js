@@ -192,7 +192,6 @@ export const deleteServicesById = async (serviceId) => {
   }
 
   const service = await CaregoryServices.findById(serviceId);
-
   if (!service) {
     const err = new Error("Service not found");
     err.statusCode = 404;
@@ -207,6 +206,11 @@ export const deleteServicesById = async (serviceId) => {
     }
   }
 
+  await Technician.updateMany(
+    { "categoryServices.categoryServiceId": serviceId },
+    { $pull: { categoryServices: { categoryServiceId: serviceId } } }
+  );
+
   await CaregoryServices.deleteOne({ _id: serviceId });
 
   return {
@@ -214,6 +218,7 @@ export const deleteServicesById = async (serviceId) => {
     deletedServiceId: serviceId,
   };
 };
+
 
 export const getServicesByTechId = async ({ categoryId }) => {
   if (!categoryId) {

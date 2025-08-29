@@ -91,7 +91,10 @@ export const getCartService = async ({ userId }) => {
     throw err;
   }
 
-  const cart = await Cart.findOne({ userId }).populate('items.serviceId');
+  console.log("user", user)
+
+  // const cart = await Cart.findOne({ userId }).populate('items.serviceId');
+  const cart = await Cart.findOne({ userId });
   if (!cart) {
     const err = new Error("Cart not found");
     err.statusCode = 404;
@@ -99,6 +102,7 @@ export const getCartService = async ({ userId }) => {
     throw err;
   }
 
+  console.log("caert", cart)
   return {
     user,
     cart,
