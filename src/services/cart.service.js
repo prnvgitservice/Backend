@@ -68,7 +68,6 @@ export const addToCartService = async ({userId, serviceId, quantity}) => {
 };
 
 export const getCartService = async ({ userId }) => {
-
   if (!userId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -91,9 +90,6 @@ export const getCartService = async ({ userId }) => {
     throw err;
   }
 
-  console.log("user", user)
-
-  // const cart = await Cart.findOne({ userId }).populate('items.serviceId');
   const cart = await Cart.findOne({ userId });
   if (!cart) {
     const err = new Error("Cart not found");
@@ -102,12 +98,30 @@ export const getCartService = async ({ userId }) => {
     throw err;
   }
 
-  console.log("caert", cart)
+  // Map cart items with service details
+  const detailedItems = await Promise.all(
+    cart.items.map(async (item) => {
+      const service = await CaregoryServices.findById(item.serviceId).select(
+        "serviceName serviceImg servicePrice"
+      );
+
+      return {
+        _id: item._id,
+        serviceId: item.serviceId,
+        quantity: item.quantity,
+        serviceName: service?.serviceName || null,
+        serviceImg: service?.serviceImg || null,
+        servicePrice: service?.servicePrice || null,
+      };
+    })
+  );
+
   return {
     user,
-    cart,
+    cart: detailedItems
   };
 };
+
 
 export const removeFromCartService = async ({ userId, serviceId }) => {
   if (!serviceId || !userId) {
