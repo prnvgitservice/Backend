@@ -1,4 +1,5 @@
-import * as executive from "../../services/authServices/franchise.js";
+import executive from "../../models/authModels/executive.js";
+
 
 const generatedSequrityCodes = new Set();
 
