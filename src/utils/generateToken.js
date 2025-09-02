@@ -58,3 +58,9 @@ export const franchaiseMiddleware = (req, res, next) => {
     }
     next();
 };
+export const executiveMiddleware = (req, res, next) => {
+    if (req.user.role !== "executive") {
+        return res.status(403).json({ message: "Executive access denied" });
+    }
+    next();
+};
