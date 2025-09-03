@@ -61,6 +61,28 @@ export const registerTechnicianByFranchaiseController = async (
     next(err);
   }
 };
+export const registerTechnicianByExecutiveController = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const technicianData = {
+      ...req.body,
+      userId: generateSequrityCode(),
+    };
+    const result = await technician.registerTechnicianByExecutive(
+      technicianData
+    );
+    res.status(201).json({
+      success: true,
+      message: "Technician Registered By Executive successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const renewTechnicianByFranchaiseController = async (req, res, next) => {
   try {

@@ -21,6 +21,10 @@ const technicianSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Franchise",
     },
+    executiveId: {
+      type: Schema.Types.ObjectId,
+      ref: "Executive",
+    },
     userId: {
       type: String,
       required: true,

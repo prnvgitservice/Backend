@@ -1,19 +1,15 @@
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
-import FranchiseAccount from "../../models/franchase/franchiseAccount.js";
 import SubscriptionPlan from "../../models/subscription.js";
-import FranchiseSubscriptionPlan from "../../models/franchase/franchiseSubscriptions.js";
 import Technician from "../../models/authModels/technician.js";
-import Franchise from "../../models/authModels/franchise.js";
 import Executive from "../../models/authModels/executive.js";
+import ExecutiveAccount from "../../models/executive/executiveAccount.js";
 import mongoose from "mongoose";
 import moment from "moment";
 
 export const addExecutiveAccount = async ({
   executiveId,
-  franchiseId,
   technicianId,
   subscriptionId,
-  FranchiseSubscriptionId,
 }) => {
   const errors = [];
 
@@ -21,16 +17,12 @@ export const addExecutiveAccount = async ({
     errors.push("ExecutiveId is required.");
   }
 
-  if (!technicianId && !franchiseId) {
-    errors.push("Either TechnicianId or FranchiseId must be provided.");
+  if (!technicianId) {
+    errors.push("TechnicianId  must be provided.");
   }
 
   if (technicianId && !subscriptionId) {
     errors.push("SubscriptionId is required when TechnicianId is provided.");
-  }
-
-  if (franchiseId && !FranchiseSubscriptionId) {
-    errors.push("FranchiseSubscriptionId is required when FranchiseId is provided.");
   }
 
   if (errors.length > 0) {
@@ -47,14 +39,8 @@ export const addExecutiveAccount = async ({
   if (technicianId && !mongoose.Types.ObjectId.isValid(technicianId)) {
     idErrors.push("Invalid TechnicianId format.");
   }
-  if (franchiseId && !mongoose.Types.ObjectId.isValid(franchiseId)) {
-    idErrors.push("Invalid FranchiseId format.");
-  }
   if (subscriptionId && !mongoose.Types.ObjectId.isValid(subscriptionId)) {
     idErrors.push("Invalid SubscriptionId format.");
-  }
-  if (FranchiseSubscriptionId && !mongoose.Types.ObjectId.isValid(FranchiseSubscriptionId)) {
-    idErrors.push("Invalid FranchiseSubscriptionId format.");
   }
 
   if (idErrors.length > 0) {
@@ -98,22 +84,10 @@ export const addExecutiveAccount = async ({
       planId = lastSub?._id?.toString();
     }
 
-    amount = subscription?.commisionAmount
+    amount = subscription?.executiveCommissionAmount
   }
 
-  if (franchiseId) {
-    const franchise = await Franchise.findById(franchiseId);
-    if (!franchise) {
-      const err = new Error("Franchise not found");
-      err.statusCode = 404;
-      err.errors = ["Franchise ID not found."];
-      throw err;
-    }
-
-  }
-
-  const newAccount = new FranchiseAccount({
-    franchiseId,
+  const newAccount = new ExecutiveAccount({
     technicianId,
     subscriptionId,
     planId,
@@ -131,38 +105,38 @@ export const addExecutiveAccount = async ({
 
 
 
-export const getFranchiseAccount = async (franchiseId) => {
-  if (!franchiseId) {
+export const getExecutiveAccount = async (executiveId) => {
+  if (!executiveId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Franchise Id is required."];
+    err.errors = ["Executive Id is required."];
     throw err;
   }
 
-  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-    const err = new Error("Invalid Franchise ID format");
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Invalid Executive ID format");
     err.statusCode = 400;
-    err.errors = ["Provided Franchise ID is not valid."];
+    err.errors = ["Provided Executive ID is not valid."];
     throw err;
   }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found");
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found");
     err.statusCode = 404;
     throw err;
   }
 
-  const franchiseAccountsDetails = await FranchiseAccount.find({ franchiseId });
-  if (!franchiseAccountsDetails || !franchiseAccountsDetails.length) {
-    const err = new Error("Franchise Accounts not found");
+  const executiveAccountsDetails = await ExecutiveAccount.find({ executiveId });
+  if (!executiveAccountsDetails || !executiveAccountsDetails.length) {
+    const err = new Error("Executive Accounts not found");
     err.statusCode = 404;
-    err.errors = ["No Franchise Accounts found for the Franchise."];
+    err.errors = ["No Executive Accounts found for the Executive."];
     throw err;
   }
 
   const enhancedAccounts = await Promise.all(
-    franchiseAccountsDetails.map(async (account) => {
+    executiveAccountsDetails.map(async (account) => {
       const technician = await Technician.findById(account.technicianId).select(
         "username"
       );
@@ -179,48 +153,48 @@ export const getFranchiseAccount = async (franchiseId) => {
   );
 
   return {
-    franchiseAccountsDetails: enhancedAccounts,
+    executiveAccountsDetails: enhancedAccounts,
   };
 };
 
-export const getFranchiseAccountValues = async (franchiseId) => {
-  if (!franchiseId) {
+export const getExecutiveAccountValues = async (executiveId) => {
+  if (!executiveId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Franchise Id is required."];
+    err.errors = ["Executive Id is required."];
     throw err;
   }
 
-  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-    const err = new Error("Invalid Franchise ID format");
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Invalid Executive ID format");
     err.statusCode = 400;
-    err.errors = ["Provided Franchise ID is not valid."];
+    err.errors = ["Provided Executive ID is not valid."];
     throw err;
   }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found");
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found");
     err.statusCode = 404;
     throw err;
   }
 
-  const franchiseAccountsDetails = await FranchiseAccount.find({ franchiseId });
-  if (!franchiseAccountsDetails || !franchiseAccountsDetails.length) {
-    const err = new Error("Franchise Accounts not found");
+  const executiveAccountsDetails = await ExecutiveAccount.find({ executiveId });
+  if (!executiveAccountsDetails || !executiveAccountsDetails.length) {
+    const err = new Error("executive Accounts not found");
     err.statusCode = 404;
-    err.errors = ["No Franchise Accounts found for the Franchise."];
+    err.errors = ["No Executive Accounts found for the Executive."];
     throw err;
   }
 
-  const totalEarnings = franchiseAccountsDetails.reduce(
+  const totalEarnings = executiveAccountsDetails.reduce(
     (sum, acc) => sum + (acc.amount || 0),
     0
   );
 
   const currentMonth = moment().month();
   const currentYear = moment().year();
-  const totalThisMonthEarnings = franchiseAccountsDetails.reduce((sum, acc) => {
+  const totalThisMonthEarnings = executiveAccountsDetails.reduce((sum, acc) => {
     const date = moment(acc.createdAt);
     if (date.month() === currentMonth && date.year() === currentYear) {
       return sum + (acc.amount || 0);
@@ -229,7 +203,7 @@ export const getFranchiseAccountValues = async (franchiseId) => {
   }, 0);
 
   const monthlyEarnings = Array(12).fill(0);
-  franchiseAccountsDetails.forEach((acc) => {
+  executiveAccountsDetails.forEach((acc) => {
     const date = moment(acc.createdAt);
     if (date.year() === currentYear) {
       monthlyEarnings[date.month()] += acc.amount || 0;
@@ -237,11 +211,11 @@ export const getFranchiseAccountValues = async (franchiseId) => {
   });
 
   const technicianIds = new Set(
-    franchiseAccountsDetails.map((acc) => acc.technicianId?.toString())
+    executiveAccountsDetails.map((acc) => acc.technicianId?.toString())
   );
   const totalNoOfTechnicians = technicianIds.size;
 
-  const totalNoOfSubscriptions = franchiseAccountsDetails.reduce(
+  const totalNoOfSubscriptions = executiveAccountsDetails.reduce(
     (count, acc) => {
       return acc.subscriptionId ? count + 1 : count;
     },

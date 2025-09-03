@@ -6,6 +6,7 @@ import {
   getTechnicianProfilesByFranchiseIdCont,
   getTechProfileControl,
   loginTechnicianController,
+  registerTechnicianByExecutiveController,
   registerTechnicianByFranchaiseController,
   registerTechnicianController,
   renewTechnicianByFranchaiseController,
@@ -23,7 +24,7 @@ const router = Router();
 router.post("/register", registerTechnicianController);
 router.post("/registerByAdmin", registerTechnicianController);
 router.post("/registerByFranchise", registerTechnicianByFranchaiseController);
-// router.post("/registerByFranchise", registerTechnicianByFranchaiseController);
+router.post("/registerByExecutive", registerTechnicianByExecutiveController);
 
 router.post("/login", loginTechnicianController);
 

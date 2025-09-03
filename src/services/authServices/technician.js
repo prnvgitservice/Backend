@@ -7,9 +7,11 @@ import fs from "fs";
 import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import Franchise from "../../models/authModels/franchise.js";
+import Executive from "../../models/authModels/executive.js";
 import { addFranchiseAccount } from "../franchase/franchiseAccount.js";
 import CaregoryServices from "../../models/caregoryServices.js";
 import { getServicesByTechId } from "../caregoryServices.js";
+import { addExecutiveAccount } from "../executive/executiveAccount.js";
 
 export const registerTechnician = async ({
   userId,
@@ -294,6 +296,163 @@ export const registerTechnicianByFranchaise = async ({
     categoryServices: technician.categoryServices,
     result: result.subscription,
     franhiseAccount: franhiseAccount.newAccountDetails,
+  };
+};
+
+export const registerTechnicianByExecutive = async ({
+  userId,
+  username,
+  phoneNumber,
+  password,
+  role = "technician",
+  category,
+  buildingName,
+  areaName,
+  subAreaName,
+  city,
+  state,
+  pincode,
+  executiveId,
+  subscriptionId,
+}) => {
+  const errors = [];
+
+  if (
+    !userId ||
+    !username ||
+    !phoneNumber ||
+    !password ||
+    !buildingName ||
+    !areaName ||
+    !role ||
+    !category ||
+    !city ||
+    !state ||
+    !pincode ||
+    !executiveId ||
+    !subscriptionId
+  ) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["All Fields Required."];
+    throw err;
+  }
+
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    errors.push("Phone number must be exactly 10 digits.");
+  }
+
+  if (password?.length < 6 || password?.length > 20) {
+    errors.push("Password must be between 6 and 20 characters.");
+  }
+
+  const phoneExists = await Technician.findOne({ phoneNumber });
+  if (phoneExists) {
+    errors.push("Phone number already exists.");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Invalid ExecutiveId ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Executive ID is not valid."];
+    throw err;
+  }
+
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found");
+    err.statusCode = 404;
+    err.errors = ["Executive ID not found."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    const err = new Error("Invalid Subscription ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Subscription ID is not valid."];
+    throw err;
+  }
+
+  const subscription = await SubscriptionPlan.findById(subscriptionId);
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID not found."];
+    throw err;
+  }
+
+  let caregoryServices = [];
+  if (category) {
+    caregoryServices = await getServicesByTechId({ categoryId: category });
+  }
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+  const technician = new Technician({
+    executiveId,
+    userId,
+    username,
+    phoneNumber,
+    password,
+    role,
+    category,
+    buildingName,
+    areaName,
+    subAreaName,
+    city,
+    state,
+    pincode,
+  });
+
+  if (caregoryServices?.service?.length > 0) {
+    technician.categoryServices = caregoryServices.service.map((srv) => ({
+      categoryServiceId: srv._id,
+      status: true,
+    }));
+  }
+
+  await technician.save();
+
+  let result = null;
+  if (subscription) {
+    result = await addTechSubscriptionPlan({
+      technicianId: technician._id,
+      subscriptionId: subscription._id,
+    });
+  }
+
+  let executiveAccount = null;
+  if (result) {
+    Account = await addExecutiveAccount({
+      executiveId,
+      technicianId: technician._id.toString(),
+      subscriptionId,
+    });
+  }
+
+  return {
+    id: technician._id,
+    franchiseId: technician.franchiseId,
+    userId: technician.userId,
+    username: technician.username,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    plan: subscription?._id || null,
+    categoryServices: technician.categoryServices,
+    result: result.subscription,
+    executiveAccount: executiveAccount.newAccountDetails,
   };
 };
 

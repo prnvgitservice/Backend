@@ -14,6 +14,7 @@ export const addSubscription = async ({
   leads,
   endUpPrice,
   commisionAmount,
+  executiveCommissionAmount,
   features,
   fullFeatures,
   isPopular,
@@ -21,6 +22,8 @@ export const addSubscription = async ({
 }) => {
   if (
     !name ||
+    !commisionAmount ||
+    !executiveCommissionAmount ||
     originalPrice == null ||
     price == null ||
     gstPercentage == null ||
@@ -61,6 +64,7 @@ export const addSubscription = async ({
     finalPrice,
     endUpPrice,
     commisionAmount,
+    executiveCommissionAmount,
     validity: validity ?? null,
     leads: leads ?? null,
     features,
@@ -80,6 +84,7 @@ export const addSubscription = async ({
     leads: newPlan.leads,
     endUpPrice: newPlan.endUpPrice,
     commisionAmount: newPlan.commisionAmount,
+    executiveCommissionAmount: newPlan.executiveCommissionAmount,
     isPopular: newPlan.isPopular,
     isActive: newPlan.isActive,
     createdAt: newPlan.createdAt,
