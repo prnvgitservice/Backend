@@ -1,5 +1,4 @@
-import * as technician from "../../services/authServices/technician.js";
-import { generateToken } from "../../utils/generateToken.js";
+import { getTReferralsByExeId, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral";
 
 const generatedSequrityCodes = new Set();
 
@@ -8,7 +7,7 @@ const generateSequrityCode = () => {
   let sequrityCode;
   let numberOfNumbers = 0;
   do {
-    sequrityCode = "PRNV-";
+    sequrityCode = "PRNV-R";
     numberOfNumbers = 0;
     for (let i = 0; i < 6; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
@@ -23,87 +22,90 @@ const generateSequrityCode = () => {
   return sequrityCode;
 };
 
-export const registerTechnicianController = async (req, res, next) => {
-  try {
-    const technicianData = {
-      ...req.body,
-      userId: generateSequrityCode(),
-    };
-    const result = await technician.registerTechnicianByAdmin(technicianData);
-    res.status(201).json({
-      success: true,
-      message: "Technician Registered successfully.",
-      result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const registerTechnicianByFranchaiseController = async (
+export const registerRefByExeController = async (
   req,
   res,
   next
 ) => {
   try {
-    const technicianData = {
+    const referralData = {
       ...req.body,
-      userId: generateSequrityCode(),
+      referralId: generateSequrityCode(),
     };
-    const result = await technician.registerTechnicianByFranchaise(
-      technicianData
+    const result = await registerReferralByExecutive(
+      referralData
     );
     res.status(201).json({
       success: true,
-      message: "Technician Registered By Franchaise successfully.",
+      message: "Referral Registered By Executive successfully.",
       result,
     });
   } catch (err) {
     next(err);
   }
 };
-export const registerTechnicianByExecutiveController = async (
+
+export const registerReferralController = async (req, res, next) => {
+  try {
+    const referralData = {
+      ...req.body,
+      referralId: generateSequrityCode(),
+    };
+    const result = await registerReferral(referralData);
+    res.status(201).json({
+      success: true,
+      message: "Referral Registered successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// export const registerTechnicianController = async (req, res, next) => {
+//   try {
+//     const technicianData = {
+//       ...req.body,
+//       userId: generateSequrityCode(),
+//     };
+//     const result = await technician.registerTechnicianByAdmin(technicianData);
+//     res.status(201).json({
+//       success: true,
+//       message: "Technician Registered successfully.",
+//       result,
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+
+export const loginReferralController = async (req, res, next) => {
+  try {
+    const result = await loginReferral(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Referral Login successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getReferralsByExeIdCont = async (
   req,
   res,
   next
 ) => {
   try {
-    const technicianData = {
-      ...req.body,
-      userId: generateSequrityCode(),
-    };
-    const result = await technician.registerTechnicianByExecutive(
-      technicianData
+    const { executiveId } = req.params;
+    const result = await getTReferralsByExeId(
+      executiveId
     );
     res.status(201).json({
       success: true,
-      message: "Technician Registered By Executive successfully.",
-      result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const renewTechnicianByFranchaiseController = async (req, res, next) => {
-  try {
-    const result = await technician.renewTechnicianByFranchaise(req.body);
-    res.status(201).json({
-      success: true,
-      message: "Technician Rwnewed By Franchaise successfully.",
-      result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const loginTechnicianController = async (req, res, next) => {
-  try {
-    const result = await technician.loginTechnician(req.body);
-    res.status(201).json({
-      success: true,
-      message: "Technician Login successfully.",
+      message: "Referrals fetched by Executive successfully.",
       result,
     });
   } catch (err) {
@@ -153,39 +155,11 @@ export const getTechProfileControl = async (req, res, next) => {
   }
 };
 
-export const getTechnicianProfilesByFranchiseIdCont = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const { franchiseId } = req.params;
-    const result = await technician.getTechnicianProfilesByFranchiseId(
-      franchiseId
-    );
-    res.status(201).json({
-      success: true,
-      message: "Technicians profile fetched by Franchise successfully.",
-      result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
 
 export const getAllTechnicianController = async (req, res, next) => {
   try {
     const { offset, limit } = req.query;
     const result = await technician.getAllTechnicians({ offset, limit });
-    res.status(200).json({ success: true, ...result });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const changeServiceStatusController = async (req, res, next) => {
-  try {
-    const result = await technician.changeServiceStatus(req.body);
     res.status(200).json({ success: true, ...result });
   } catch (err) {
     next(err);
