@@ -147,10 +147,6 @@ export const getExecutiveProfile = async (id) => {
     throw err;
   }
 
-  // const executiveSubDetails = await Executive.findOne({
-  //   id: executive._id,
-  // });
-
   return {
     id: executive._id,
     executivename: executive.executivename,
@@ -167,33 +163,24 @@ export const getExecutiveProfile = async (id) => {
 };
 
 export const updateExecutive = async ({
-  executiveId,
+  id,
   executivename,
   password,
   buildingName,
   areaName,
-  city,
+  city, 
   state,
   pincode,
-  description,
   files,
 }) => {
   const errors = [];
-  if (!executiveId) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = ["Executive Id are required."];
-    throw err;
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
-    const err = new Error("Executive ID format.");
+ if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error("Invalid Executive ID");
     err.statusCode = 400;
-    err.errors = ["Provided Executive ID is not valid."];
     throw err;
   }
 
-  const executive = await Executive.findById(executiveId);
+  const executive = await Executive.findById(id);
   if (!executive) {
     const err = new Error("Executive not found");
     err.statusCode = 404;
@@ -214,21 +201,20 @@ export const updateExecutive = async ({
     }
 
     const uploadResult = await cloudinary.uploader.upload(filePath, {
-      folder: "FranchaseProfiles",
+      folder: "ExecutiveProfiles",
     });
     fs.unlinkSync(filePath);
 
     executive.profileImage = uploadResult.secure_url;
   }
 
-  if (username) executive.username = username;
+  if (executivename) executive.executivename = executivename;
   if (password) executive.password = password;
   if (buildingName) executive.buildingName = buildingName;
   if (areaName) executive.areaName = areaName;
   if (city) executive.city = city;
   if (state) executive.state = state;
   if (pincode) executive.pincode = pincode;
-  if (description) executive.description = description;
 
   await executive.save();
 
@@ -241,7 +227,7 @@ export const updateExecutive = async ({
 
   return {
     id: executive._id,
-    username: executive.username,
+    executivename: executive.executivename,
     executiveId: executive.executiveId,
     phoneNumber: executive.phoneNumber,
     role: executive.role,
@@ -250,49 +236,10 @@ export const updateExecutive = async ({
     city: executive.city,
     state: executive.state,
     pincode: executive.pincode,
-    description: executive.description,
     profileImage: executive.profileImage,
   };
 };
 
-export const deleteExecutive = async (executiveId) => {
-  if (!executiveId) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = ["Executive ID is required."];
-    throw err;
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
-    const err = new Error("Invalid Executive ID format.");
-    err.statusCode = 400;
-    err.errors = ["Provided Executive ID is not valid."];
-    throw err;
-  }
-
-  const executive = await Executive.findById(executiveId);
-  if (!executive) {
-    const err = new Error("Executive not found");
-    err.statusCode = 404;
-    err.errors = ["Executive ID not found."];
-    throw err;
-  }
-
-  const oldUrl = executive.profileImage;
-  if (oldUrl) {
-    const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
-    const publicId = match ? `ExecutiveProfiles/${match[1]}` : null;
-    if (publicId) {
-      await cloudinary.uploader.destroy(publicId);
-    }
-  }
-
-  await executive.deleteOne();
-
-  return {
-    id: executive._id,
-  };
-};
 
 export const getAllExecutives = async ({ offset = 0, limit = 10 }) => {
   const skip = parseInt(offset, 10);
@@ -318,7 +265,7 @@ export const getAllExecutives = async ({ offset = 0, limit = 10 }) => {
     executives: executives.map((executive) => ({
       id: executive._id,
       executiveId: executive.executiveId,
-      username: executive.username,
+      executivename: executive.executivename,
       phoneNumber: executive.phoneNumber,
       role: executive.role,
       buildingName: executive.buildingName,
@@ -326,8 +273,50 @@ export const getAllExecutives = async ({ offset = 0, limit = 10 }) => {
       city: executive.city,
       state: executive.state,
       pincode: executive.pincode,
-      description: executive.description,
       profileImage: executive.profileImage,
     })),
   };
 };
+
+
+export const deleteExecutive = async (id) => {
+  if (!id) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Executive ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error("Invalid Executive ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Executive ID is not valid."];
+    throw err;
+  }
+
+  const executive = await Executive.findById(id);
+  if (!executive) {
+    const err = new Error("Executive not found");
+    err.statusCode = 404;
+    err.errors = ["Executive ID not found."];
+    throw err;
+  }
+
+  const oldUrl = executive.profileImage;
+  if (oldUrl) {
+    const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+    const publicId = match ? `ExecutiveProfiles/${match[1]}` : null;
+    if (publicId) {
+      await cloudinary.uploader.destroy(publicId);
+    }
+  }
+
+  await executive.deleteOne();
+
+  return {
+    id: executive._id,
+    executivename: executive.executivename,
+  };
+};
+
+

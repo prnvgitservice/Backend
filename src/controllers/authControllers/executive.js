@@ -1,4 +1,4 @@
-import { getExecutiveProfile, loginExecutive, registerExecutive } from "../../services/authServices/executive.js";
+import { deleteExecutive, getAllExecutives, getExecutiveProfile, loginExecutive, registerExecutive, updateExecutive } from "../../services/authServices/executive.js";
 
 
 const generatedSequrityCodes = new Set();
@@ -68,7 +68,7 @@ export const getExecutiveProfileControl = async (req, res, next) => {
   }
 };
 
-export const updateFranchiseControl = async (req, res, next) => {
+export const updateExecutiveControl = async (req, res, next) => {
   const filesArray = req.files || [];
   const filesMap = {};
 
@@ -79,16 +79,16 @@ export const updateFranchiseControl = async (req, res, next) => {
     filesMap[file.fieldname].push(file);
   });
 
-  const franchiseData = {
+  const executiveData = {
     ...req.body,
     files: filesMap,
   };
 
   try {
-    const result = await franchise.updateFranchise(franchiseData);
+    const result = await updateExecutive(executiveData);
     res.status(201).json({
       success: true,
-      message: "Franchise profile updated successfully.",
+      message: "Executive profile updated successfully.",
       result,
     });
   } catch (err) {
@@ -96,28 +96,54 @@ export const updateFranchiseControl = async (req, res, next) => {
   }
 };
 
-export const deleteFranchiseProfileControl = async (req, res, next) => {
-  try {
-    const {franchiseId} = req.params;
+// export const updateExecutiveControl = async (req, res, next) => {
+//   try {
+//     const filesMap = (req.files || []).reduce((acc, file) => {
+//       acc[file.fieldname] = [...(acc[file.fieldname] || []), file];
+//       return acc;
+//     }, {});
 
-    const result = await franchise.deleteFranchise(franchiseId);
-    res.status(201).json({
-      success: true,
-      message: "Franchise Profile Deleted Successfully.",
-      result,
-    });
-  } catch (err) {
+//     const result = await updateExecutive({
+//       id: req.params.id,
+//       ...req.body,
+//       files: filesMap,
+//     });
 
-    next(err);
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       message: "Executive profile updated successfully",
+//       result
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-export const getAllFranchisesController = async (req, res, next) => {
+
+export const getAllExecutivesController = async (req, res, next) => {
   try {
     const { offset, limit } = req.query;
-    const result = await franchise.getAllFranchises({ offset, limit });
+    const result = await getAllExecutives({ offset, limit });
     res.status(200).json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
 };
+
+
+export const deleteExecutiveProfileControl = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const result = await deleteExecutive(id);
+    res.status(201).json({
+      success: true,
+      message: "Executive Profile Deleted Successfully.",
+      result,
+    });
+  } catch (err) {
+
+    next(err);
+  }
+};
+
