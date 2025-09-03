@@ -23,18 +23,36 @@ const router = Router();
 router.post("/register", registerTechnicianController);
 router.post("/registerByAdmin", registerTechnicianController);
 router.post("/registerByFranchise", registerTechnicianByFranchaiseController);
-router.put(
-  "/renewTechnicianByFranchaise",
-  renewTechnicianByFranchaiseController
-);
+// router.post("/registerByFranchise", registerTechnicianByFranchaiseController);
+
 router.post("/login", loginTechnicianController);
+
 router.put(
   "/updateTechnicianControl",
   uploadWithValidation,
   updateTechnicianControl
 );
-router.get("/getAllTechnicians", getAllTechnicianController);
+router.put(
+  "/updateTechByFranchaise",
+  //   requireSignIn
+  //   franchaiseMiddleware,
+  uploadWithValidation,
+  updateTechnicianControl
+);
+
+router.put(
+  "/renewTechnicianByFranchaise",
+  renewTechnicianByFranchaiseController
+);
+router.put(
+  "/changeServiceStatus",
+  //   requireSignIn
+  //   franchaiseMiddleware,
+  changeServiceStatusController
+);
+
 router.get("/getTechProfile/:technicianId", getTechProfileControl);
+router.get("/getAllTechnicians", getAllTechnicianController);
 router.get(
   "/getTechProfileByFranchise/:technicianId",
   //   requireSignIn
@@ -47,19 +65,7 @@ router.get(
   //   franchaiseMiddleware,
   getTechnicianProfilesByFranchiseIdCont
 );
-router.put(
-  "/updateTechByFranchaise",
-  //   requireSignIn
-  //   franchaiseMiddleware,
-  uploadWithValidation,
-  updateTechnicianControl
-);
-router.put(
-  "/changeServiceStatus",
-  //   requireSignIn
-  //   franchaiseMiddleware,
-  changeServiceStatusController
-);
+
 router.delete(
   "/deleteTechnician/:technicianId",
   deleteTechnicianByIdController
