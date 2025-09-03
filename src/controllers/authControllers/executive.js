@@ -1,4 +1,4 @@
-import executive from "../../models/authModels/executive.js";
+import { loginExecutive, registerExecutive } from "../../services/authServices/executive.js";
 
 
 const generatedSequrityCodes = new Set();
@@ -29,7 +29,7 @@ export const registerExecutiveController = async (req, res, next) => {
       ...req.body,
       executiveId: generateSequrityCode(),
     };
-    const result = await executive.registerExecutive(executiveData);
+    const result = await registerExecutive(executiveData);
     res.status(201).json({
       success: true,
       message: "Executive Registered successfully.",
@@ -42,7 +42,7 @@ export const registerExecutiveController = async (req, res, next) => {
 
 export const loginExecutiveController = async (req, res, next) => {
   try {
-    const result = await executive.loginExecutive(req.body);
+    const result = await loginExecutive(req.body);
     res.status(201).json({
       success: true,
       message: "Executive Login successfully.",

@@ -70,7 +70,12 @@ const franchiseSubscriptionSchema = new Schema({
   isActive: {
     type: Boolean,
     default: true
-  }
+  },
+  commisionAmount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
 }, {
   timestamps: true
 });

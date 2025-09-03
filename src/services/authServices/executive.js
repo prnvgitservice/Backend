@@ -47,7 +47,7 @@ export const registerExecutive = async ({
 
   const phoneExists = await Executive.findOne({ phoneNumber });
   if (phoneExists) {
- const err = new Error("Phone number already registered");
+    const err = new Error("Phone number already registered");
     err.statusCode = 400;
     throw err;
     // errors.push("Phone number already exists.");
@@ -125,8 +125,8 @@ export const loginExecutive = async ({ phoneNumber, password }) => {
 };
 
 
-export const updateFranchise = async ({
-  franchiseId,
+export const updateExecutive = async ({
+  executiveId,
   username,
   password,
   buildingName,
@@ -138,35 +138,35 @@ export const updateFranchise = async ({
   files,
 }) => {
   const errors = [];
-  if (!franchiseId) {
+  if (!executiveId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Franchise Id are required."];
+    err.errors = ["Executive Id are required."];
     throw err;
   }
 
-  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-    const err = new Error("Franchise ID format.");
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Executive ID format.");
     err.statusCode = 400;
-    err.errors = ["Provided Franchise ID is not valid."];
+    err.errors = ["Provided Executive ID is not valid."];
     throw err;
   }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found");
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found");
     err.statusCode = 404;
-    err.errors = ["Franchise ID Not Found."];
+    err.errors = ["Executive ID Not Found."];
     throw err;
   }
 
   if (files.profileImage?.[0]) {
     const filePath = files.profileImage[0].path;
 
-    const oldUrl = franchise.profileImage;
+    const oldUrl = executive.profileImage;
     if (oldUrl) {
       const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
-      const publicId = match ? `FranchaseProfiles/${match[1]}` : null;
+      const publicId = match ? `ExecutiveProfiles/${match[1]}` : null;
       if (publicId) {
         await cloudinary.uploader.destroy(publicId);
       }
@@ -177,19 +177,19 @@ export const updateFranchise = async ({
     });
     fs.unlinkSync(filePath);
 
-    franchise.profileImage = uploadResult.secure_url;
+    executive.profileImage = uploadResult.secure_url;
   }
 
-  if (username) franchise.username = username;
-  if (password) franchise.password = password;
-  if (buildingName) franchise.buildingName = buildingName;
-  if (areaName) franchise.areaName = areaName;
-  if (city) franchise.city = city;
-  if (state) franchise.state = state;
-  if (pincode) franchise.pincode = pincode;
-  if (description) franchise.description = description;
+  if (username) executive.username = username;
+  if (password) executive.password = password;
+  if (buildingName) executive.buildingName = buildingName;
+  if (areaName) executive.areaName = areaName;
+  if (city) executive.city = city;
+  if (state) executive.state = state;
+  if (pincode) executive.pincode = pincode;
+  if (description) executive.description = description;
 
-  await franchise.save();
+  await executive.save();
 
   if (errors.length > 0) {
     const err = new Error("Validation failed");
@@ -199,117 +199,117 @@ export const updateFranchise = async ({
   }
 
   return {
-    id: franchise._id,
-    username: franchise.username,
-    franchiseId: franchise.franchiseId,
-    phoneNumber: franchise.phoneNumber,
-    role: franchise.role,
-    buildingName: franchise.buildingName,
-    areaName: franchise.areaName,
-    city: franchise.city,
-    state: franchise.state,
-    pincode: franchise.pincode,
-    description: franchise.description,
-    profileImage: franchise.profileImage,
+    id: executive._id,
+    username: executive.username,
+    executiveId: executive.executiveId,
+    phoneNumber: executive.phoneNumber,
+    role: executive.role,
+    buildingName: executive.buildingName,
+    areaName: executive.areaName,
+    city: executive.city,
+    state: executive.state,
+    pincode: executive.pincode,
+    description: executive.description,
+    profileImage: executive.profileImage,
   };
 };
 
-export const getFranchiseProfile = async (franchiseId) => {
-  if (!franchiseId) {
+export const getExecutiveProfile = async (executiveId) => {
+  if (!executiveId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Franchise ID is required."];
+    err.errors = ["Executive ID is required."];
     throw err;
   }
 
-  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-    const err = new Error("Invalid Franchise ID format.");
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Invalid Executive ID format.");
     err.statusCode = 400;
-    err.errors = ["Provided Franchise ID is not valid."];
+    err.errors = ["Provided Executive ID is not valid."];
     throw err;
   }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found.");
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found.");
     err.statusCode = 404;
-    err.errors = ["Franchise not found."];
+    err.errors = ["Executive not found."];
     throw err;
   }
 
-  const franchiseSubDetails = await FranchiseSubscription.findOne({
-    franchiseId,
+  const executiveSubDetails = await ExecutiveSubscription.findOne({
+    executiveId,
   });
 
   let lastSubscription = null;
   if (
-    franchiseSubDetails &&
-    Array.isArray(franchiseSubDetails.subscriptions) &&
-    franchiseSubDetails.subscriptions.length > 0
+    executiveSubDetails &&
+    Array.isArray(executiveSubDetails.subscriptions) &&
+    executiveSubDetails.subscriptions.length > 0
   ) {
     lastSubscription =
-      franchiseSubDetails.subscriptions[
-        franchiseSubDetails.subscriptions.length - 1
+      executiveSubDetails.subscriptions[
+      executiveSubDetails.subscriptions.length - 1
       ];
   }
 
   return {
-    id: franchise._id,
-    username: franchise.username,
-    franchiseId: franchise.franchiseId,
-    phoneNumber: franchise.phoneNumber,
-    role: franchise.role,
-    buildingName: franchise.buildingName,
-    areaName: franchise.areaName,
-    city: franchise.city,
-    state: franchise.state,
-    pincode: franchise.pincode,
-    description: franchise.description,
-    profileImage: franchise.profileImage,
+    id: executive._id,
+    username: executive.username,
+    executiveId: executive.executiveId,
+    phoneNumber: executive.phoneNumber,
+    role: executive.role,
+    buildingName: executive.buildingName,
+    areaName: executive.areaName,
+    city: executive.city,
+    state: executive.state,
+    pincode: executive.pincode,
+    description: executive.description,
+    profileImage: executive.profileImage,
     lastSubscription: lastSubscription,
   };
 };
 
-export const deleteFranchise = async (franchiseId) => {
-  if (!franchiseId) {
+export const deleteExecutive = async (executiveId) => {
+  if (!executiveId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Franchise ID is required."];
+    err.errors = ["Executive ID is required."];
     throw err;
   }
 
-  if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-    const err = new Error("Invalid Franchise ID format.");
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Invalid Executive ID format.");
     err.statusCode = 400;
-    err.errors = ["Provided Franchise ID is not valid."];
+    err.errors = ["Provided Executive ID is not valid."];
     throw err;
   }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found");
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found");
     err.statusCode = 404;
-    err.errors = ["Franchise ID not found."];
+    err.errors = ["Executive ID not found."];
     throw err;
   }
 
-  const oldUrl = franchise.profileImage;
+  const oldUrl = executive.profileImage;
   if (oldUrl) {
     const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
-    const publicId = match ? `FranchaseProfiles/${match[1]}` : null;
+    const publicId = match ? `ExecutiveProfiles/${match[1]}` : null;
     if (publicId) {
       await cloudinary.uploader.destroy(publicId);
     }
   }
 
-  await franchise.deleteOne();
+  await executive.deleteOne();
 
   return {
-    id: franchise._id,
+    id: executive._id,
   };
 };
 
-export const getAllFranchises = async ({ offset = 0, limit = 10 }) => {
+export const getAllExecutives = async ({ offset = 0, limit = 10 }) => {
   const skip = parseInt(offset, 10);
   const pageSize = parseInt(limit, 10);
 
@@ -320,29 +320,29 @@ export const getAllFranchises = async ({ offset = 0, limit = 10 }) => {
     throw err;
   }
 
-  const totalFranchises = await Franchise.countDocuments({});
-  const franchises = await Franchise.find({})
+  const totalExecutives = await Executive.countDocuments({});
+  const executives = await Executive.find({})
     .skip(skip)
     .limit(pageSize)
     .sort({ createdAt: -1 });
 
   return {
-    total: totalFranchises,
+    total: totalExecutives,
     offset: skip,
     limit: pageSize,
-    franchises: franchises.map((franchise) => ({
-      id: franchise._id,
-      franchiseId: franchise.franchiseId,
-      username: franchise.username,
-      phoneNumber: franchise.phoneNumber,
-      role: franchise.role,
-      buildingName: franchise.buildingName,
-      areaName: franchise.areaName,
-      city: franchise.city,
-      state: franchise.state,
-      pincode: franchise.pincode,
-      description: franchise.description,
-      profileImage: franchise.profileImage,
+    executives: executives.map((executive) => ({
+      id: executive._id,
+      executiveId: executive.executiveId,
+      username: executive.username,
+      phoneNumber: executive.phoneNumber,
+      role: executive.role,
+      buildingName: executive.buildingName,
+      areaName: executive.areaName,
+      city: executive.city,
+      state: executive.state,
+      pincode: executive.pincode,
+      description: executive.description,
+      profileImage: executive.profileImage,
     })),
   };
 };

@@ -1,6 +1,11 @@
 import mongoose from 'mongoose';
 
 const CartItemSchema = new mongoose.Schema({
+  technicianId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Technician',
+    required: true,
+  },
   serviceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service',

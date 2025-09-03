@@ -1,84 +1,117 @@
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import FranchiseAccount from "../../models/franchase/franchiseAccount.js";
 import SubscriptionPlan from "../../models/subscription.js";
+import FranchiseSubscriptionPlan from "../../models/franchase/franchiseSubscriptions.js";
 import Technician from "../../models/authModels/technician.js";
 import Franchise from "../../models/authModels/franchise.js";
+import Executive from "../../models/authModels/executive.js";
 import mongoose from "mongoose";
 import moment from "moment";
 
-export const addFranchiseAccount = async ({
+export const addExecutiveAccount = async ({
+  executiveId,
   franchiseId,
   technicianId,
   subscriptionId,
+  FranchiseSubscriptionId,
 }) => {
-  if (!franchiseId || !technicianId || !subscriptionId) {
+  const errors = [];
+
+  if (!executiveId) {
+    errors.push("ExecutiveId is required.");
+  }
+
+  if (!technicianId && !franchiseId) {
+    errors.push("Either TechnicianId or FranchiseId must be provided.");
+  }
+
+  if (technicianId && !subscriptionId) {
+    errors.push("SubscriptionId is required when TechnicianId is provided.");
+  }
+
+  if (franchiseId && !FranchiseSubscriptionId) {
+    errors.push("FranchiseSubscriptionId is required when FranchiseId is provided.");
+  }
+
+  if (errors.length > 0) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = [
-      "FranchiseId, TechnicianId, and SubscriptionId are required.",
-    ];
+    err.errors = errors;
     throw err;
   }
 
-  if (
-    !mongoose.Types.ObjectId.isValid(franchiseId) ||
-    !mongoose.Types.ObjectId.isValid(technicianId) ||
-    !mongoose.Types.ObjectId.isValid(subscriptionId)
-  ) {
+  const idErrors = [];
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    idErrors.push("Invalid ExecutiveId format.");
+  }
+  if (technicianId && !mongoose.Types.ObjectId.isValid(technicianId)) {
+    idErrors.push("Invalid TechnicianId format.");
+  }
+  if (franchiseId && !mongoose.Types.ObjectId.isValid(franchiseId)) {
+    idErrors.push("Invalid FranchiseId format.");
+  }
+  if (subscriptionId && !mongoose.Types.ObjectId.isValid(subscriptionId)) {
+    idErrors.push("Invalid SubscriptionId format.");
+  }
+  if (FranchiseSubscriptionId && !mongoose.Types.ObjectId.isValid(FranchiseSubscriptionId)) {
+    idErrors.push("Invalid FranchiseSubscriptionId format.");
+  }
+
+  if (idErrors.length > 0) {
     const err = new Error("Invalid ID format");
     err.statusCode = 400;
-    err.errors = ["FranchiseId, TechnicianId, or SubscriptionId is not valid."];
+    err.errors = idErrors;
     throw err;
   }
 
-  const franchise = await Franchise.findById(franchiseId);
-  if (!franchise) {
-    const err = new Error("Franchise not found");
+  const executive = await Executive.findById(executiveId);
+  if (!executive) {
+    const err = new Error("Executive not found");
     err.statusCode = 404;
-    err.errors = ["Franchise ID not found."];
+    err.errors = ["Executive ID not found."];
     throw err;
   }
 
-  const technician = await Technician.findById(technicianId);
-  if (!technician) {
-    const err = new Error("Technician not found");
-    err.statusCode = 404;
-    err.errors = ["Technician ID not found."];
-    throw err;
-  }
-
-  const subscription = await SubscriptionPlan.findById(subscriptionId);
-  if (!subscription) {
-    const err = new Error("Subscription not found");
-    err.statusCode = 404;
-    err.errors = ["Subscription ID not found."];
-    throw err;
-  }
-
-  const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({
-    technicianId,
-  });
   let planId = null;
-  if (techSubscriptionDetail?.subscriptions?.length > 0) {
-    const lastSub =
-      techSubscriptionDetail.subscriptions[
-        techSubscriptionDetail.subscriptions.length - 1
-      ];
-    planId = lastSub?._id?.toString();
+  let amount = null;
+
+  if (technicianId) {
+    const technician = await Technician.findById(technicianId);
+    if (!technician) {
+      const err = new Error("Technician not found");
+      err.statusCode = 404;
+      err.errors = ["Technician ID not found."];
+      throw err;
+    }
+
+    const subscription = await SubscriptionPlan.findById(subscriptionId);
+    if (!subscription) {
+      const err = new Error("Subscription not found");
+      err.statusCode = 404;
+      err.errors = ["Subscription ID not found."];
+      throw err;
+    }
+
+    const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({ technicianId });
+    if (techSubscriptionDetail?.subscriptions?.length > 0) {
+      const lastSub = techSubscriptionDetail.subscriptions[techSubscriptionDetail.subscriptions.length - 1];
+      planId = lastSub?._id?.toString();
+    }
+
+    amount = subscription?.commisionAmount
   }
 
-  const amount = subscription?.commisionAmount
-  // switch (subscription.name) {
-  //   case "Economy Plan":
-  //     amount = 300;
-  //     break;
-  //   case "Gold Plan":
-  //     amount = 300;
-  //     break;
-  //   case "Platinum Plan":
-  //     amount = 1000;
-  //     break;
-  // }
+  if (franchiseId) {
+    const franchise = await Franchise.findById(franchiseId);
+    if (!franchise) {
+      const err = new Error("Franchise not found");
+      err.statusCode = 404;
+      err.errors = ["Franchise ID not found."];
+      throw err;
+    }
+
+  }
+
   const newAccount = new FranchiseAccount({
     franchiseId,
     technicianId,
@@ -96,95 +129,7 @@ export const addFranchiseAccount = async ({
   };
 };
 
-// export const addFranchiseAccount = async ({
-//   franchiseId,
-//   technicianId,
-//   subscriptionId,
-// }) => {
-//   if (!franchiseId || !technicianId || !subscriptionId) {
-//     const err = new Error("Validation failed");
-//     err.statusCode = 401;
-//     err.errors = [
-//       "FranchiseId, TechnicianId, and SubscriptionId are required.",
-//     ];
-//     throw err;
-//   }
 
-//   if (
-//     !mongoose.Types.ObjectId.isValid(franchiseId) ||
-//     !mongoose.Types.ObjectId.isValid(technicianId) ||
-//     !mongoose.Types.ObjectId.isValid(subscriptionId)
-//   ) {
-//     const err = new Error("Invalid ID format");
-//     err.statusCode = 400;
-//     err.errors = ["FranchiseId, TechnicianId, or SubscriptionId is not valid."];
-//     throw err;
-//   }
-
-//   const franchise = await Franchise.findById(franchiseId);
-//   if (!franchise) {
-//     const err = new Error("Franchise not found");
-//     err.statusCode = 404;
-//     err.errors = ["Franchise ID not found."];
-//     throw err;
-//   }
-
-//   const technician = await Technician.findById(technicianId);
-//   if (!technician) {
-//     const err = new Error("Technician not found");
-//     err.statusCode = 404;
-//     err.errors = ["Technician ID not found."];
-//     throw err;
-//   }
-
-//   const subscription = await SubscriptionPlan.findById(subscriptionId);
-//   if (!subscription) {
-//     const err = new Error("Subscription not found");
-//     err.statusCode = 404;
-//     err.errors = ["Subscription ID not found."];
-//     throw err;
-//   }
-
-//   const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({
-//     technicianId,
-//   });
-//   let planId = null;
-//   if (techSubscriptionDetail?.subscriptions?.length > 0) {
-//     const lastSub =
-//       techSubscriptionDetail.subscriptions[
-//         techSubscriptionDetail.subscriptions.length - 1
-//       ];
-//     planId = lastSub?._id?.toString();
-//   }
-
-//   let amount = null;
-//   switch (subscription.name) {
-//     case "Economy Plan":
-//       amount = 300;
-//       break;
-//     case "Gold Plan":
-//       amount = 300;
-//       break;
-//     case "Platinum Plan":
-//       amount = 1000;
-//       break;
-//   }
-//   const newAccount = new FranchiseAccount({
-//     franchiseId,
-//     technicianId,
-//     subscriptionId,
-//     planId,
-//     amount,
-//   });
-
-//   await newAccount.save();
-
-//   return {
-//     success: true,
-//     message: "Account created successfully",
-//     newAccountDetails: newAccount,
-//   };
-// };
 
 export const getFranchiseAccount = async (franchiseId) => {
   if (!franchiseId) {

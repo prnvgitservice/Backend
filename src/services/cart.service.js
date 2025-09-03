@@ -3,10 +3,11 @@ import Services from '../models/technician/services.js';
 import CaregoryServices from '../models/caregoryServices.js';
 import mongoose from "mongoose";
 import User from "../models/authModels/user.js";
+import Technician from '../models/authModels/technician.js';
 
-export const addToCartService = async ({userId, serviceId, quantity}) => {
+export const addToCartService = async ({userId, serviceId, technicianId, quantity}) => {
 
-  if (!serviceId || !userId || !quantity) {
+  if (!technicianId || !serviceId || !userId || !quantity) {
       const err = new Error("Validation failed");
       err.statusCode = 401;
       err.errors = ["Service Id, User Id, Quatity, Booking Date all are required."];
@@ -20,6 +21,20 @@ export const addToCartService = async ({userId, serviceId, quantity}) => {
       err.errors = ["Provided Service ID is not valid."];
       throw err;
     }
+
+if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Invalid Technician ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+    const findTechnician = await Technician.findById(technicianId);
+      if (!findTechnician) {
+       const err = new Error("Technician not found");
+      err.statusCode = 404;
+      err.errors = ["Technician ID Not Found"];
+      throw err;
+      }
   
     const service = await CaregoryServices.findById(serviceId);
     if (!service) {
@@ -40,6 +55,7 @@ export const addToCartService = async ({userId, serviceId, quantity}) => {
   let cart = await Cart.findOne({ userId });
 
   const itemData = {
+    technicianId,
     serviceId,
     quantity,
     status: 'upcoming',
@@ -123,11 +139,11 @@ export const getCartService = async ({ userId }) => {
 };
 
 
-export const removeFromCartService = async ({ userId, serviceId }) => {
-  if (!serviceId || !userId) {
+export const removeFromCartService = async ({ technicianId, userId, serviceId }) => {
+  if (!serviceId || !userId || !technicianId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Service ID and User ID are required."];
+    err.errors = ["Service ID, User ID and Technician ID are required."];
     throw err;
   }
 
@@ -135,6 +151,14 @@ export const removeFromCartService = async ({ userId, serviceId }) => {
     const err = new Error("Invalid Service ID format");
     err.statusCode = 400;
     err.errors = ["Provided Service ID is not valid."];
+    throw err;
+  }
+
+  const findTechnician = await Technician.findById(technicianId);
+  if (!findTechnician) {
+    const err = new Error("Invalid Technician ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
     throw err;
   }
 
@@ -148,7 +172,7 @@ export const removeFromCartService = async ({ userId, serviceId }) => {
 
   const initialLength = cart.items.length;
   cart.items = cart.items.filter(
-    item => item.serviceId.toString() !== serviceId
+    item => item.serviceId.toString() !== serviceId && item.technicianId.toString() !== technicianId
   );
 
   if (cart.items.length === initialLength) {
