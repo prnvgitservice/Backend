@@ -124,10 +124,51 @@ export const loginExecutive = async ({ phoneNumber, password }) => {
   };
 };
 
+export const getExecutiveProfile = async (id) => {
+  if (!id) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Executive ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const err = new Error("Invalid Executive ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Executive ID is not valid."];
+    throw err;
+  }
+
+  const executive = await Executive.findById(id);
+  if (!executive) {
+    const err = new Error("Executive not found.");
+    err.statusCode = 404;
+    err.errors = ["Executive not found with this ID."];
+    throw err;
+  }
+
+  // const executiveSubDetails = await Executive.findOne({
+  //   id: executive._id,
+  // });
+
+  return {
+    id: executive._id,
+    executivename: executive.executivename,
+    executiveId: executive.executiveId,
+    phoneNumber: executive.phoneNumber,
+    role: executive.role,
+    buildingName: executive.buildingName,
+    areaName: executive.areaName,
+    city: executive.city,
+    state: executive.state,
+    pincode: executive.pincode,
+    profileImage: executive.profileImage,
+  };
+};
 
 export const updateExecutive = async ({
   executiveId,
-  username,
+  executivename,
   password,
   buildingName,
   areaName,
@@ -211,62 +252,6 @@ export const updateExecutive = async ({
     pincode: executive.pincode,
     description: executive.description,
     profileImage: executive.profileImage,
-  };
-};
-
-export const getExecutiveProfile = async (executiveId) => {
-  if (!executiveId) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = ["Executive ID is required."];
-    throw err;
-  }
-
-  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
-    const err = new Error("Invalid Executive ID format.");
-    err.statusCode = 400;
-    err.errors = ["Provided Executive ID is not valid."];
-    throw err;
-  }
-
-  const executive = await Executive.findById(executiveId);
-  if (!executive) {
-    const err = new Error("Executive not found.");
-    err.statusCode = 404;
-    err.errors = ["Executive not found."];
-    throw err;
-  }
-
-  const executiveSubDetails = await ExecutiveSubscription.findOne({
-    executiveId,
-  });
-
-  let lastSubscription = null;
-  if (
-    executiveSubDetails &&
-    Array.isArray(executiveSubDetails.subscriptions) &&
-    executiveSubDetails.subscriptions.length > 0
-  ) {
-    lastSubscription =
-      executiveSubDetails.subscriptions[
-      executiveSubDetails.subscriptions.length - 1
-      ];
-  }
-
-  return {
-    id: executive._id,
-    username: executive.username,
-    executiveId: executive.executiveId,
-    phoneNumber: executive.phoneNumber,
-    role: executive.role,
-    buildingName: executive.buildingName,
-    areaName: executive.areaName,
-    city: executive.city,
-    state: executive.state,
-    pincode: executive.pincode,
-    description: executive.description,
-    profileImage: executive.profileImage,
-    lastSubscription: lastSubscription,
   };
 };
 

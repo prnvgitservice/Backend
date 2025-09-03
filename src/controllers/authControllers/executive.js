@@ -1,4 +1,4 @@
-import { loginExecutive, registerExecutive } from "../../services/authServices/executive.js";
+import { getExecutiveProfile, loginExecutive, registerExecutive } from "../../services/authServices/executive.js";
 
 
 const generatedSequrityCodes = new Set();
@@ -53,6 +53,21 @@ export const loginExecutiveController = async (req, res, next) => {
   }
 };
 
+export const getExecutiveProfileControl = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const result = await getExecutiveProfile(id);
+    res.status(200).json({
+      success: true,
+      message: "Executive profile fetched successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateFranchiseControl = async (req, res, next) => {
   const filesArray = req.files || [];
   const filesMap = {};
@@ -77,23 +92,6 @@ export const updateFranchiseControl = async (req, res, next) => {
       result,
     });
   } catch (err) {
-    next(err);
-  }
-};
-
-
-export const getFranchiseProfileControl = async (req, res, next) => {
-  try {
-    const {franchiseId} = req.params;
-
-    const result = await franchise.getFranchiseProfile(franchiseId);
-    res.status(201).json({
-      success: true,
-      message: "Franchise profile fetched successfully.",
-      result,
-    });
-  } catch (err) {
-
     next(err);
   }
 };
