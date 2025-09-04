@@ -1,4 +1,3 @@
-
 import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
@@ -73,6 +72,9 @@ export const registerExecutive = async ({
     pincode,
   });
   await executive.save();
+  return {
+    executive,
+  };
 };
 
 export const loginExecutive = async ({ phoneNumber, password }) => {
@@ -168,13 +170,13 @@ export const updateExecutive = async ({
   password,
   buildingName,
   areaName,
-  city, 
+  city,
   state,
   pincode,
   files,
 }) => {
   const errors = [];
- if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     const err = new Error("Invalid Executive ID");
     err.statusCode = 400;
     throw err;
@@ -240,7 +242,6 @@ export const updateExecutive = async ({
   };
 };
 
-
 export const getAllExecutives = async ({ offset = 0, limit = 10 }) => {
   const skip = parseInt(offset, 10);
   const pageSize = parseInt(limit, 10);
@@ -277,7 +278,6 @@ export const getAllExecutives = async ({ offset = 0, limit = 10 }) => {
     })),
   };
 };
-
 
 export const deleteExecutive = async (id) => {
   if (!id) {
@@ -318,5 +318,3 @@ export const deleteExecutive = async (id) => {
     executivename: executive.executivename,
   };
 };
-
-

@@ -67,33 +67,30 @@ export const addFranchiseAccount = async ({
     planId = lastSub?._id?.toString();
   }
 
-  const amount = subscription?.commisionAmount
-  // switch (subscription.name) {
-  //   case "Economy Plan":
-  //     amount = 300;
-  //     break;
-  //   case "Gold Plan":
-  //     amount = 300;
-  //     break;
-  //   case "Platinum Plan":
-  //     amount = 1000;
-  //     break;
-  // }
-  const newAccount = new FranchiseAccount({
-    franchiseId,
-    technicianId,
-    subscriptionId,
-    planId,
-    amount,
-  });
+  const amount = subscription?.commisionAmount;
 
-  await newAccount.save();
+  if (amount != 0 || amount != null) {
+    const newAccount = new FranchiseAccount({
+      franchiseId,
+      technicianId,
+      subscriptionId,
+      planId,
+      amount,
+    });
 
-  return {
-    success: true,
-    message: "Account created successfully",
-    newAccountDetails: newAccount,
-  };
+    await newAccount.save();
+
+    return {
+      success: true,
+      message: "Account created successfully",
+      newAccountDetails: newAccount,
+    };
+  } else {
+    return {
+      success: true,
+      message: "No Commision found for this Subscription",
+    };
+  }
 };
 
 // export const addFranchiseAccount = async ({

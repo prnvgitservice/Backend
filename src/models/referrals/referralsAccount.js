@@ -2,11 +2,11 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
-const ExecutiveAccountSchema = new Schema(
+const ReferralsAccountSchema = new Schema(
   {
-    executiveId: {
+    referralsId: {
       type: Schema.Types.ObjectId,
-      ref: "Executive",
+      ref: "Referrals",
       required: true,
     },
     subscriptionId: {
@@ -30,9 +30,9 @@ const ExecutiveAccountSchema = new Schema(
       ref: "Technician",
       required: false,
     },
-    referralsId: {
+    executiveId: {
       type: Schema.Types.ObjectId,
-      ref: "Referrals",
+      ref: "Executive",
       required: false,
     },
   },
@@ -41,4 +41,4 @@ const ExecutiveAccountSchema = new Schema(
   }
 );
 
-export default model("ExecutiveAccount", ExecutiveAccountSchema);
+export default model("ReferralsAccount", ReferralsAccountSchema);

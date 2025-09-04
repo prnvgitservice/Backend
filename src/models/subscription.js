@@ -92,6 +92,14 @@ const subscriptionSchema = new Schema(
       type: Number,
       required: true,
     },
+    refExecutiveCommisionAmount:{
+      type: Number,
+      required: true,
+    },
+    referalCommisionAmount:{
+      type: Number,
+      required: true,
+    }
   },
   {
     timestamps: true,

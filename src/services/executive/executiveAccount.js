@@ -78,32 +78,42 @@ export const addExecutiveAccount = async ({
       throw err;
     }
 
-    const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({ technicianId });
+    const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({
+      technicianId,
+    });
     if (techSubscriptionDetail?.subscriptions?.length > 0) {
-      const lastSub = techSubscriptionDetail.subscriptions[techSubscriptionDetail.subscriptions.length - 1];
+      const lastSub =
+        techSubscriptionDetail.subscriptions[
+          techSubscriptionDetail.subscriptions.length - 1
+        ];
       planId = lastSub?._id?.toString();
     }
 
-    amount = subscription?.executiveCommissionAmount
+    amount = subscription?.executiveCommissionAmount;
   }
 
-  const newAccount = new ExecutiveAccount({
-    technicianId,
-    subscriptionId,
-    planId,
-    amount,
-  });
+  if (amount != 0 || amount != null) {
+    const newAccount = new ExecutiveAccount({
+      technicianId,
+      subscriptionId,
+      planId,
+      amount,
+    });
+    await newAccount.save();
 
-  await newAccount.save();
-
-  return {
-    success: true,
-    message: "Account created successfully",
-    newAccountDetails: newAccount,
-  };
+    return {
+      success: true,
+      message: "Account created successfully",
+      newAccountDetails: newAccount,
+    };
+  } else {
+    return {
+      success: true,
+      message: "No Commition for this Subscription",
+      s,
+    };
+  }
 };
-
-
 
 export const getExecutiveAccount = async (executiveId) => {
   if (!executiveId) {

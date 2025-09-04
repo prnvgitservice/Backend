@@ -3,7 +3,7 @@ import referral from "../../models/authModels/referral";
 import referral from "../../models/authModels/referral";
 
 export const registerReferralByExecutive = async ({
-executiveId,
+  executiveId,
   referralId,
   referralName,
   phoneNumber,
@@ -92,31 +92,31 @@ executiveId,
     state,
     pincode,
     bankName,
-  accountNumber,
-  ifscCode,
-  branchName,
+    accountNumber,
+    ifscCode,
+    branchName,
   });
 
   await referral.save();
-  // return {
-  //   id: technician._id,
-  //   franchiseId: technician.franchiseId,
-  //   userId: technician.userId,
-  //   username: technician.username,
-  //   phoneNumber: technician.phoneNumber,
-  //   role: technician.role,
-  //   category: technician.category,
-  //   buildingName: technician.buildingName,
-  //   areaName: technician.areaName,
-  //   subAreaName: technician.subAreaName,
-  //   city: technician.city,
-  //   state: technician.state,
-  //   pincode: technician.pincode,
-  //   plan: subscription?._id || null,
-  //   categoryServices: technician.categoryServices,
-  //   result: result.subscription,
-  //   franhiseAccount: franhiseAccount.newAccountDetails,
-  // };
+  return {
+    id: technician._id,
+    franchiseId: technician.franchiseId,
+    userId: technician.userId,
+    username: technician.username,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    plan: subscription?._id || null,
+    categoryServices: technician.categoryServices,
+    result: result.subscription,
+    franhiseAccount: franhiseAccount.newAccountDetails,
+  };
 };
 
 export const registerReferral = async ({
@@ -156,7 +156,7 @@ export const registerReferral = async ({
     err.errors = ["All Fields Required."];
     throw err;
   }
- 
+
   if (!/^\d{10}$/.test(phoneNumber)) {
     errors.push("Phone number must be exactly 10 digits.");
   }
@@ -188,9 +188,9 @@ export const registerReferral = async ({
     state,
     pincode,
     bankName,
-  accountNumber,
-  ifscCode,
-  branchName,
+    accountNumber,
+    ifscCode,
+    branchName,
   });
   await referral.save();
 };
@@ -205,9 +205,7 @@ export const loginReferral = async ({ phoneNumber, password }) => {
 
   const errors = [];
 
-  const referral = await Referral.findOne({ phoneNumber }).select(
-    "+password"
-  );
+  const referral = await Referral.findOne({ phoneNumber }).select("+password");
   if (!referral) {
     errors.push("Referral not found with this phone number.");
   }
@@ -431,7 +429,7 @@ export const getTReferralsByExeId = async (executiveId) => {
     throw err;
   }
 
-    return {
+  return {
     id: referral._id,
     referralId: referral.referralId,
     referralName: referral.referralName,
@@ -448,9 +446,6 @@ export const getTReferralsByExeId = async (executiveId) => {
     profileImage: referral.profileImage,
   };
 };
-
-
-
 
 // export const updateTechnician = async ({
 //   technicianId,
