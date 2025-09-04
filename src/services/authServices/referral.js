@@ -1,6 +1,9 @@
-import executive from "../../models/authModels/executive.js";
-import referral from "../../models/authModels/referral.js";
-import executiveAccount from "../../models/executive/executiveAccount.js";
+// import executive from "../../models/authModels/executive.js";
+import Referral from "../../models/authModels/referral.js";
+import Executive from "../../models/authModels/executive.js";
+import mongoose from "mongoose";
+import { generateToken } from "../../utils/generateToken.js";
+// import executiveAccount from "../../models/executive/executiveAccount.js";
 
 export const registerReferralByExecutive = async ({
   executiveId,
@@ -50,7 +53,7 @@ export const registerReferralByExecutive = async ({
     errors.push("Password must be between 6 and 20 characters.");
   }
 
-  const phoneExists = await referral.findOne({ phoneNumber });
+  const phoneExists = await Referral.findOne({ phoneNumber });
   if (phoneExists) {
     // errors.push("Phone number already exists.");
     const err = new Error("Referral with this phone number already exists");
@@ -65,7 +68,7 @@ export const registerReferralByExecutive = async ({
     throw err;
   }
 
-  const executive = await executive.findById(executiveId);
+  const executive = await Executive.findById(executiveId);
   if (!executive) {
     const err = new Error("Executive not found");
     err.statusCode = 404;
@@ -98,9 +101,60 @@ export const registerReferralByExecutive = async ({
   });
 
   await referral.save();
+  return referral;
+  // return {
+  //   id: referral._id,
+  //   executiveId: referral.executiveId,
+  //   referralId: referral.referralId,
+  //   referralName: referral.referralName,
+  //   phoneNumber: referral.phoneNumber,
+  //   buildingName: referral.buildingName,
+  //   areaName: referral.areaName,
+  //   city: referral.city,
+  //   state: referral.state,
+  //   pincode: referral.pincode,
+  //   bankName : referral.bankName,
+  //   accountNumber: referral.accountNumber,
+  //   ifscCode: referral.ifscCode,
+  //   branchName: referral.branchName,
+  //   executiveAccount: executiveAccount.newAccountDetails,
+  // };
+};
+
+export const loginReferral = async ({ phoneNumber, password }) => {
+  if (!phoneNumber || !password) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Phone number and password are required."];
+    throw err;
+  }
+
+  const errors = [];
+
+  const referral = await Referral.findOne({ phoneNumber }).select("+password");
+  if (!referral) {
+    errors.push("Referral not found with this phone number.");
+  }
+
+  let isMatch = false;
+  if (referral) {
+    isMatch = await referral.isPasswordMatch(password);
+    if (!isMatch) {
+      errors.push("Invalid credentials.");
+    }
+  }
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+  const token = generateToken(referral);
+
   return {
     id: referral._id,
-    executiveId: referral.executiveId,
     referralId: referral.referralId,
     referralName: referral.referralName,
     phoneNumber: referral.phoneNumber,
@@ -109,11 +163,11 @@ export const registerReferralByExecutive = async ({
     city: referral.city,
     state: referral.state,
     pincode: referral.pincode,
-    bankName : referral.bankName,
+    bankName: referral.bankName,
     accountNumber: referral.accountNumber,
     ifscCode: referral.ifscCode,
     branchName: referral.branchName,
-    executiveAccount: executiveAccount.newAccountDetails,
+    token,
   };
 };
 
@@ -193,55 +247,6 @@ export const registerReferral = async ({
   await referral.save();
 };
 
-export const loginReferral = async ({ phoneNumber, password }) => {
-  if (!phoneNumber || !password) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = ["Phone number and password are required."];
-    throw err;
-  }
-
-  const errors = [];
-
-  const referral = await Referral.findOne({ phoneNumber }).select("+password");
-  if (!referral) {
-    errors.push("Referral not found with this phone number.");
-  }
-
-  let isMatch = false;
-  if (referral) {
-    isMatch = await referral.isPasswordMatch(password);
-    if (!isMatch) {
-      errors.push("Invalid credentials.");
-    }
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
-  }
-
-  const token = generateToken(referral);
-
-  return {
-    id: referral._id,
-    referralId: referral.referralId,
-    referralName: referral.referralName,
-    phoneNumber: referral.phoneNumber,
-    buildingName: referral.buildingName,
-    areaName: referral.areaName,
-    city: referral.city,
-    state: referral.state,
-    pincode: referral.pincode,
-    bankName: referral.bankName,
-    accountNumber: referral.accountNumber,
-    ifscCode: referral.ifscCode,
-    branchName: referral.branchName,
-    token,
-  };
-};
 
 // export const registerReferralByAdmin = async ({
 //   userId,
@@ -418,9 +423,9 @@ export const getReferralsByExeId = async (executiveId) => {
     throw err;
   }
 
-  const referrals = await Referral.find({ executiveId });
+  const referral = await Referral.find({ executiveId });
 
-  if (!referrals || referrals.length === 0) {
+  if (!referral || referral.length === 0) {
     const err = new Error("No referrals found for this executive.");
     err.statusCode = 404;
     err.errors = ["No referrals associated with this Executive ID."];

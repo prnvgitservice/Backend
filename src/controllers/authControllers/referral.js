@@ -1,4 +1,4 @@
-import {  getReferralsByExeId, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral.js";
+import {  getReferralsByExeId, loginReferral, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral.js";
 
 const generatedSequrityCodes = new Set();
 
@@ -9,7 +9,7 @@ const generateSequrityCode = () => {
   do {
     sequrityCode = "PRNV-R";
     numberOfNumbers = 0;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 5; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
       const randomChar = characters[randomIndex];
       if (/\d/.test(randomChar)) {
@@ -38,6 +38,19 @@ export const registerRefByExeController = async (
     res.status(201).json({
       success: true,
       message: "Referral Registered By Executive successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const loginReferralController = async (req, res, next) => {
+  try {
+    const result = await loginReferral(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Referral Login successfully.",
       result,
     });
   } catch (err) {
@@ -80,18 +93,7 @@ export const registerReferralController = async (req, res, next) => {
 // };
 
 
-export const loginReferralController = async (req, res, next) => {
-  try {
-    const result = await loginReferral(req.body);
-    res.status(201).json({
-      success: true,
-      message: "Referral Login successfully.",
-      result,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+
 
 export const getReferralsByExeIdCont = async (
   req,
