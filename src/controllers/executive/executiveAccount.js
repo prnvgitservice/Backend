@@ -1,4 +1,4 @@
-import { getExecutiveAccount } from "../../services/executive/executiveAccount";
+import { getExecutiveAccount } from "../../services/executive/executiveAccount.js";
 
 export const getExecutiveAccountController = async (req, res, next) => {
   try {

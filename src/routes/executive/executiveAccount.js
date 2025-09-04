@@ -1,5 +1,5 @@
 import express from "express";
-import { getExecutiveAccountController } from "../../controllers/executive/executiveAccount";
+import { getExecutiveAccountController } from "../../controllers/executive/executiveAccount.js";
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
-import executive from "../../models/authModels/executive";
-import referral from "../../models/authModels/referral";
-import referral from "../../models/authModels/referral";
+import executive from "../../models/authModels/executive.js";
+import referral from "../../models/authModels/referral.js";
+import executiveAccount from "../../models/executive/executiveAccount.js";
 
 export const registerReferralByExecutive = async ({
   executiveId,
@@ -99,23 +99,21 @@ export const registerReferralByExecutive = async ({
 
   await referral.save();
   return {
-    id: technician._id,
-    franchiseId: technician.franchiseId,
-    userId: technician.userId,
-    username: technician.username,
-    phoneNumber: technician.phoneNumber,
-    role: technician.role,
-    category: technician.category,
-    buildingName: technician.buildingName,
-    areaName: technician.areaName,
-    subAreaName: technician.subAreaName,
-    city: technician.city,
-    state: technician.state,
-    pincode: technician.pincode,
-    plan: subscription?._id || null,
-    categoryServices: technician.categoryServices,
-    result: result.subscription,
-    franhiseAccount: franhiseAccount.newAccountDetails,
+    id: referral._id,
+    executiveId: referral.executiveId,
+    referralId: referral.referralId,
+    referralName: referral.referralName,
+    phoneNumber: referral.phoneNumber,
+    buildingName: referral.buildingName,
+    areaName: referral.areaName,
+    city: referral.city,
+    state: referral.state,
+    pincode: referral.pincode,
+    bankName : referral.bankName,
+    accountNumber: referral.accountNumber,
+    ifscCode: referral.ifscCode,
+    branchName: referral.branchName,
+    executiveAccount: executiveAccount.newAccountDetails,
   };
 };
 

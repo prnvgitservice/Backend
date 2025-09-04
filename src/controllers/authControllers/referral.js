@@ -1,4 +1,4 @@
-import { getTReferralsByExeId, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral";
+import { getTReferralsByExeId, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral.js";
 
 const generatedSequrityCodes = new Set();
 
