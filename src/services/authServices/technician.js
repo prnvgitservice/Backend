@@ -1109,7 +1109,6 @@ export const getTechnicianProfile = async (technicianId) => {
   };
 };
 
-
 export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
   if (!franchiseId) {
     const err = new Error("Validation failed");
