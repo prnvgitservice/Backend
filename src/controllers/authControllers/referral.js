@@ -1,4 +1,4 @@
-import { getTReferralsByExeId, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral.js";
+import {  getReferralsByExeId, registerReferral, registerReferralByExecutive } from "../../services/authServices/referral.js";
 
 const generatedSequrityCodes = new Set();
 
@@ -100,7 +100,7 @@ export const getReferralsByExeIdCont = async (
 ) => {
   try {
     const { executiveId } = req.params;
-    const result = await getTReferralsByExeId(
+    const result = await getReferralsByExeId(
       executiveId
     );
     res.status(201).json({

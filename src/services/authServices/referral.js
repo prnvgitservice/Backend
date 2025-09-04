@@ -403,7 +403,7 @@ export const loginReferral = async ({ phoneNumber, password }) => {
 //   };
 // };
 
-export const getTReferralsByExeId = async (executiveId) => {
+export const getReferralsByExeId = async (executiveId) => {
   if (!executiveId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
