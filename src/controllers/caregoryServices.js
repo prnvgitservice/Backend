@@ -64,7 +64,7 @@ export const updateServiceControl = async (req, res, next) => {
 export const getServicesByCateIdControl = async (req, res, next) => {
   try {
     const {categoryId} = req.params;
-    const result = await caregoryServices.getServicesByTechId({categoryId});
+    const result = await caregoryServices.getServicesByCategoryId({categoryId});
     res.status(201).json({
       success: true,
       message: "Category Services By Techinicians fetched successfully.",

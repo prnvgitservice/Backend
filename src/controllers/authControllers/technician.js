@@ -172,6 +172,25 @@ export const getTechnicianProfilesByFranchiseIdCont = async (
     next(err);
   }
 };
+export const getTechnicianProfilesByExecutiveIdCont = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { executiveId } = req.params;
+    const result = await technician.getTechnicianProfilesByExecutiveId(
+      executiveId
+    );
+    res.status(201).json({
+      success: true,
+      message: "Technicians profile fetched by Executive successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const getAllTechnicianController = async (req, res, next) => {
   try {
