@@ -10,7 +10,7 @@ export const addToCartService = async ({userId, serviceId, technicianId, quantit
   if (!technicianId || !serviceId || !userId || !quantity) {
       const err = new Error("Validation failed");
       err.statusCode = 401;
-      err.errors = ["Service Id, User Id, Quatity, Booking Date all are required."];
+      err.errors = ["Technician Id, Service Id, User Id, Quantity, all are required."];
       throw err;
     }
   
@@ -74,9 +74,9 @@ if (!mongoose.Types.ObjectId.isValid(technicianId)) {
       cart.items.push(itemData);
     }
   }
-
-   await cart.save();
-    return {
+  console.log("cart", cart);
+  await cart.save();
+  return {
     id: cart._id,
     userId: cart.userId,
     items: cart.items,
@@ -113,8 +113,7 @@ export const getCartService = async ({ userId }) => {
     err.errors = ["Cart Not Found For This User Id"];
     throw err;
   }
-
-  // Map cart items with service details
+  console.log("cart", cart);
   const detailedItems = await Promise.all(
     cart.items.map(async (item) => {
       const service = await CaregoryServices.findById(item.serviceId).select(
@@ -125,6 +124,7 @@ export const getCartService = async ({ userId }) => {
         _id: item._id,
         serviceId: item.serviceId,
         quantity: item.quantity,
+        technicianId: item?.technicianId || null,
         serviceName: service?.serviceName || null,
         serviceImg: service?.serviceImg || null,
         servicePrice: service?.servicePrice || null,
