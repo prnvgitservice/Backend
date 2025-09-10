@@ -186,7 +186,7 @@ export const removeFromCartService = async ({ technicianId, userId, serviceId })
 
   return {
     message: "Service removed from cart successfully",
-    cartId: cart._id,
+    cartId: cart._id,  
     userId: cart.userId,
     items: cart.items,
   };
