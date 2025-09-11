@@ -118,8 +118,8 @@ export const BookingStatusByTechnicianCont = async (req, res, next) => {
     const result = await BookingService.BookingStatusByTechnician(req.body);
     res.status(201).json({
       success: true,
-      message: result.message,
-      result: result.booking,
+      message: result?.message,
+      result: result?.booking,
       updatedSubscription: result.updatedSubscription || null,
     });
   } catch (err) {
@@ -133,7 +133,7 @@ export const getAllBookingsController = async (req, res, next) => {
     const result = await BookingService.getAllBookings({ offset, limit });
     res.status(201).json({
       success: true,
-      message: result.message,
+      message: result?.message,
       result: result,
     });
   } catch (err) {

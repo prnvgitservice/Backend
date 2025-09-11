@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 export const addCagegorySearchDetails = async ({
   categoryId,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
@@ -14,10 +15,11 @@ export const addCagegorySearchDetails = async ({
 }) => {
   if (
     !categoryId ||
-    !areaName ||
+    // !areaName ||
+    // !subAreaName ||
     !city ||
     !state ||
-    !pincode ||
+    // !pincode ||
     !meta_title ||
     !meta_description ||
     !seo_content
@@ -25,7 +27,7 @@ export const addCagegorySearchDetails = async ({
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = [
-      "CategoryId, Area, City, State, Pincode and Data fields are all required.",
+      "CategoryId, City, State and Data fields are all required.",
     ];
     throw err;
   }
@@ -48,6 +50,7 @@ export const addCagegorySearchDetails = async ({
   const existingSearch = await SearchContentData.findOne({
     categoryId,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -63,6 +66,7 @@ export const addCagegorySearchDetails = async ({
   const searchData = new SearchContentData({
     categoryId,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -77,6 +81,7 @@ export const addCagegorySearchDetails = async ({
     id: searchData._id,
     categoryId: searchData.categoryId,
     areaName: searchData.areaName,
+    subAreaName: searchData.subAreaName,
     city: searchData.city,
     state: searchData.state,
     pincode: searchData.pincode,
@@ -91,15 +96,16 @@ export const addCagegorySearchDetails = async ({
 export const getSearchContentByLocation = async ({
   categoryId,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
 }) => {
-  if (!categoryId || !areaName || !city || !state || !pincode) {
+  if (!categoryId || !city || !state) {
     const err = new Error("Validation failed");
     err.statusCode = 400;
     err.errors = [
-      "All location parameters (categoryId, areaName, city, state, pincode) are required",
+      "All location parameters (categoryId, city, state) are required",
     ];
     throw err;
   }
@@ -114,6 +120,7 @@ export const getSearchContentByLocation = async ({
   const searchContent = await SearchContentData.findOne({
     categoryId,
     areaName,
+    subAreaName,
     city,
     state,
     pincode,
@@ -130,6 +137,7 @@ export const getSearchContentByLocation = async ({
     id: searchContent._id,
     categoryId: searchContent.categoryId,
     areaName: searchContent.areaName,
+    subAreaName: searchContent.subAreaName,
     city: searchContent.city,
     state: searchContent.state,
     pincode: searchContent.pincode,
@@ -146,6 +154,7 @@ export const updateCagegorySearchDetails = async ({
   searchContentDataId,
   categoryId,
   areaName,
+  subAreaName,
   city,
   state,
   pincode,
@@ -177,6 +186,7 @@ export const updateCagegorySearchDetails = async ({
 
   if (categoryId) existingData.categoryId = categoryId;
   if (areaName) existingData.areaName = areaName;
+  if (subAreaName) existingData.subAreaName = subAreaName;
   if (city) existingData.city = city;
   if (state) existingData.state = state;
   if (pincode) existingData.pincode = pincode;
@@ -191,6 +201,7 @@ export const updateCagegorySearchDetails = async ({
     id: existingData._id,
     categoryId: existingData.categoryId,
     areaName: existingData.areaName,
+    subAreaName: existingData.subAreaName,
     city: existingData.city,
     state: existingData.state,
     pincode: existingData.pincode,
@@ -259,6 +270,7 @@ export const getAllSearchContents = async ({ offset = 0, limit = 10 }) => {
       categoryId: item.categoryId?._id || null,
       categoryName: item.categoryId?.category_name || null,
       areaName: item.areaName,
+      subAreaName: item.subAreaName,
       city: item.city,
       state: item.state,
       pincode: item.pincode,

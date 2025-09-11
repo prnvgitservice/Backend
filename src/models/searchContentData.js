@@ -21,10 +21,11 @@ const searchContentDataSchema = new Schema(
       ref: "Category",
       required: true,
     },
-    areaName: { type: String, required: true },
+    areaName: { type: String },
+    subAreaName: { type: String },
     city: { type: String, required: true },
     state: { type: String, required: true },
-    pincode: { type: String, required: true },
+    pincode: { type: String},
     meta_title: {
       type: String,
       default: "",

@@ -170,13 +170,14 @@ export const getAllTechniciansByCateId = async ({
 export const getAllTechByAdd = async ({
   pincode,
   areaName,
+  subAreaName,
   categoryId,
   city,
 }) => {
-  if (!categoryId || !pincode || !areaName || !city) {
+  if (!categoryId || !city) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
-    err.errors = ["Category ID, Pincode, City and Area fields are required."];
+    err.errors = ["Category ID and City fields are required."];
     throw err;
   }
 
@@ -199,6 +200,7 @@ export const getAllTechByAdd = async ({
     category: categoryId,
     pincode: pincode,
     areaName: areaName,
+    subAreaName: subAreaName,
     city: city,
   });
 
