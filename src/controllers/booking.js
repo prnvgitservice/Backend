@@ -120,7 +120,7 @@ export const BookingStatusByTechnicianCont = async (req, res, next) => {
       success: true,
       message: result?.message,
       result: result?.booking,
-      updatedSubscription: result.updatedSubscription || null,
+      updatedSubscription: result?.updatedSubscription || null,
     });
   } catch (err) {
     next(err);
