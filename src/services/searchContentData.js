@@ -243,6 +243,108 @@ export const deleteCategorySearchDetails = async ({ searchContentDataId }) => {
   };
 };
 
+// export const getSeosByCategoryId = async ({ categoryId }) => {
+//   if (!categoryId) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = ["Category Id field is required."];
+//     throw err;
+//   }
+
+//   if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+//     const err = new Error("Invalid Category ID format");
+//     err.statusCode = 400;
+//     err.errors = ["Provided Category ID is not valid."];
+//     throw err;
+//   }
+
+//   const category = await Category.findById(categoryId);
+//   if (!category) {
+//     const err = new Error("Category not found");
+//     err.statusCode = 404;
+//     throw err;
+//   }
+
+//     const seoContent = await SearchContentData.find({ categoryId });
+//   if (!seoContent || seoContent.length === 0) {
+//     const err = new Error("SEO Content not found For this Category Id");
+//     err.statusCode = 404;
+//     throw err;
+//   }
+
+//   return {
+//     seoContent,
+//   };
+// };
+
+
+
+export const getSeoContentsByCategoryId = async ({ categoryId, offset = 0, limit = 10 }) => {
+  if (!categoryId) {
+    const err = new Error("Category ID is required");
+    err.statusCode = 400;
+    err.errors = ["Category ID field is missing."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+     const err = new Error("Invalid Category ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Category ID is not valid."];
+    throw err;
+  }
+
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+     const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
+  const category = await Category.findById(categoryId);
+   if (!category) {
+    const err = new Error("Category not found");
+    err.statusCode = 404;
+    throw err;
+  }
+  // Fetch SEO contents
+  const total = await SearchContentData.countDocuments({ categoryId });
+  const seoContents = await SearchContentData.find({ categoryId })
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 });
+
+  if (!seoContents || seoContents.length === 0) {
+   const err = new Error("No SEO Content found for this Category");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  return {
+    total,
+    offset: skip,
+    limit: pageSize,
+    results: seoContents.map((item) => ({
+      id: item._id,
+      categoryId: item.categoryId,
+      areaName: item.areaName,
+      subAreaName: item.subAreaName,
+      city: item.city,
+      state: item.state,
+      pincode: item.pincode,
+      meta_title: item.meta_title,
+      meta_description: item.meta_description,
+      seo_content: item.seo_content,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    })),
+  };
+};
+
+
 export const getAllSearchContents = async ({ offset = 0, limit = 10 }) => {
   const skip = parseInt(offset, 10);
   const pageSize = parseInt(limit, 10);
@@ -259,7 +361,7 @@ export const getAllSearchContents = async ({ offset = 0, limit = 10 }) => {
     .skip(skip)
     .limit(pageSize)
     .sort({ createdAt: -1 })
-    .populate("categoryId", "category_name"); // Optional: populate category name
+    .populate("categoryId", "category_name");
 
   return {
     total,

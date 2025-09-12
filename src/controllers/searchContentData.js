@@ -66,10 +66,32 @@ export const getAllSearchContentsController = async (req, res, next) => {
     });
     res.status(201).json({
       success: true,
-      message: "Search Content Data Deleted Successfully.",
+      message: "Search Content Data Fetched Successfully.",
       result,
     });
   } catch (err) {
     next(err);
   }
 };
+
+export const getSeoContentsByCategoryIdCont = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const { offset, limit } = req.query;
+
+    const result = await searchContentData.getSeoContentsByCategoryId({
+      categoryId,
+      offset,
+      limit,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "SEO Contents fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
