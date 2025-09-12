@@ -223,7 +223,7 @@ export const editProfile = async (updateData) => {
 
     const oldUrl = user.profileImage;
     if (oldUrl) {
-      const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+      const match = oldUrl?.match(/\/([^/]+)\.[a-z]+$/i);
       const publicId = match ? `UserProfiles/${match[1]}` : null;
       if (publicId) {
         await cloudinary.uploader.destroy(publicId);
@@ -235,7 +235,7 @@ export const editProfile = async (updateData) => {
     });
     fs.unlinkSync(filePath);
 
-    user.profileImage = uploadResult.secure_url;
+    user.profileImage = uploadResult?.secure_url;
   }
 
   if (errors.length > 0) {
