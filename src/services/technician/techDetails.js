@@ -196,13 +196,22 @@ export const getAllTechByAdd = async ({
     throw err;
   }
 
-  const technicians = await Technician.find({
-    category: categoryId,
-    pincode: pincode,
-    areaName: areaName,
-    subAreaName: subAreaName,
-    city: city,
-  });
+  // const technicians = await Technician.find({
+  //   category: categoryId,
+  //   pincode: pincode,
+  //   areaName: areaName,
+  //   subAreaName: subAreaName,
+  //   city: city,
+  // });
+
+  const query = { category: categoryId, city };
+
+if (pincode) query.pincode = String(pincode);
+if (areaName) query.areaName = areaName;
+if (subAreaName) query.subAreaName = subAreaName;
+
+const technicians = await Technician.find(query);
+
 
   const validTechnicians = [];
 
