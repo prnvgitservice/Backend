@@ -315,7 +315,7 @@ export const getSeoContentsByCategoryId = async ({ categoryId, offset = 0, limit
   const seoContents = await SearchContentData.find({ categoryId })
     .skip(skip)
     .limit(pageSize)
-    .sort({ createdAt: -1 });
+    .sort({ pincode: 1 });
 
   if (!seoContents || seoContents.length === 0) {
    const err = new Error("No SEO Content found for this Category");
