@@ -247,7 +247,6 @@ export const registerReferral = async ({
   await referral.save();
 };
 
-
 // export const registerReferralByAdmin = async ({
 //   userId,
 //   username,
@@ -432,22 +431,26 @@ export const getReferralsByExeId = async (executiveId) => {
     throw err;
   }
 
-  return {
-    id: referral._id,
-    referralId: referral.referralId,
-    referralName: referral.referralName,
-    phoneNumber: referral.phoneNumber,
-    buildingName: referral.buildingName,
-    areaName: referral.areaName,
-    city: referral.city,
-    state: referral.state,
-    pincode: referral.pincode,
-    bankName: referral.bankName,
-    accountNumber: referral.accountNumber,
-    ifscCode: referral.ifscCode,
-    branchName: referral.branchName,
-    profileImage: referral.profileImage,
-  };
+  const result = referral.map((referral) => {
+    return {
+      id: referral._id,
+      referralId: referral.referralId,
+      referralName: referral.referralName,
+      phoneNumber: referral.phoneNumber,
+      buildingName: referral.buildingName,
+      areaName: referral.areaName,
+      city: referral.city,
+      state: referral.state,
+      pincode: referral.pincode,
+      bankName: referral.bankName,
+      accountNumber: referral.accountNumber,
+      ifscCode: referral.ifscCode,
+      branchName: referral.branchName,
+      profileImage: referral.profileImage,
+    };
+  });
+
+  return result;
 };
 
 // export const updateTechnician = async ({
