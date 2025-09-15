@@ -117,14 +117,22 @@ export const getSearchContentByLocation = async ({
     throw err;
   }
 
-  const searchContent = await SearchContentData.findOne({
-    categoryId,
-    areaName,
-    subAreaName,
-    city,
-    state,
-    pincode,
-  });
+  // const searchContent = await SearchContentData.findOne({
+  //   categoryId,
+  //   areaName,
+  //   subAreaName,
+  //   city,
+  //   state,
+  //   pincode,
+  // });
+
+   const query = { categoryId, city };
+
+if (pincode) query.pincode = String(pincode);
+if (areaName) query.areaName = areaName;
+if (subAreaName) query.subAreaName = subAreaName;
+
+const searchContent = await SearchContentData.findOne(query);
 
   if (!searchContent) {
     const err = new Error("Search content not found");
