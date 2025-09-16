@@ -1,8 +1,12 @@
 import express from "express";
-import { getExecutiveAccountController } from "../../controllers/executive/executiveAccount.js";
+import { getExecutiveAccountController, getExecutiveAccountValuesCont } from "../../controllers/executive/executiveAccount.js";
 
 const router = express.Router();
 
 router.get("/:executiveId", getExecutiveAccountController);
+router.get(
+  "/getExecutiveAccountValues/:executiveId",
+  getExecutiveAccountValuesCont
+);
 
 export default router;
