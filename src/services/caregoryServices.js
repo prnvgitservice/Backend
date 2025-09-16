@@ -220,7 +220,7 @@ export const deleteServicesById = async (serviceId) => {
 };
 
 
-export const getServicesByTechId = async ({ categoryId }) => {
+export const getServicesByCategoryId = async ({ categoryId }) => {
   if (!categoryId) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -248,6 +248,40 @@ export const getServicesByTechId = async ({ categoryId }) => {
     err.statusCode = 404;
     throw err;
   }
+
+  return {
+    service,
+  };
+};
+
+export const getServicesByCategoryIdForTech = async ({ categoryId }) => {
+  if (!categoryId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Category Id field is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+    const err = new Error("Invalid Category ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Category ID is not valid."];
+    throw err;
+  }
+
+  const category = await Category.findById(categoryId);
+  if (!category) {
+    const err = new Error("Category not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  const service = await CaregoryServices.find({ categoryId });
+  // if (!service || service.length === 0) {
+  //   const err = new Error("Service not found For this Category Id");
+  //   err.statusCode = 404;
+  //   throw err;
+  // }
 
   return {
     service,

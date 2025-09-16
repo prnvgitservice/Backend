@@ -3,6 +3,7 @@ import {
   changeServiceStatusController,
   deleteTechnicianByIdController,
   getAllTechnicianController,
+  getTechnicianProfilesByExecutiveIdCont,
   getTechnicianProfilesByFranchiseIdCont,
   getTechProfileControl,
   loginTechnicianController,
@@ -65,6 +66,12 @@ router.get(
   //   requireSignIn
   //   franchaiseMiddleware,
   getTechnicianProfilesByFranchiseIdCont
+);
+router.get(
+  "/getTechProfilesByExecutiveId/:executiveId",
+  //   requireSignIn
+  //   franchaiseMiddleware,
+  getTechnicianProfilesByExecutiveIdCont
 );
 
 router.delete(

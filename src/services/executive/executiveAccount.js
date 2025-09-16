@@ -11,6 +11,10 @@ export const addExecutiveAccount = async ({
   technicianId,
   subscriptionId,
 }) => {
+
+  console.log("===>",executiveId,
+  technicianId,
+  subscriptionId)
   const errors = [];
 
   if (!executiveId) {
@@ -94,6 +98,7 @@ export const addExecutiveAccount = async ({
 
   if (amount != 0 || amount != null) {
     const newAccount = new ExecutiveAccount({
+      executiveId,
       technicianId,
       subscriptionId,
       planId,
@@ -110,7 +115,6 @@ export const addExecutiveAccount = async ({
     return {
       success: true,
       message: "No Commition for this Subscription",
-      s,
     };
   }
 };

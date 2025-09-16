@@ -10,7 +10,7 @@ import Franchise from "../../models/authModels/franchise.js";
 import Executive from "../../models/authModels/executive.js";
 import { addFranchiseAccount } from "../franchase/franchiseAccount.js";
 import CaregoryServices from "../../models/caregoryServices.js";
-import { getServicesByTechId } from "../caregoryServices.js";
+import { getServicesByCategoryIdForTech } from "../caregoryServices.js";
 import { addExecutiveAccount } from "../executive/executiveAccount.js";
 import { addReferralsAccount } from "../referrals/referralsAccounts.js";
 
@@ -87,7 +87,7 @@ export const registerTechnician = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByTechId({ categoryId: category });
+    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
   }
 
   const technician = new Technician({
@@ -227,14 +227,7 @@ export const registerTechnicianByFranchaise = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByTechId({ categoryId: category });
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
+    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
   }
 
   const technician = new Technician({
@@ -384,14 +377,7 @@ export const registerTechnicianByExecutive = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByTechId({ categoryId: category });
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
+    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
   }
 
   const technician = new Technician({
@@ -429,7 +415,7 @@ export const registerTechnicianByExecutive = async ({
 
   let executiveAccount = null;
   if (result) {
-    Account = await addExecutiveAccount({
+    executiveAccount = await addExecutiveAccount({
       executiveId,
       technicianId: technician._id.toString(),
       subscriptionId,
@@ -541,14 +527,7 @@ export const registerTechnicianByReferrals = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByTechId({ categoryId: category });
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
+    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
   }
 
   const technician = new Technician({
@@ -699,14 +678,7 @@ export const registerTechnicianByAdmin = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByTechId({ categoryId: category });
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
+    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
   }
 
   const technician = new Technician({
@@ -1152,6 +1124,73 @@ export const getTechnicianProfilesByFranchiseId = async (franchiseId) => {
       return {
         id: technician._id,
         franchiseId: technician.franchiseId,
+        username: technician.username,
+        userId: technician.userId,
+        phoneNumber: technician.phoneNumber,
+        role: technician.role,
+        category: technician.category,
+        buildingName: technician.buildingName,
+        areaName: technician.areaName,
+        subAreaName: technician.subAreaName,
+        city: technician.city,
+        state: technician.state,
+        pincode: technician.pincode,
+        description: technician.description,
+        service: technician.service,
+        profileImage: technician.profileImage,
+        subscription: lastSubscription || null,
+        admin: technician.admin,
+        categoryServices: technician.categoryServices,
+      };
+    })
+  );
+
+  return results;
+};
+
+export const getTechnicianProfilesByExecutiveId = async (executiveId) => {
+  if (!executiveId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["Executive ID is required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(executiveId)) {
+    const err = new Error("Invalid Executive ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Executive ID is not valid."];
+    throw err;
+  }
+
+  const technicians = await Technician.find({ executiveId });
+
+  if (!technicians || technicians.length === 0) {
+    const err = new Error("No technicians found for this executive.");
+    err.statusCode = 404;
+    err.errors = ["No technician profiles associated with this Executive ID."];
+    throw err;
+  }
+
+  const results = await Promise.all(
+    technicians.map(async (technician) => {
+      const techSubDetails = await TechSubscriptionsDetail.findOne({
+        technicianId: technician._id,
+      });
+
+      let lastSubscription = null;
+      if (
+        techSubDetails &&
+        Array.isArray(techSubDetails.subscriptions) &&
+        techSubDetails.subscriptions.length > 0
+      ) {
+        lastSubscription =
+          techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
+      }
+
+      return {
+        id: technician._id,
+        executiveId: technician.executiveId,
         username: technician.username,
         userId: technician.userId,
         phoneNumber: technician.phoneNumber,
