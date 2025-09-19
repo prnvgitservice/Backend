@@ -2,7 +2,8 @@
 FROM node:18
 
 # Set working directory inside container
-WORKDIR /app
+# WORKDIR /app
+WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json first
 COPY package*.json ./
@@ -17,4 +18,5 @@ COPY . .
 EXPOSE 8080
 
 # Start the app
-CMD ["npm", "start"]
+# CMD ["npm", "start"]
+CMD ["node", "server.js"]

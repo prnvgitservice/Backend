@@ -1,10 +1,11 @@
 import app from './app.js';
 import { v2 as cloudinary } from 'cloudinary';
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 app.get('/', (req, res) => {
-  res.send('🚀 Server is running successfully!');
+  res.send('🚀 Hello from Cloud Run');
+  // res.send('🚀 Server is running successfully!');
 });
 
 app.listen(PORT, () => {
