@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Services from '../../models/technician/services.js';
+import CategoryService from '../../models/caregoryServices.js'
 import Technician from '../../models/authModels/technician.js';
 import Review from '../../models/technician/reviewsAndRatings.js';
 import User from "../../models/authModels/user.js";
@@ -38,7 +39,7 @@ export const userAddReview = async ({
     err.statusCode = 404;
     throw err;
   }
-  const service = await Services.findById(serviceId);
+  const service = await Services.findById(serviceId) || await CategoryService.findById(serviceId);
   if (!service) {
     const err = new Error("Service not found");
     err.statusCode = 404;
