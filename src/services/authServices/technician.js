@@ -14,6 +14,8 @@ import { getServicesByCategoryIdForTech } from "../caregoryServices.js";
 import { addExecutiveAccount } from "../executive/executiveAccount.js";
 import { addReferralsAccount } from "../referrals/referralsAccounts.js";
 import category from "../../models/category.js";
+import Review from '../../models/technician/reviewsAndRatings.js';
+
 
 export const registerTechnician = async ({
   userId,
@@ -1057,6 +1059,9 @@ export const getTechnicianProfile = async (technicianId) => {
     technicianId,
   });
 
+    const ratings = await Review.find({ technicianId });
+  
+
   let lastSubscription = null;
   if (
     techSubDetails &&
@@ -1087,6 +1092,7 @@ export const getTechnicianProfile = async (technicianId) => {
     profileImage: technician.profileImage,
     subscription: lastSubscription || null,
     admin: technician.admin,
+    ratings: ratings,
     categoryServices: technician.categoryServices,
   };
 };
