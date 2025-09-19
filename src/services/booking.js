@@ -328,6 +328,7 @@ export const BookingStatusByTechnician = async ({
     const err = new Error("Unauthorized action");
     err.statusCode = 403;
     err.errors = ["Booking has already been completed."];
+      err.booking = booking; 
     throw err;
   }
 
@@ -335,6 +336,7 @@ export const BookingStatusByTechnician = async ({
     const err = new Error("Unauthorized action");
     err.statusCode = 403;
     err.errors = [`Booking is already ${status}`];
+     err.booking = booking; 
     throw err;
   }
 
@@ -369,35 +371,65 @@ export const BookingStatusByTechnician = async ({
     const lastSub =
       techSubDetails.subscriptions[techSubDetails.subscriptions.length - 1];
 
-    if (lastSub.endDate && !lastSub.leads) {
-      return;
-    }
+  //   if (lastSub.endDate && !lastSub.leads) {
+  //     return;
+  //   }
 
-    if (lastSub.leads && !lastSub.endDate) {
-      const allBookings = await BookingService.find({
-        technicianId,
-        createdAt: { $gte: new Date(lastSub.startDate) },
-      });
+  //   if (lastSub.leads && !lastSub.endDate) {
+  //     const allBookings = await BookingService.find({
+  //       technicianId,
+  //       createdAt: { $gte: new Date(lastSub.startDate) },
+  //     });
 
-      const completedOrStartedBookings = allBookings.filter((b) =>
-        ["completed", "started"].includes(b.status)
-      );
+  //     const completedOrStartedBookings = allBookings.filter((b) =>
+  //       ["completed", "started"].includes(b.status)
+  //     );
 
-      const currentCount = completedOrStartedBookings.length;
+  //     const currentCount = completedOrStartedBookings.length;
 
-      if (currentCount >= lastSub.leads) {
-        const err = new Error("Lead limit exceeded");
-        err.statusCode = 403;
-        err.errors = [
-          `Lead limit of ${lastSub.leads} exceeded. Cannot complete more bookings.`,
-        ];
-        throw err;
+  //     if (currentCount >= lastSub.leads) {
+  //       const err = new Error("Lead limit exceeded");
+  //       err.statusCode = 403;
+  //       err.errors = [
+  //         `Lead limit of ${lastSub.leads} exceeded. Cannot complete more bookings.`,
+  //       ];
+  //       throw err;
+  //     }
+
+  //     lastSub.ordersCount = currentCount + 1;
+  //     await techSubDetails.save();
+
+  //     updatedSubInfo = lastSub;
+  //   }
+  // }
+  // If subscription ended with no leads, do nothing but still return success response
+    if (!(lastSub.endDate && !lastSub.leads)) {
+      if (lastSub.leads && !lastSub.endDate) {
+        const allBookings = await BookingService.find({
+          technicianId,
+          createdAt: { $gte: new Date(lastSub.startDate) },
+        });
+
+        const completedOrStartedBookings = allBookings.filter((b) =>
+          ["completed", "started"].includes(b.status)
+        );
+
+        const currentCount = completedOrStartedBookings.length;
+
+        if (currentCount >= lastSub.leads) {
+          const err = new Error("Lead limit exceeded");
+          err.statusCode = 403;
+          err.errors = [
+            `Lead limit of ${lastSub.leads} exceeded. Cannot complete more bookings.`,
+          ];
+          throw err;
+        }
+
+        lastSub.ordersCount = currentCount + 1;
+        await techSubDetails.save();
+
+        updatedSubInfo = lastSub;
       }
-
-      lastSub.ordersCount = currentCount + 1;
-      await techSubDetails.save();
-
-      updatedSubInfo = lastSub;
     }
   }
 
