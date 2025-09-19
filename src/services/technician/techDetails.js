@@ -50,7 +50,7 @@ export const getTechAllDetails = async (technicianId) => {
 
   const services = await Services.find({ technicianId });
   const technicianImages = await TechnicianImages.findOne({ technicianId });
-  const ratings = await RatingsAndReviews.findOne({ technicianId });
+  const ratings = await RatingsAndReviews.find({ technicianId });
 
   return {
     technician: {
@@ -138,7 +138,7 @@ export const getAllTechniciansByCateId = async ({
       const technicianImages = await TechnicianImages.findOne({
         technicianId: technician._id,
       });
-      const ratings = await RatingsAndReviews.findOne({
+      const ratings = await RatingsAndReviews.find({
         technicianId: technician._id,
       });
 

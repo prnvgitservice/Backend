@@ -13,6 +13,7 @@ import CaregoryServices from "../../models/caregoryServices.js";
 import { getServicesByCategoryIdForTech } from "../caregoryServices.js";
 import { addExecutiveAccount } from "../executive/executiveAccount.js";
 import { addReferralsAccount } from "../referrals/referralsAccounts.js";
+import category from "../../models/category.js";
 
 export const registerTechnician = async ({
   userId,
@@ -1044,6 +1045,14 @@ export const getTechnicianProfile = async (technicianId) => {
     throw err;
   }
 
+   const categories = await category.findById(technician.category)
+  if (!categories) {
+    const err = new Error("category not found");
+    err.statusCode = 404;
+    err.errors = ["category ID Not Found."];
+    throw err;
+  }
+
   const techSubDetails = await TechSubscriptionsDetail.findOne({
     technicianId,
   });
@@ -1066,6 +1075,7 @@ export const getTechnicianProfile = async (technicianId) => {
     phoneNumber: technician.phoneNumber,
     role: technician.role,
     category: technician.category,
+    categoryName: categories.category_name,
     buildingName: technician.buildingName,
     areaName: technician.areaName,
     subAreaName: technician.subAreaName,
