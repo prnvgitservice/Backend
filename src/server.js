@@ -13,15 +13,30 @@ app.listen(PORT, () => {
   console.log(`http://localhost:${PORT}`);
 });
 
- cloudinary.config({
-  cloud_name: `${process.env.CLOUD_NAME}`,
-  api_key: `${process.env.CLOUD_API_KEY}`,
-  api_secret: `${process.env.CLOUD_API_SECRET}`,
+//  cloudinary.config({
+//   cloud_name: `${process.env.CLOUD_NAME}`,
+//   api_key: `${process.env.CLOUD_API_KEY}`,
+//   api_secret: `${process.env.CLOUD_API_SECRET}`,
+// });
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
 });
-cloudinary.api.ping((err, result) => {
-  if (err) {
-    console.error("Cloudinary Connection Failed:", err);
-  } else {
-    console.log("Cloudinary Connected Successfully");
-  }
-});
+
+// cloudinary.api.ping((err, result) => {
+//   if (err) {
+//     console.error("Cloudinary Connection Failed:", err);
+//   } else {
+//     console.log("Cloudinary Connected Successfully");
+//   }
+// });
+setTimeout(() => {
+  cloudinary.api.ping((err, result) => {
+    if (err) {
+      console.error("⚠️ Cloudinary Connection Failed:", err.message);
+    } else {
+      console.log("✅ Cloudinary Connected Successfully");
+    }
+  });
+}, 2000);
