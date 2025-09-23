@@ -126,10 +126,10 @@ export const getSearchContentByLocation = async ({
   //   pincode,
   // });
 
-   const query = { categoryId, city };
+   const query = {areaName, categoryId, city };
 
 if (pincode) query.pincode = String(pincode);
-if (areaName) query.areaName = areaName;
+// if (areaName) query.areaName = areaName;
 if (subAreaName) query.subAreaName = subAreaName;
 
 const searchContent = await SearchContentData.findOne(query);
