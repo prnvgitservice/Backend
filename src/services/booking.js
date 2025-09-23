@@ -531,12 +531,12 @@ export const getBookServiceByTechnicianIdDashboard = async ({
   }
 
   const bookings = await BookingService.find({ technicianId });
-  if (!bookings || bookings.length === 0) {
-    const err = new Error("Bookings not found");
-    err.statusCode = 404;
-    err.errors = ["Bookings Not Found For This Technician ID"];
-    throw err;
-  }
+  // if (!bookings || bookings.length === 0) {
+  //   const err = new Error("Bookings not found");
+  //   err.statusCode = 404;
+  //   err.errors = ["Bookings Not Found For This Technician ID"];
+  //   throw err;
+  // }
 
   // Calculate stats
   const totalBookings = bookings.length;
