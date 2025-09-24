@@ -6,6 +6,7 @@ import RatingsAndReviews from "../../models/technician/reviewsAndRatings.js";
 import Category from "../../models/category.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import CategoryServices from "../../models/caregoryServices.js";
+import user from "../../models/authModels/user.js";
 
 export const getTechAllDetails = async (technicianId) => {
   if (!technicianId) {
@@ -52,6 +53,29 @@ export const getTechAllDetails = async (technicianId) => {
   const technicianImages = await TechnicianImages.findOne({ technicianId });
   const ratings = await RatingsAndReviews.find({ technicianId });
 
+  const userIds = ratings.map((rating) => rating.userId);
+  const users = await user.find(
+    { _id: { $in: userIds } },
+    "username profileImage"
+  ).lean();
+  const userMap = new Map(users.map((user) => [user._id.toString(), user]));
+  const populatedRatings = ratings.map((rating) => {
+    const user = userMap.get(rating.userId.toString());
+    return {
+      _id: rating._id,
+      technicianId:rating.technicianId ,
+      userId: rating.userId ,
+      serviceId:rating.serviceId,
+      review: rating.review,
+      rating: rating.rating,
+      createdAt: rating.createdAt,
+      updatedAt: rating.updatedAt,
+      __v: rating.__v,
+      username: user ? user.username : null,
+      profileImage: user ? user.profileImage || "" : String,
+    };
+  });
+
   return {
     technician: {
       ...technician.toObject(),
@@ -59,7 +83,7 @@ export const getTechAllDetails = async (technicianId) => {
     },
     services,
     technicianImages,
-    ratings,
+    ratings: populatedRatings,
   };
 };
 
@@ -206,12 +230,11 @@ export const getAllTechByAdd = async ({
 
   const query = { category: categoryId, city };
 
-if (pincode) query.pincode = String(pincode);
-if (areaName) query.areaName = areaName;
-if (subAreaName) query.subAreaName = subAreaName;
+  if (pincode) query.pincode = String(pincode);
+  if (areaName) query.areaName = areaName;
+  if (subAreaName) query.subAreaName = subAreaName;
 
-const technicians = await Technician.find(query);
-
+  const technicians = await Technician.find(query);
 
   const validTechnicians = [];
 
@@ -242,7 +265,7 @@ const technicians = await Technician.find(query);
       const technicianImages = await TechnicianImages.findOne({
         technicianId: technician._id,
       });
-      const ratings = await RatingsAndReviews.findOne({
+      const ratings = await RatingsAndReviews.find({
         technicianId: technician._id,
       });
 
