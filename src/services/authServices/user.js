@@ -156,6 +156,7 @@ export const getProfile = async (userId) => {
     id: user._id,
     username: user.username,
     phoneNumber: user.phoneNumber,
+    profileImage: user.profileImage,
     role: user.role,
     buildingName: user.buildingName,
     areaName: user.areaName,
