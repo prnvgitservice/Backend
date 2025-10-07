@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import SubscriptionPlan from "../models/subscription.js";
 import createError from "http-errors";
 
