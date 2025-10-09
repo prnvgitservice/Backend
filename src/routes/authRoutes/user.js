@@ -17,6 +17,7 @@ router.post("/registerUserByAdmin", register);
 router.post("/login", login);
 router.get("/profile/:id", getProfile);
 router.put("/editProfile", uploadWithValidation, editProfile);
+router.put("/editProfileByAdmin", uploadWithValidation, editProfile);
 router.get("/getAllUsers", uploadWithValidation, getAllUsersController);
 router.delete("/deleteUserById/:userId", deleteUserByIdController);
 router.delete(

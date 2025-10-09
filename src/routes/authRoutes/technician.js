@@ -34,6 +34,13 @@ router.put(
   uploadWithValidation,
   updateTechnicianControl
 );
+
+router.put(
+  "/updateTechByAdmin",
+  uploadWithValidation,
+  updateTechnicianControl
+);
+
 router.put(
   "/updateTechByFranchaise",
   //   requireSignIn
@@ -80,8 +87,8 @@ router.delete(
 );
 router.delete(
   "/deleteTechnicianByAdmin/:technicianId",
-  requireSignIn,
-  adminMiddleware,
+  // requireSignIn,
+  // adminMiddleware,
   deleteTechnicianByIdController
 );
 

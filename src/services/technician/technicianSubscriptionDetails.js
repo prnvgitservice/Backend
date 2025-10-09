@@ -117,6 +117,102 @@ export const addTechSubscriptionPlan = async ({
   };
 };
 
+
+export const updateSubscriptionPlan = async ({
+  technicianId,
+  subscriptionId,
+}) => {
+  if (!technicianId || !subscriptionId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["TechnicianId and SubscriptionId are required."];
+    throw err;
+  }
+
+  if (
+    !mongoose.Types.ObjectId.isValid(technicianId) ||
+    !mongoose.Types.ObjectId.isValid(subscriptionId)
+  ) {
+    const err = new Error("Invalid Technician or Subscription ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician or Subscription ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found"];
+    throw err;
+  }
+
+  const subscription = await SubscriptionPlan.findById(subscriptionId);
+  if (!subscription) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID Not Found"];
+    throw err;
+  }
+
+  const now = new Date();
+  const updatedSubscriptionData = {
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name,
+    startDate: now,
+    endDate: null,
+    leads: null,
+    ordersCount: 0,
+  };
+
+  if (subscription.validity) {
+    updatedSubscriptionData.endDate = new Date(
+      now.getTime() + subscription.validity * 24 * 60 * 60 * 1000
+    );
+  }
+
+  if (subscription.leads != null) {
+    updatedSubscriptionData.leads = subscription.leads;
+  }
+
+  const techSubscriptionDetail = await TechSubscriptionsDetail.findOne({
+    technicianId,
+  });
+
+  if (!techSubscriptionDetail || !techSubscriptionDetail.subscriptions?.length) {
+    const err = new Error("No existing subscription to update");
+    err.statusCode = 404;
+    err.errors = ["Technician has no subscriptions."];
+    throw err;
+  }
+
+  const lastSub =
+    techSubscriptionDetail.subscriptions[
+      techSubscriptionDetail.subscriptions.length - 1
+    ];
+
+  // Enforce: Only update if current (last) subscription is a Free Plan
+  // (Prevent updates for paid plans; allow upgrades/renewals from Free only)
+  if (lastSub?.subscriptionName?.toLowerCase() !== "free plan") {
+    const err = new Error("Cannot update paid plan");
+    err.statusCode = 409;
+    err.errors = ["Updates are only allowed for current Free Plan."];
+    throw err;
+  }
+
+  // Update the last subscription with new data (upgrade/renewal to any plan)
+  // This overwrites in-place for simplicity; future changes to plans are fetched dynamically
+  Object.assign(lastSub, updatedSubscriptionData);
+  await techSubscriptionDetail.save();
+
+  return {
+    success: true,
+    message: "Subscription plan updated successfully",
+    subscription: lastSub,
+  };
+};
+
+
 export const getTechSubscriptionPlan = async (technicianId) => {
   if (!technicianId) {
     const err = new Error("Validation failed");

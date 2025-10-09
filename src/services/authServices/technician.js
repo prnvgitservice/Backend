@@ -4,7 +4,7 @@ import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
+import { addTechSubscriptionPlan, getTechSubscriptionPlan, updateSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import Franchise from "../../models/authModels/franchise.js";
 import Executive from "../../models/authModels/executive.js";
@@ -15,6 +15,8 @@ import { addExecutiveAccount } from "../executive/executiveAccount.js";
 import { addReferralsAccount } from "../referrals/referralsAccounts.js";
 import category from "../../models/category.js";
 import Review from '../../models/technician/reviewsAndRatings.js';
+import subscription from "../../models/subscription.js";
+import { get } from "http";
 
 
 export const registerTechnician = async ({
@@ -939,6 +941,7 @@ export const updateTechnician = async ({
   state,
   pincode,
   description,
+  subscriptionId,
   service,
   files,
 }) => {
@@ -965,6 +968,8 @@ export const updateTechnician = async ({
     throw err;
   }
 
+  
+
   if (files.profileImage?.[0]) {
     const filePath = files.profileImage[0].path;
 
@@ -983,6 +988,14 @@ export const updateTechnician = async ({
     fs.unlinkSync(filePath);
 
     technician.profileImage = uploadResult.secure_url;
+  }
+
+  const subscriptionDetail = await updateSubscriptionPlan({
+    technicianId: technician._id,
+    subscriptionId,
+  });
+  if (subscriptionDetail && subscriptionDetail.error) {
+    errors.push(subscriptionDetail.error);
   }
 
   if (username) technician.username = username;
@@ -1021,7 +1034,8 @@ export const updateTechnician = async ({
     description: technician.description,
     service: technician.service,
     profileImage: technician.profileImage,
-  };
+    subscriptionDetail: subscriptionDetail || null,
+    };
 };
 
 export const getTechnicianProfile = async (technicianId) => {
@@ -1248,6 +1262,16 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
     .limit(pageSize)
     .sort({ createdAt: -1 });
 
+const techDetails = await Promise.all(
+    technicians.map(async (technician) => {
+      const categoryDoc = await category.findById(technician.category); // Assuming model is 'Category' (capitalized)
+      const techSubDetails = await getTechSubscriptionPlan(technician._id);
+      return {
+        categoryName: categoryDoc ? categoryDoc.category_name : null,
+        planDetails: techSubDetails.subscription || null,
+      };
+    })
+  );
   return {
     total: totalTechnicians,
     offset: skip,
@@ -1257,6 +1281,8 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
       username: technician.username,
       phoneNumber: technician.phoneNumber,
       role: technician.role,
+      userId: technician.userId,
+      category: technician.category,
       buildingName: technician.buildingName,
       areaName: technician.areaName,
       subAreaName: technician.subAreaName,
@@ -1265,7 +1291,10 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
       pincode: technician.pincode,
       profileImage: technician.profileImage,
       admin: technician.admin,
+      description: technician.description,
       categoryServices: technician.categoryServices,
+      createdAt: technician.createdAt,
+      techDetails: techDetails[technicians.indexOf(technician)],
     })),
   };
 };
