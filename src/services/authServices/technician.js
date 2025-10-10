@@ -19,8 +19,136 @@ import subscription from "../../models/subscription.js";
 import { get } from "http";
 
 
-export const registerTechnician = async ({
-  userId,
+// export const registerTechnician = async ({
+//   userId,
+//   username,
+//   phoneNumber,
+//   password,
+//   role = "technician",
+//   category,
+//   buildingName,
+//   areaName,
+//   subAreaName,
+//   city,
+//   state,
+//   pincode,
+//   subscriptionId,
+// }) => {
+//   const errors = [];
+
+//   if (
+//     !userId ||
+//     !username ||
+//     !phoneNumber ||
+//     !password ||
+//     !buildingName ||
+//     !areaName ||
+//     !role ||
+//     !category ||
+//     !city ||
+//     !state ||
+//     !subscriptionId ||
+//     !pincode
+//   ) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = ["All Fields Required."];
+//     throw err;
+//   }
+//   if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+//     const err = new Error("Invalid Subscription ID format.");
+//     err.statusCode = 400;
+//     err.errors = ["Provided Subscription ID is not valid."];
+//     throw err;
+//   }
+
+//   const subscription = await SubscriptionPlan.findById(subscriptionId);
+//   if (!subscription) {
+//     const err = new Error("Subscription not found");
+//     err.statusCode = 404;
+//     err.errors = ["Subscription ID not found."];
+//     throw err;
+//   }
+
+//   if (!/^\d{10}$/.test(phoneNumber)) {
+//     errors.push("Phone number must be exactly 10 digits.");
+//   }
+
+//   if (password?.length < 6 || password?.length > 20) {
+//     errors.push("Password must be between 6 and 20 characters.");
+//   }
+
+//   const phoneExists = await Technician.findOne({ phoneNumber });
+//   if (phoneExists) {
+//     errors.push("Phone number already exists.");
+//   }
+
+//   if (errors.length > 0) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = errors;
+//     throw err;
+//   }
+
+//   let caregoryServices = [];
+//   if (category) {
+//     caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+//   }
+
+//   const technician = new Technician({
+//     userId,
+//     username,
+//     phoneNumber,
+//     password,
+//     role,
+//     category,
+//     buildingName,
+//     areaName,
+//     subAreaName,
+//     city,
+//     state,
+//     pincode,
+//   });
+
+//   if (caregoryServices?.service?.length > 0) {
+//     technician.categoryServices = caregoryServices.service.map((srv) => ({
+//       categoryServiceId: srv._id,
+//       status: true,
+//     }));
+//   }
+
+//   await technician.save();
+
+//   // const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
+
+//   let result = null;
+//   if (subscription) {
+//     result = await addTechSubscriptionPlan({
+//       technicianId: technician._id,
+//       subscriptionId: subscription._id,
+//     });
+//   }
+
+//   return {
+//     id: technician._id,
+//     userId: technician.userId,
+//     username: technician.username,
+//     phoneNumber: technician.phoneNumber,
+//     role: technician.role,
+//     category: technician.category,
+//     buildingName: technician.buildingName,
+//     areaName: technician.areaName,
+//     subAreaName: technician.subAreaName,
+//     city: technician.city,
+//     state: technician.state,
+//     pincode: technician.pincode,
+//     plan: subscription?._id || null,
+//     categoryServices: technician.categoryServices,
+//     result: result.subscription,
+//   };
+// };
+
+export const registerTechnicianByAdmin = async ({
   username,
   phoneNumber,
   password,
@@ -32,12 +160,17 @@ export const registerTechnician = async ({
   city,
   state,
   pincode,
+  franchiseId,
   subscriptionId,
+  authorized1Phone,
+  authorized2Phone,
+  description,
+  service,
+  files,
 }) => {
   const errors = [];
 
   if (
-    !userId ||
     !username ||
     !phoneNumber ||
     !password ||
@@ -47,14 +180,82 @@ export const registerTechnician = async ({
     !category ||
     !city ||
     !state ||
+    !pincode ||
     !subscriptionId ||
-    !pincode
+    !authorized1Phone ||
+    !authorized2Phone
   ) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = ["All Fields Required."];
     throw err;
   }
+
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    errors.push("Phone number must be exactly 10 digits.");
+  }
+
+  if (!/^\d{10}$/.test(authorized1Phone)) {
+    errors.push("Authorized person 1 phone number must be exactly 10 digits.");
+  }
+
+  if (!/^\d{10}$/.test(authorized2Phone)) {
+    errors.push("Authorized person 2 phone number must be exactly 10 digits.");
+  }
+
+  if (password?.length < 6 || password?.length > 20) {
+    errors.push("Password must be between 6 and 20 characters.");
+  }
+
+  if (!files.aadharFront?.[0]) {
+    errors.push("Aadhar front image is required.");
+  }
+
+  if (!files.aadharBack?.[0]) {
+    errors.push("Aadhar back image is required.");
+  }
+
+  if (!files.panCard?.[0] && !files.voterCard?.[0]) {
+    errors.push("PAN card image or Voter card image is required.");
+  }
+
+  if (!files.auth1Photo?.[0]) {
+    errors.push("Authorized person 1 photo is required.");
+  }
+
+  if (!files.auth2Photo?.[0]) {
+    errors.push("Authorized person 2 photo is required.");
+  }
+
+  const phoneExists = await Technician.findOne({ phoneNumber });
+  if (phoneExists) {
+    errors.push("Phone number already exists.");
+  }
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 400;
+    err.errors = errors;
+    throw err;
+  }
+
+  if (franchiseId) {
+    if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+      const err = new Error("Invalid Franchise ID format.");
+      err.statusCode = 400;
+      err.errors = ["Provided Franchise ID is not valid."];
+      throw err;
+    }
+
+    const franchise = await Franchise.findById(franchiseId);
+    if (!franchise) {
+      const err = new Error("Franchise not found");
+      err.statusCode = 404;
+      err.errors = ["Franchise ID not found."];
+      throw err;
+    }
+  }
+
   if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
     const err = new Error("Invalid Subscription ID format.");
     err.statusCode = 400;
@@ -70,32 +271,16 @@ export const registerTechnician = async ({
     throw err;
   }
 
-  if (!/^\d{10}$/.test(phoneNumber)) {
-    errors.push("Phone number must be exactly 10 digits.");
-  }
-
-  if (password?.length < 6 || password?.length > 20) {
-    errors.push("Password must be between 6 and 20 characters.");
-  }
-
-  const phoneExists = await Technician.findOne({ phoneNumber });
-  if (phoneExists) {
-    errors.push("Phone number already exists.");
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = errors;
-    throw err;
-  }
-
-  let caregoryServices = [];
+  let categoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+    categoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
   }
+
+  // Generate userId if not provided
+  const userId = `TECH_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   const technician = new Technician({
+    franchiseId: franchiseId || null,
     userId,
     username,
     phoneNumber,
@@ -108,18 +293,98 @@ export const registerTechnician = async ({
     city,
     state,
     pincode,
+    description: description || '',
+    service: service || '',
+    admin: true,
   });
 
-  if (caregoryServices?.service?.length > 0) {
-    technician.categoryServices = caregoryServices.service.map((srv) => ({
+  if (categoryServices?.service?.length > 0) {
+    technician.categoryServices = categoryServices.service.map((srv) => ({
       categoryServiceId: srv._id,
       status: true,
     }));
   }
 
-  await technician.save();
+  // Upload Profile Image
+  if (files.profileImage?.[0]) {
+    const filePath = files.profileImage[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProfiles",
+    });
+    fs.unlinkSync(filePath);
+    technician.profileImage = uploadResult.secure_url;
+  }
 
-  // const subscription = await SubscriptionPlan.findOne({ name: "Free Plan" });
+  // Upload Aadhar front
+  if (files.aadharFront?.[0]) {
+    const filePath = files.aadharFront[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProofs/AadharFront",
+    });
+    fs.unlinkSync(filePath);
+    technician.aadharFront = uploadResult.secure_url;
+  }
+
+  // Upload Aadhar back
+  if (files.aadharBack?.[0]) {
+    const filePath = files.aadharBack[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProofs/AadharBack",
+    });
+    fs.unlinkSync(filePath);
+    technician.aadharBack = uploadResult.secure_url;
+  }
+
+  // Upload PAN card
+  if (files.panCard?.[0]) {
+    const filePath = files.panCard[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProofs/PanCard",
+    });
+    fs.unlinkSync(filePath);
+    technician.panCard = uploadResult.secure_url;
+  }
+
+  // Upload Voter card
+  if (files.voterCard?.[0]) {
+    const filePath = files.voterCard[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProofs/VoterCard",
+    });
+    fs.unlinkSync(filePath);
+    technician.voterCard = uploadResult.secure_url;
+  }
+
+  // Initialize authorized persons array
+  technician.authorizedPersons = [];
+
+  // Upload Authorized person 1 photo
+  if (files.auth1Photo?.[0]) {
+    const filePath = files.auth1Photo[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProofs/AuthorizedPersons",
+    });
+    fs.unlinkSync(filePath);
+    technician.authorizedPersons.push({
+      phone: authorized1Phone,
+      photo: uploadResult.secure_url,
+    });
+  }
+
+  // Upload Authorized person 2 photo
+  if (files.auth2Photo?.[0]) {
+    const filePath = files.auth2Photo[0].path;
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProofs/AuthorizedPersons",
+    });
+    fs.unlinkSync(filePath);
+    technician.authorizedPersons.push({
+      phone: authorized2Phone,
+      photo: uploadResult.secure_url,
+    });
+  }
+
+  await technician.save();
 
   let result = null;
   if (subscription) {
@@ -129,8 +394,18 @@ export const registerTechnician = async ({
     });
   }
 
+  let franchiseAccount = null;
+  if (result && franchiseId) {
+    franchiseAccount = await addFranchiseAccount({
+      franchiseId,
+      technicianId: technician._id.toString(),
+      subscriptionId,
+    });
+  }
+
   return {
     id: technician._id,
+    franchiseId: technician.franchiseId,
     userId: technician.userId,
     username: technician.username,
     phoneNumber: technician.phoneNumber,
@@ -142,9 +417,19 @@ export const registerTechnician = async ({
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
+    description: technician.description,
+    service: technician.service,
+    admin: technician.admin,
+    profileImage: technician.profileImage || null,
     plan: subscription?._id || null,
     categoryServices: technician.categoryServices,
-    result: result.subscription,
+    aadharFront: technician.aadharFront || null,
+    aadharBack: technician.aadharBack || null,
+    panCard: technician.panCard || null,
+    voterCard: technician.voterCard || null,
+    authorizedPersons: technician.authorizedPersons,
+    result: result?.subscription || null,
+    franchiseAccount: franchiseAccount?.newAccountDetails || null,
   };
 };
 
@@ -598,158 +883,158 @@ export const registerTechnicianByReferrals = async ({
   };
 };
 
-export const registerTechnicianByAdmin = async ({
-  userId,
-  username,
-  phoneNumber,
-  password,
-  role = "technician",
-  category,
-  buildingName,
-  areaName,
-  subAreaName,
-  city,
-  state,
-  pincode,
-  franchiseId,
-  subscriptionId,
-}) => {
-  const errors = [];
+// export const registerTechnicianByAdmin = async ({
+//   userId,
+//   username,
+//   phoneNumber,
+//   password,
+//   role = "technician",
+//   category,
+//   buildingName,
+//   areaName,
+//   subAreaName,
+//   city,
+//   state,
+//   pincode,
+//   franchiseId,
+//   subscriptionId,
+// }) => {
+//   const errors = [];
 
-  if (
-    !userId ||
-    !username ||
-    !phoneNumber ||
-    !password ||
-    !buildingName ||
-    !areaName ||
-    !role ||
-    !category ||
-    !city ||
-    !state ||
-    !pincode ||
-    !subscriptionId
-  ) {
-    const err = new Error("Validation failed");
-    err.statusCode = 401;
-    err.errors = ["All Fields Required."];
-    throw err;
-  }
+//   if (
+//     !userId ||
+//     !username ||
+//     !phoneNumber ||
+//     !password ||
+//     !buildingName ||
+//     !areaName ||
+//     !role ||
+//     !category ||
+//     !city ||
+//     !state ||
+//     !pincode ||
+//     !subscriptionId
+//   ) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = ["All Fields Required."];
+//     throw err;
+//   }
 
-  if (!/^\d{10}$/.test(phoneNumber)) {
-    errors.push("Phone number must be exactly 10 digits.");
-  }
+//   if (!/^\d{10}$/.test(phoneNumber)) {
+//     errors.push("Phone number must be exactly 10 digits.");
+//   }
 
-  if (password?.length < 6 || password?.length > 20) {
-    errors.push("Password must be between 6 and 20 characters.");
-  }
+//   if (password?.length < 6 || password?.length > 20) {
+//     errors.push("Password must be between 6 and 20 characters.");
+//   }
 
-  const phoneExists = await Technician.findOne({ phoneNumber });
-  if (phoneExists) {
-    errors.push("Phone number already exists.");
-  }
+//   const phoneExists = await Technician.findOne({ phoneNumber });
+//   if (phoneExists) {
+//     errors.push("Phone number already exists.");
+//   }
 
-  if (franchiseId) {
-    if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
-      const err = new Error("Invalid Franchise ID format.");
-      err.statusCode = 400;
-      err.errors = ["Provided Franchise ID is not valid."];
-      throw err;
-    }
+//   if (franchiseId) {
+//     if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+//       const err = new Error("Invalid Franchise ID format.");
+//       err.statusCode = 400;
+//       err.errors = ["Provided Franchise ID is not valid."];
+//       throw err;
+//     }
 
-    const franchise = await Franchise.findById(franchiseId);
-    if (!franchise) {
-      const err = new Error("Franchise not found");
-      err.statusCode = 404;
-      err.errors = ["Franchise ID not found."];
-      throw err;
-    }
-  }
+//     const franchise = await Franchise.findById(franchiseId);
+//     if (!franchise) {
+//       const err = new Error("Franchise not found");
+//       err.statusCode = 404;
+//       err.errors = ["Franchise ID not found."];
+//       throw err;
+//     }
+//   }
 
-  if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
-    const err = new Error("Invalid Subscription ID format.");
-    err.statusCode = 400;
-    err.errors = ["Provided Subscription ID is not valid."];
-    throw err;
-  }
+//   if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+//     const err = new Error("Invalid Subscription ID format.");
+//     err.statusCode = 400;
+//     err.errors = ["Provided Subscription ID is not valid."];
+//     throw err;
+//   }
 
-  const subscription = await SubscriptionPlan.findById(subscriptionId);
-  if (!subscription) {
-    const err = new Error("Subscription not found");
-    err.statusCode = 404;
-    err.errors = ["Subscription ID not found."];
-    throw err;
-  }
+//   const subscription = await SubscriptionPlan.findById(subscriptionId);
+//   if (!subscription) {
+//     const err = new Error("Subscription not found");
+//     err.statusCode = 404;
+//     err.errors = ["Subscription ID not found."];
+//     throw err;
+//   }
 
-  let caregoryServices = [];
-  if (category) {
-    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
-  }
+//   let caregoryServices = [];
+//   if (category) {
+//     caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+//   }
 
-  const technician = new Technician({
-    franchiseId: franchiseId || null,
-    userId,
-    username,
-    phoneNumber,
-    password,
-    role,
-    category,
-    buildingName,
-    areaName,
-    subAreaName,
-    city,
-    state,
-    pincode,
-    admin: true,
-  });
+//   const technician = new Technician({
+//     franchiseId: franchiseId || null,
+//     userId,
+//     username,
+//     phoneNumber,
+//     password,
+//     role,
+//     category,
+//     buildingName,
+//     areaName,
+//     subAreaName,
+//     city,
+//     state,
+//     pincode,
+//     admin: true,
+//   });
 
-  if (caregoryServices?.service?.length > 0) {
-    technician.categoryServices = caregoryServices.service.map((srv) => ({
-      categoryServiceId: srv._id,
-      status: true,
-    }));
-  }
+//   if (caregoryServices?.service?.length > 0) {
+//     technician.categoryServices = caregoryServices.service.map((srv) => ({
+//       categoryServiceId: srv._id,
+//       status: true,
+//     }));
+//   }
 
-  await technician.save();
+//   await technician.save();
 
-  let result = null;
-  if (subscription) {
-    result = await addTechSubscriptionPlan({
-      technicianId: technician._id,
-      subscriptionId: subscription._id,
-    });
-  }
+//   let result = null;
+//   if (subscription) {
+//     result = await addTechSubscriptionPlan({
+//       technicianId: technician._id,
+//       subscriptionId: subscription._id,
+//     });
+//   }
 
-  let franhiseAccount = null;
-  if (result && franchiseId) {
-    franhiseAccount = await addFranchiseAccount({
-      franchiseId,
-      technicianId: technician._id.toString(),
-      subscriptionId,
-    });
-  }
+//   let franhiseAccount = null;
+//   if (result && franchiseId) {
+//     franhiseAccount = await addFranchiseAccount({
+//       franchiseId,
+//       technicianId: technician._id.toString(),
+//       subscriptionId,
+//     });
+//   }
 
-  return {
-    id: technician._id,
-    franchiseId: technician.franchiseId,
-    userId: technician.userId,
-    username: technician.username,
-    phoneNumber: technician.phoneNumber,
-    role: technician.role,
-    category: technician.category,
-    buildingName: technician.buildingName,
-    areaName: technician.areaName,
-    subAreaName: technician.subAreaName,
-    city: technician.city,
-    state: technician.state,
-    pincode: technician.pincode,
-    admin: technician.admin,
-    plan: subscription?._id || null,
-    categoryServices: technician.categoryServices,
-    result: result?.subscription || null,
-    franhiseAccount: franhiseAccount?.newAccountDetails || null,
-  };
-};
+//   return {
+//     id: technician._id,
+//     franchiseId: technician.franchiseId,
+//     userId: technician.userId,
+//     username: technician.username,
+//     phoneNumber: technician.phoneNumber,
+//     role: technician.role,
+//     category: technician.category,
+//     buildingName: technician.buildingName,
+//     areaName: technician.areaName,
+//     subAreaName: technician.subAreaName,
+//     city: technician.city,
+//     state: technician.state,
+//     pincode: technician.pincode,
+//     admin: technician.admin,
+//     plan: subscription?._id || null,
+//     categoryServices: technician.categoryServices,
+//     result: result?.subscription || null,
+//     franhiseAccount: franhiseAccount?.newAccountDetails || null,
+//   };
+// };
 
 export const renewTechnicianByFranchaise = async ({
   technicianId,

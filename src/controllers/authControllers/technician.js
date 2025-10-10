@@ -1,5 +1,6 @@
 import * as technician from "../../services/authServices/technician.js";
 import { generateToken } from "../../utils/generateToken.js";
+import formidable from 'formidable'
 
 const generatedSequrityCodes = new Set();
 
@@ -23,13 +24,33 @@ const generateSequrityCode = () => {
   return sequrityCode;
 };
 
+
 export const registerTechnicianController = async (req, res, next) => {
   try {
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      maxFileSize: 0.250 * 1024 * 1024, // 250kb limit per file
+    });
+
+    const [fields, files] = await form.parse(req);
+
+    // Convert fields to plain object (formidable returns arrays for single values)
+    const parsedFields = {};
+    Object.keys(fields).forEach(key => {
+      parsedFields[key] = Array.isArray(fields[key]) ? fields[key][0] : fields[key];
+    });
+
     const technicianData = {
-      ...req.body,
+      ...parsedFields,
       userId: generateSequrityCode(),
+      files,
     };
+
+    console.log('technicianData', technicianData);
+
     const result = await technician.registerTechnicianByAdmin(technicianData);
+
     res.status(201).json({
       success: true,
       message: "Technician Registered successfully.",
@@ -39,6 +60,23 @@ export const registerTechnicianController = async (req, res, next) => {
     next(err);
   }
 };
+
+// export const registerTechnicianController = async (req, res, next) => {
+//   try {
+//     const technicianData = {
+//       ...req.body,
+//       userId: generateSequrityCode(),
+//     };
+//     const result = await technician.registerTechnicianByAdmin(technicianData);
+//     res.status(201).json({
+//       success: true,
+//       message: "Technician Registered successfully.",
+//       result,
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 export const registerTechnicianByFranchaiseController = async (
   req,
