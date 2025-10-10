@@ -13,6 +13,19 @@ const GuestBookingSchema = new mongoose.Schema({
   phoneNumber: {
     type: Number,
     default: 1,
+    maxlength: 10,
+    required: true,
+  },
+
+  message: {
+    type: String,
+    required: true,
+  },
+
+  categoryName: {
+    type: String,
+    maxlength: 1000,
+    trim: true,
   },
 
   status:{
