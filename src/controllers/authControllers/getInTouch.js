@@ -26,3 +26,20 @@ export const getInTouchForm = async (req, res, next) => {
     next(err);
   };
 }
+
+export const updateGetInTouchStatusCont = async (req, res, next) => {
+  const { bookingId, status } = req.params;
+  try {
+    const result = await getInTouch.updateGetInTouchStatus({
+      bookingId,
+      status,
+    });
+    res.status(201).json({
+      success: true,
+      message: result.message,
+      result: result.booking,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

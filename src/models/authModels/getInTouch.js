@@ -16,6 +16,16 @@ const GetInTouchSchema = new mongoose.Schema({
     // match: [/^\d{10}$/, 'Phone number must be 10 digits']
   },
 
+  categoryName: {
+    type: String,
+    maxlength: 1000,
+    trim: true,
+  },
+
+  message: {
+    type: String,
+  },
+
   status:{
     type: String,
     enum:["pending", "completed", "declined"],

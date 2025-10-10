@@ -19,7 +19,6 @@ const GuestBookingSchema = new mongoose.Schema({
 
   message: {
     type: String,
-    required: true,
   },
 
   categoryName: {
