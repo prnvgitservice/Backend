@@ -103,6 +103,12 @@ const technicianSchema = new Schema(
     },
     authorizedPersons: [authorizedPersonSchema],
     categoryServices: [categoryServicesSchema],
+
+    status:{
+    type: String,
+    enum:["requested", "registered", "declined"],
+    default:"requested"
+    },
   },
   { timestamps: true }
 );
