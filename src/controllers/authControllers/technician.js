@@ -1,5 +1,6 @@
 import * as technician from "../../services/authServices/technician.js";
 import { generateToken } from "../../utils/generateToken.js";
+import formidable from "formidable";
 
 const generatedSequrityCodes = new Set();
 
@@ -23,16 +24,134 @@ const generateSequrityCode = () => {
   return sequrityCode;
 };
 
+
+
+// export const registerTechnicianController = async (req, res, next) => {
+//   try {
+//     const technicianData = {
+//       ...req.body,
+//       userId: generateSequrityCode(),
+//     };
+//     const result = await technician.registerTechnicianByAdmin(technicianData);
+//     res.status(201).json({
+//       success: true,
+//       message: "Technician Registered successfully.",
+//       result,
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
 export const registerTechnicianController = async (req, res, next) => {
   try {
+    // Initialize formidable with safe limits
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      maxFileSize: 0.5 * 1024 * 1024, // 500 KB per file
+    });
+
+    // Parse form-data (async/await wrapper)
+    const [fields, files] = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        else resolve([fields, files]);
+      });
+    });
+
+    // Convert formidable field arrays into plain key:value
+    const parsedFields = {};
+    for (const key in fields) {
+      parsedFields[key] = Array.isArray(fields[key]) ? fields[key][0] : fields[key];
+    }
+
+    // Map nested keys for authorized persons
+    const mappedFields = { ...parsedFields };
+    if (parsedFields["authorizedPersons[0][phone]"]) {
+      mappedFields.authorized1Phone = parsedFields["authorizedPersons[0][phone]"];
+    }
+    if (parsedFields["authorizedPersons[1][phone]"]) {
+      mappedFields.authorized2Phone = parsedFields["authorizedPersons[1][phone]"];
+    }
+
+    // Clean up unwanted nested keys
+    delete mappedFields["authorizedPersons[0][phone]"];
+    delete mappedFields["authorizedPersons[1][phone]"];
+
+    // Prepare technician data
     const technicianData = {
-      ...req.body,
-      userId: generateSequrityCode(),
+      ...mappedFields,
+      userId: generateSequrityCode(), // Generate a unique technician code
+      files,
     };
-    const result = await technician.registerTechnicianByAdmin(technicianData);
+
+
+    // Call service to register technician
+    const result = await technician.addTechnician(technicianData);
+
+    // Success response
     res.status(201).json({
       success: true,
-      message: "Technician Registered successfully.",
+      message: "Technician registered successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const registerTechnicianByAdminController = async (req, res, next) => {
+  try {
+    // Initialize formidable with safe limits
+    const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      maxFileSize: 0.5 * 1024 * 1024, // 500 KB per file
+    });
+
+    // Parse form-data (async/await wrapper)
+    const [fields, files] = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        else resolve([fields, files]);
+      });
+    });
+
+    // Convert formidable field arrays into plain key:value
+    const parsedFields = {};
+    for (const key in fields) {
+      parsedFields[key] = Array.isArray(fields[key]) ? fields[key][0] : fields[key];
+    }
+
+    // Map nested keys for authorized persons
+    const mappedFields = { ...parsedFields };
+    if (parsedFields["authorizedPersons[0][phone]"]) {
+      mappedFields.authorized1Phone = parsedFields["authorizedPersons[0][phone]"];
+    }
+    if (parsedFields["authorizedPersons[1][phone]"]) {
+      mappedFields.authorized2Phone = parsedFields["authorizedPersons[1][phone]"];
+    }
+
+    // Clean up unwanted nested keys
+    delete mappedFields["authorizedPersons[0][phone]"];
+    delete mappedFields["authorizedPersons[1][phone]"];
+
+    // Prepare technician data
+    const technicianData = {
+      ...mappedFields,
+      userId: generateSequrityCode(), // Generate a unique technician code
+      files,
+    };
+
+
+    // Call service to register technician
+    const result = await technician.registerTechnicianByAdmin(technicianData);
+
+    // Success response
+    res.status(201).json({
+      success: true,
+      message: "Technician registered successfully.",
       result,
     });
   } catch (err) {
