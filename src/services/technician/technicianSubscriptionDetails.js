@@ -3,7 +3,6 @@ import bookingServices from "../../models/bookingServices.js";
 import technician from "../../models/authModels/technician.js";
 import SubscriptionPlan from "../../models/subscription.js";
 import mongoose from "mongoose";
-import subscription from "../../models/subscription.js";
 
 function computeEndDateForNewPlan(startDate, plan) {
   const start = new Date(startDate).getTime();
@@ -265,6 +264,142 @@ export async function getTechSubscriptionPlan(technicianId) {
   
   return {
     lastSub
+  };
+}
+
+export async function updateTechSubscriptionPlan({
+  technicianId,
+  subscriptionId,
+}) {
+  if (!technicianId || !subscriptionId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["TechnicianId and SubscriptionId are required."];
+    throw err;
+  }
+  if (
+    !mongoose.Types.ObjectId.isValid(technicianId) ||
+    !mongoose.Types.ObjectId.isValid(subscriptionId)
+  ) {
+    const err = new Error("Invalid Technician or Subscription ID format");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician or Subscription ID is not valid."];
+    throw err;
+  }
+  const techDoc = await technician.findById(technicianId);
+  if (!techDoc) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found"];
+    throw err;
+  }
+  const requestedPlan = await SubscriptionPlan.findById(subscriptionId);
+  if (!requestedPlan) {
+    const err = new Error("Subscription not found");
+    err.statusCode = 404;
+    err.errors = ["Subscription ID Not Found"];
+    throw err;
+  }
+  const requestedPrice = requestedPlan.finalPrice || 0;
+
+  const techSubDoc = await techSubscriptionsDetail.findOne({ technicianId });
+  if (!techSubDoc || !techSubDoc.subscriptions?.length) {
+    const err = new Error("No current subscription found");
+    err.statusCode = 404;
+    err.errors = ["Technician has no active or previous subscription."];
+    throw err;
+  }
+
+  const latest = techSubDoc.subscriptions[techSubDoc.subscriptions.length - 1];
+  const usage = await calculatePlanUsage(technicianId, latest.startDate);
+  await writeBackUsageCounters(technicianId, usage);
+
+  const expired = isPlanExpiredNow({
+    leads: latest.leads ?? null,
+    endUpPrice: latest.endUpPrice ?? null,
+    endDate: latest.endDate ?? null,
+    ordersCount: usage.ordersCount,
+    earnAmount: usage.earnAmount,
+  });
+
+  const currentPlan = await SubscriptionPlan.findById(latest.subscriptionId);
+  if (!currentPlan) {
+    const err = new Error("Current subscription plan not found");
+    err.statusCode = 404;
+    err.errors = ["Current subscription plan ID is invalid."];
+    throw err;
+  }
+  const currentPrice = currentPlan.finalPrice || 0;
+
+  if (latest.subscriptionId.toString() === subscriptionId.toString()) {
+    const display = makeDisplayBlock({
+      ...latest,
+      ordersCount: usage.ordersCount,
+      earnAmount: usage.earnAmount,
+    });
+    return {
+      success: true,
+      message: "Same plan selected. No update performed.",
+      subscription: latest,
+    };
+  }
+
+  let canUpdate = false;
+  let updateMessage = "Subscription updated successfully";
+
+  if (expired) {
+    if (requestedPrice === 0) {
+      const err = new Error("Cannot update to free plan when current plan is expired.");
+      err.statusCode = 403;
+      err.errors = ["Free plan not allowed on expired subscriptions."];
+      throw err;
+    }
+    canUpdate = true;
+  } else {
+    if (currentPrice === 0) {
+      canUpdate = true;
+    } else if (currentPrice < requestedPrice) {
+      canUpdate = true;
+    } else {
+      const err = new Error("Cannot update to a plan with equal or lower price.");
+      err.statusCode = 403;
+      err.errors = ["Downgrades or same-price updates are not allowed."];
+      throw err;
+    }
+  }
+
+  if (!canUpdate) {
+    const err = new Error("Update not allowed based on current plan status.");
+    err.statusCode = 403;
+    err.errors = ["Update criteria not met."];
+    throw err;
+  }
+
+  const now = new Date();
+  const entry = {
+    subscriptionId: requestedPlan._id,
+    subscriptionName: requestedPlan.name,
+    startDate: now,
+    endDate: computeEndDateForNewPlan(now, {
+      validity: requestedPlan.validity ?? null,
+      leads: requestedPlan.leads ?? null,
+      endUpPrice: requestedPlan.endUpPrice ?? null,
+    }),
+    leads: requestedPlan.leads ?? null,
+    ordersCount: 0,
+    endUpPrice: requestedPlan.endUpPrice ?? null,
+    earnAmount: 0,
+  };
+
+  techSubDoc.subscriptions.push(entry);
+  await techSubDoc.save();
+
+  const display = makeDisplayBlock(entry);
+  return {
+    success: true,
+    message: updateMessage,
+    subscription: entry,
+    display,
   };
 }
 

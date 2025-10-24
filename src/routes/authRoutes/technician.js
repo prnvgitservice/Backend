@@ -3,6 +3,7 @@ import {
   changeServiceStatusController,
   deleteTechnicianByIdController,
   getAllTechnicianController,
+  getAllTechRequestController,
   getTechnicianProfilesByExecutiveIdCont,
   getTechnicianProfilesByFranchiseIdCont,
   getTechProfileControl,
@@ -12,7 +13,9 @@ import {
   registerTechnicianByFranchaiseController,
   registerTechnicianController,
   renewTechnicianByFranchaiseController,
+  updateTechByAdminCon,
   updateTechnicianControl,
+  updateTechnicianStatusCont,
 } from "../../controllers/authControllers/technician.js";
 import { uploadWithValidation } from "../../middleware/uploads.js";
 import {
@@ -35,6 +38,13 @@ router.put(
   uploadWithValidation,
   updateTechnicianControl
 );
+
+router.put(
+  "/updateTechByAdmin",
+  uploadWithValidation,
+  updateTechByAdminCon
+);
+
 router.put(
   "/updateTechByFranchaise",
   //   requireSignIn
@@ -56,6 +66,8 @@ router.put(
 
 router.get("/getTechProfile/:technicianId", getTechProfileControl);
 router.get("/getAllTechnicians", getAllTechnicianController);
+router.get("/getAllTechRequest", getAllTechRequestController)
+router.put('/updateStaus/:technicianId/:status', updateTechnicianStatusCont);
 router.get(
   "/getTechProfileByFranchise/:technicianId",
   //   requireSignIn

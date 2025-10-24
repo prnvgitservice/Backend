@@ -4,7 +4,7 @@ import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import { addTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
+import { addTechSubscriptionPlan, getTechSubscriptionPlan, updateTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import Franchise from "../../models/authModels/franchise.js";
 import Executive from "../../models/authModels/executive.js";
@@ -1499,6 +1499,121 @@ export const updateTechnician = async ({
   };
 };
 
+export const updateTechByAdmin = async ({
+  technicianId,
+  username,
+  password,
+  buildingName,
+  areaName,
+  subAreaName,
+  city,
+  state,
+  pincode,
+  description,
+  subscriptionId,
+  service,
+  files,
+}) => {
+  const errors = [];
+  if (!technicianId) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = ["technicianId are required."];
+    throw err;
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(technicianId)) {
+    const err = new Error("Technician ID format.");
+    err.statusCode = 400;
+    err.errors = ["Provided Technician ID is not valid."];
+    throw err;
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    const err = new Error("Technician not found");
+    err.statusCode = 404;
+    err.errors = ["Technician ID Not Found."];
+    throw err;
+  }
+
+  
+
+  if (files.profileImage?.[0]) {
+    const filePath = files.profileImage[0].path;
+
+    const oldUrl = technician.profileImage;
+    if (oldUrl) {
+      const match = oldUrl.match(/\/([^/]+)\.[a-z]+$/i);
+      const publicId = match ? `TechProfiles/${match[1]}` : null;
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId);
+      }
+    }
+
+    const uploadResult = await cloudinary.uploader.upload(filePath, {
+      folder: "TechProfiles",
+    });
+    fs.unlinkSync(filePath);
+
+    technician.profileImage = uploadResult.secure_url;
+  }
+
+  let subscriptionDetail;
+
+  if(!subscriptionId){
+    subscriptionDetail = null;
+    return;
+  }else{
+    subscriptionDetail = await updateTechSubscriptionPlan({
+     technicianId: technician._id,
+     subscriptionId,
+   });
+   if (subscriptionDetail && subscriptionDetail.error) {
+     errors.push(subscriptionDetail.error);
+   }
+  }
+
+  if (username) technician.username = username;
+  if (password) technician.password = password;
+  if (buildingName) technician.buildingName = buildingName;
+  if (areaName) technician.areaName = areaName;
+  if (subAreaName) technician.subAreaName = subAreaName;
+  if (city) technician.city = city;
+  if (state) technician.state = state;
+  if (pincode) technician.pincode = pincode;
+  if (service) technician.service = service;
+  if (description) technician.description = description;
+
+  await technician.save();
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 401;
+    err.errors = errors;
+    throw err;
+  }
+
+  return {
+    id: technician._id,
+    username: technician.username,
+    userId: technician.userId,
+    phoneNumber: technician.phoneNumber,
+    role: technician.role,
+    category: technician.category,
+    buildingName: technician.buildingName,
+    areaName: technician.areaName,
+    subAreaName: technician.subAreaName,
+    city: technician.city,
+    state: technician.state,
+    pincode: technician.pincode,
+    description: technician.description,
+    service: technician.service,
+    profileImage: technician.profileImage,
+    subscriptionDetail: subscriptionDetail || null,
+    };
+};
+
 export const getTechnicianProfile = async (technicianId) => {
   if (!technicianId) {
     const err = new Error("Validation failed");
@@ -1706,6 +1821,45 @@ export const getTechnicianProfilesByExecutiveId = async (executiveId) => {
   return results;
 };
 
+// export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
+//   const skip = parseInt(offset, 10);
+//   const pageSize = parseInt(limit, 10);
+
+//   if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+//     const err = new Error("Invalid pagination parameters");
+//     err.statusCode = 400;
+//     err.errors = ["Offset and limit must be valid positive integers"];
+//     throw err;
+//   }
+
+//   const totalTechnicians = await Technician.countDocuments({});
+//   const technicians = await Technician.find({})
+//     .skip(skip)
+//     .limit(pageSize)
+//     .sort({ createdAt: -1 });
+
+//   return {
+//     total: totalTechnicians,
+//     offset: skip,
+//     limit: pageSize,
+//     technicians: technicians.map((technician) => ({
+//       id: technician._id,
+//       username: technician.username,
+//       phoneNumber: technician.phoneNumber,
+//       role: technician.role,
+//       buildingName: technician.buildingName,
+//       areaName: technician.areaName,
+//       subAreaName: technician.subAreaName,
+//       city: technician.city,
+//       state: technician.state,
+//       pincode: technician.pincode,
+//       profileImage: technician.profileImage,
+//       admin: technician.admin,
+//       categoryServices: technician.categoryServices,
+//     })),
+//   };
+// };
+
 export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
   const skip = parseInt(offset, 10);
   const pageSize = parseInt(limit, 10);
@@ -1717,12 +1871,24 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
     throw err;
   }
 
-  const totalTechnicians = await Technician.countDocuments({});
-  const technicians = await Technician.find({})
+  const allowedStatus = ["registered", "requested", "declined"]
+
+  const totalTechnicians = await Technician.find({status : allowedStatus}).countDocuments({});
+  const technicians = await Technician.find({ status : "registered"})
     .skip(skip)
     .limit(pageSize)
     .sort({ createdAt: -1 });
 
+const techDetails = await Promise.all(
+    technicians.map(async (technician) => {
+      const categoryDoc = await category.findById(technician.category); // Assuming model is 'Category' (capitalized)
+      const techSubDetails = await getTechSubscriptionPlan(technician._id);
+      return {
+        categoryName: categoryDoc ? categoryDoc.category_name : null,
+        planDetails: techSubDetails.lastSub || null,
+      };
+    })
+  );
   return {
     total: totalTechnicians,
     offset: skip,
@@ -1732,6 +1898,8 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
       username: technician.username,
       phoneNumber: technician.phoneNumber,
       role: technician.role,
+      userId: technician.userId,
+      category: technician.category,
       buildingName: technician.buildingName,
       areaName: technician.areaName,
       subAreaName: technician.subAreaName,
@@ -1740,10 +1908,112 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
       pincode: technician.pincode,
       profileImage: technician.profileImage,
       admin: technician.admin,
+      status: technician.status,
+      description: technician.description,
       categoryServices: technician.categoryServices,
+      createdAt: technician.createdAt,
+      techDetails: techDetails[technicians.indexOf(technician)],
     })),
   };
 };
+
+export const getAllTechRequest = async ({offset , limit}) =>{
+
+  const skip = parseInt(offset, 10);
+  const pageSize = parseInt(limit, 10);
+
+  if (isNaN(skip) || isNaN(pageSize) || skip < 0 || pageSize <= 0) {
+    const err = new Error("Invalid pagination parameters");
+    err.statusCode = 400;
+    err.errors = ["Offset and limit must be valid positive integers"];
+    throw err;
+  }
+
+  const allowedStatus = ["requested", "declined"]
+
+  const technicians = await Technician.find({status : allowedStatus})
+  .skip(skip)
+  .limit(pageSize)
+  .sort({ createdAt: -1 });
+  
+  // const totalTechnicians = (await Technician.find({status : allowedStatus})).length;
+  const totalTechnicians = await Technician.find({status : allowedStatus}).countDocuments({});
+
+
+  const techDetails = await Promise.all(
+    technicians.map(async (technician) => {
+      const categoryDoc = await category.findById(technician.category); // Assuming model is 'Category' (capitalized)
+      const techSubDetails = await getTechSubscriptionPlan(technician._id);
+      return {
+        categoryName: categoryDoc ? categoryDoc.category_name : null,
+        planDetails: techSubDetails.lastSub || null,
+      };
+    })
+  );
+
+   return {
+    total: totalTechnicians,
+    offset: skip,
+    limit: pageSize,
+    technicians: technicians.map((technician) => ({
+      id: technician._id,
+      username: technician.username,
+      phoneNumber: technician.phoneNumber,
+      role: technician.role,
+      userId: technician.userId,
+      category: technician.category,
+      buildingName: technician.buildingName,
+      areaName: technician.areaName,
+      subAreaName: technician.subAreaName,
+      city: technician.city,
+      state: technician.state,
+      pincode: technician.pincode,
+      profileImage: technician.profileImage,
+      admin: technician.admin,
+      status: technician.status,
+      authorizedPersons: technician.authorizedPersons,
+      aadharBack: technician.aadharBack,
+      aadharFront: technician.aadharFront,
+      voterCard: technician.voterCard || null,
+      panCard: technician.panCard || null,
+      description: technician.description,
+      categoryServices: technician.categoryServices,
+      createdAt: technician.createdAt,
+      techDetails: techDetails[technicians.indexOf(technician)],
+    })),
+  };  
+}
+
+export const updateTechnicianStatusService = async (technicianId, newStatus) => {
+  if (!['registered', 'declined'].includes(newStatus)) {
+    throw new Error('Invalid status. Must be "registered" or "declined".');
+  }
+
+  const technician = await Technician.findById(technicianId);
+  if (!technician) {
+    throw new Error('Technician not found.');
+  }
+
+  if (technician.status !== 'requested') {
+    throw new Error('Can only update status from "requested" to "registered" or "declined".');
+  }
+
+  const allowedStatuses = ["registered", "declined"];
+  const normalizedStatus = newStatus.toLowerCase();
+
+  if (!allowedStatuses.includes(normalizedStatus)) {
+    const err = new Error("Invalid status value");
+    err.statusCode = 400;
+    err.errors = [`Status must be one of: ${allowedStatuses.join(", ")}`];
+    throw err;
+  }
+
+  technician.status = newStatus;
+  await technician.save();
+
+  return technician;
+};
+
 
 export const changeServiceStatus = async ({
   technicianId,

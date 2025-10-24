@@ -258,6 +258,34 @@ export const updateTechnicianControl = async (req, res, next) => {
   }
 };
 
+export const updateTechByAdminCon = async (req, res, next) => {
+  const filesArray = req.files || [];
+  const filesMap = {};
+
+  filesArray.forEach((file) => {
+    if (!filesMap[file.fieldname]) {
+      filesMap[file.fieldname] = [];
+    }
+    filesMap[file.fieldname].push(file);
+  });
+
+  const technicianData = {
+    ...req.body,
+    files: filesMap,
+  };
+
+  try {
+    const result = await technician.updateTechByAdmin(technicianData);
+    res.status(201).json({
+      success: true,
+      message: "Technician profile updated successfully.",
+      result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getTechProfileControl = async (req, res, next) => {
   try {
     const { technicianId } = req.params;
@@ -320,6 +348,35 @@ export const getAllTechnicianController = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAllTechRequestController = async (req, res, next) => {
+  try {
+    const { offset, limit } = req.query;
+    const result = await technician.getAllTechRequest({offset , limit});
+    res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export const updateTechnicianStatusCont = async (req, res, next) => {
+  const { technicianId, status } = req.params; // or req.body if you prefer
+  try {
+    const updated = await technician.updateTechnicianStatusService(technicianId, status);
+    return res.status(200).json({
+      success: true,
+      message: `Technician status updated to "${updated.status}".`,
+      data: updated,
+    });
+  } catch (err) {
+    // ensure we propagate typed status codes if set in service
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+};
+
 
 export const changeServiceStatusController = async (req, res, next) => {
   try {
