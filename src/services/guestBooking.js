@@ -2,8 +2,8 @@ import GuestBooking from "../models/guestBooking.js";
 import Category from '../models/category.js';
 import mongoose from "mongoose";
 
-export const addGuestBooking = async ({ name, phoneNumber, categoryId }) => {
-  if (!name || !phoneNumber || !categoryId) {
+export const addGuestBooking = async ({ name, phoneNumber, categoryId, message, categoryName }) => {
+  if (!name || !phoneNumber || !categoryId || !message) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
     err.errors = ["Name, Phone Number, and categoryId are all required."];
@@ -29,6 +29,8 @@ export const addGuestBooking = async ({ name, phoneNumber, categoryId }) => {
     categoryId,
     name,
     phoneNumber,
+    message,
+    categoryName,
   });
 
   const savedEnquiry = await newGuestBookings.save();
@@ -38,6 +40,8 @@ export const addGuestBooking = async ({ name, phoneNumber, categoryId }) => {
     name: savedEnquiry.name,
     phoneNumber: savedEnquiry.phoneNumber,
     categoryId: savedEnquiry.categoryId,
+    message: savedEnquiry.message,
+    categoryName: savedEnquiry.categoryName,
   };
 };
 
