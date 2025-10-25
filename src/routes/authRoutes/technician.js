@@ -93,8 +93,8 @@ router.delete(
 );
 router.delete(
   "/deleteTechnicianByAdmin/:technicianId",
-  requireSignIn,
-  adminMiddleware,
+  // requireSignIn,
+  // adminMiddleware,
   deleteTechnicianByIdController
 );
 
