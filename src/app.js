@@ -41,26 +41,7 @@ connectDB()
 const app = express();
 
 app.use(express.json());
-
-const allowedOrigins = [
-  "https://prnvservices.com",
-  "https://www.prnvservices.com",
-  "https://prnv-472906.web.app",
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.use('/api/userAuth', authUserRoutes);
 app.use('/api/adminAuth', authAdminRoutes);
