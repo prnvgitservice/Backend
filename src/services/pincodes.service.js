@@ -1,38 +1,28 @@
+// pincodes.service.js
 import Pincodes from '../models/pincodes.model.js';
 
-export const getCodeAndAreaNamesService = async () => {
+export const getAllPincodesService = async () => {
   try {
-    const result = await Pincodes.aggregate([
-      { $unwind: "$areas" },
-      { $unwind: "$areas.subAreas" },
-      {
-        $project: {
-          _id: 0,
-          code: 1,
-          area: "$areas.name",
-          subArea: "$areas.subAreas.name"
-        }
-      }
-    ]);
+    const result = await Pincodes.find().lean();
     return result;
   } catch (error) {
     throw error;
   }
 };
 
-export const getAllPincodesService = async () => {
-    try{
-        const result = await Pincodes.find();
-        return result;
-    } catch (error) {
-        throw error;
-    }
+export const getPincodeByCodeService = async (code) => {
+  try {
+    const result = await Pincodes.findOne({ code }).lean();
+    return result;
+  } catch (error) {
+    throw error;
+  }
 };
 
 
 export const createPincodeService = async (pincodeData) => {
   try {
-    const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
+    const existingPincode = await Pincodes.findOne({ code: pincodeData.code });
 
     if (!existingPincode) {
       const newPincode = new Pincodes(pincodeData);
@@ -47,14 +37,15 @@ export const createPincodeService = async (pincodeData) => {
     let updated = false;
 
     for (const incomingArea of pincodeData.areas) {
-      const existingArea = existingPincode.areas.find(
+      const existingAreaIndex = existingPincode.areas.findIndex(
         area => area.name.trim().toLowerCase() === incomingArea.name.trim().toLowerCase()
       );
 
-      if (!existingArea) {
+      if (existingAreaIndex === -1) {
         existingPincode.areas.push(incomingArea);
         updated = true;
       } else {
+        const existingArea = existingPincode.areas[existingAreaIndex];
         for (const incomingSubArea of incomingArea.subAreas) {
           const subAreaExists = existingArea.subAreas.some(
             sa => sa.name.trim().toLowerCase() === incomingSubArea.name.trim().toLowerCase()
@@ -78,11 +69,9 @@ export const createPincodeService = async (pincodeData) => {
     } else {
       return {
         alreadyExisted: true,
-        message: `Pincode ${pincodeData.code} with same area(s) and subarea(s) already exists`,
-        // data: existingPincode
+        message: `Pincode ${pincodeData.code} with same area(s) and subarea(s) already exists`
       };
     }
-
   } catch (error) {
     throw error;
   }
@@ -90,44 +79,41 @@ export const createPincodeService = async (pincodeData) => {
 
 export const updatePincodeService = async (pincodeData) => {
   try {
-    const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
+    const { code, city, state, areas , subAreas } = pincodeData;
+    const existingPincode = await Pincodes.findOne({ code });
 
     if (!existingPincode) {
       return {
         notFound: true,
-        message: `Pincode ${pincodeData.code} not found`
+        message: `Pincode ${code} not found`
       };
     }
-console.log("existingPincode",existingPincode)
+
     let updated = false;
 
-    if (pincodeData.city && pincodeData.city !== existingPincode.city) {
-      existingPincode.city = pincodeData.city;
+    // Update city if provided
+    if (city !== undefined && city !== existingPincode.city) {
+      existingPincode.city = city;
       updated = true;
     }
 
-    if (pincodeData.state && pincodeData.state !== existingPincode.state) {
-      existingPincode.state = pincodeData.state;
+    // Update state if provided
+    if (state !== undefined && state !== existingPincode.state) {
+      existingPincode.state = state;
       updated = true;
     }
-    for (const incomingArea of pincodeData.areas || []) {
-      const existingArea = existingPincode.areas.find(
-        area => area.name.trim().toLowerCase() === incomingArea.name.trim().toLowerCase()
-      );
 
-      if (!existingArea) {
-        existingPincode.areas.push(incomingArea);
-        updated = true;
-      } else {
-        for (const incomingSubArea of incomingArea.subAreas || []) {
-          const subAreaExists = existingArea.subAreas.some(
-            sa => sa.name.trim().toLowerCase() === incomingSubArea.name.trim().toLowerCase()
-          );
+    // If areas provided, replace the entire areas array (allows full update including name changes without duplication)
+    if (areas !== undefined) {
+      existingPincode.areas = areas;
+      updated = true;
+    }
 
-          if (!subAreaExists) {
-            existingArea.subAreas.push(incomingSubArea);
-            updated = true;
-          }
+    if (subAreas !== undefined) {
+      for (const incomingArea of existingPincode.areas) {
+        const areaSubAreas = subAreas[incomingArea.name];
+        if (areaSubAreas) {
+          incomingArea.subAreas = areaSubAreas;
         }
       }
     }
@@ -136,13 +122,13 @@ console.log("existingPincode",existingPincode)
       const saved = await existingPincode.save();
       return {
         updated: true,
-        message: `Pincode ${pincodeData.code} updated successfully`,
+        message: `Pincode ${code} updated successfully`,
         data: saved
       };
     } else {
       return {
         noChanges: true,
-        message: `No changes were made. All areas and subareas already exist.`,
+        message: `No changes were made`,
         data: existingPincode
       };
     }
@@ -151,84 +137,257 @@ console.log("existingPincode",existingPincode)
   }
 };
 
-export const deletePincodeService = async (pincodeData) => {
+export const deletePincodeService = async (code) => {
   try {
-    const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
+    const existingPincode = await Pincodes.findOne({ code });
 
     if (!existingPincode) {
-      return { notFound: true, message: `Pincode ${pincodeData?.code} not found.` };
-    }
-
-    if (!pincodeData.areas || pincodeData.areas.length === 0) {
-      if (existingPincode.areas.length > 0) {
-        return {
-          cannotDelete: true,
-          message: `Pincode has areas with subareas. Delete areas and subareas first.`,
-          data: existingPincode
-        };
-      } else {
-        await Pincodes.deleteOne({ code: pincodeData?.code });
-        return {
-          deleted: true,
-          message: `Pincode ${pincodeData.code} deleted as it had no areas.`,
-        };
-      }
-    }
-
-    let changesMade = false;
-
-    for (const inputArea of pincodeData.areas) {
-      const areaIndex = existingPincode.areas.findIndex(
-        area => area.name.trim().toLowerCase() === inputArea.name.trim().toLowerCase()
-      );
-
-      if (areaIndex === -1) continue;
-
-      const area = existingPincode.areas[areaIndex];
-
-      if (inputArea.subAreas && inputArea.subAreas.length > 0) {
-        const originalLength = area.subAreas.length;
-
-        area.subAreas = area.subAreas.filter(subArea => {
-          return !inputArea.subAreas.some(inputSub =>
-            inputSub.name.trim().toLowerCase() === subArea.name.trim().toLowerCase()
-          );
-        });
-
-        if (area.subAreas.length < originalLength) {
-          changesMade = true;
-        }
-
-      } else {
-        if (area.subAreas.length > 0) {
-          return {
-            cannotDelete: true,
-            message: `Area "${area.name}" has subareas. Delete subareas first.`,
-            area: area
-          };
-        } else {
-          existingPincode.areas.splice(areaIndex, 1);
-          changesMade = true;
-        }
-      }
-    }
-
-    if (changesMade) {
-      await existingPincode.save();
-      return {
-        deleted: true,
-        message: `Deletion successful.`,
-        data: existingPincode
-      };
-    } else {
-      return {
-        noChanges: true,
-        message: `No matching areas or subareas found to delete.`,
-        data: existingPincode
+      return { 
+        notFound: true, 
+        message: `Pincode ${code} not found.` 
       };
     }
 
+    await Pincodes.deleteOne({ code });
+    return {
+      deleted: true,
+      message: `Pincode ${code} deleted successfully.`
+    };
   } catch (error) {
     throw error;
   }
 };
+// import Pincodes from '../models/pincodes.model.js';
+
+// export const getCodeAndAreaNamesService = async () => {
+//   try {
+//     const result = await Pincodes.aggregate([
+//       { $unwind: "$areas" },
+//       { $unwind: "$areas.subAreas" },
+//       {
+//         $project: {
+//           _id: 0,
+//           code: 1,
+//           area: "$areas.name",
+//           subArea: "$areas.subAreas.name"
+//         }
+//       }
+//     ]);
+//     return result;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// export const getAllPincodesService = async () => {
+//     try{
+//         const result = await Pincodes.find();
+//         return result;
+//     } catch (error) {
+//         throw error;
+//     }
+// };
+
+
+// export const createPincodeService = async (pincodeData) => {
+//   try {
+//     const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
+
+//     if (!existingPincode) {
+//       const newPincode = new Pincodes(pincodeData);
+//       const saved = await newPincode.save();
+//       return {
+//         created: true,
+//         message: `Pincode ${pincodeData.code} created with areas and subareas`,
+//         data: saved
+//       };
+//     }
+
+//     let updated = false;
+
+//     for (const incomingArea of pincodeData.areas) {
+//       const existingArea = existingPincode.areas.find(
+//         area => area.name.trim().toLowerCase() === incomingArea.name.trim().toLowerCase()
+//       );
+
+//       if (!existingArea) {
+//         existingPincode.areas.push(incomingArea);
+//         updated = true;
+//       } else {
+//         for (const incomingSubArea of incomingArea.subAreas) {
+//           const subAreaExists = existingArea.subAreas.some(
+//             sa => sa.name.trim().toLowerCase() === incomingSubArea.name.trim().toLowerCase()
+//           );
+
+//           if (!subAreaExists) {
+//             existingArea.subAreas.push(incomingSubArea);
+//             updated = true;
+//           }
+//         }
+//       }
+//     }
+
+//     if (updated) {
+//       const saved = await existingPincode.save();
+//       return {
+//         updated: true,
+//         message: `Pincode ${pincodeData.code} updated with new area(s) or subarea(s)`,
+//         data: saved
+//       };
+//     } else {
+//       return {
+//         alreadyExisted: true,
+//         message: `Pincode ${pincodeData.code} with same area(s) and subarea(s) already exists`,
+//         // data: existingPincode
+//       };
+//     }
+
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// export const updatePincodeService = async (pincodeData) => {
+//   try {
+//     const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
+
+//     if (!existingPincode) {
+//       return {
+//         notFound: true,
+//         message: `Pincode ${pincodeData.code} not found`
+//       };
+//     }
+// console.log("existingPincode",existingPincode)
+//     let updated = false;
+
+//     if (pincodeData.city && pincodeData.city !== existingPincode.city) {
+//       existingPincode.city = pincodeData.city;
+//       updated = true;
+//     }
+
+//     if (pincodeData.state && pincodeData.state !== existingPincode.state) {
+//       existingPincode.state = pincodeData.state;
+//       updated = true;
+//     }
+//     for (const incomingArea of pincodeData.areas || []) {
+//       const existingArea = existingPincode.areas.find(
+//         area => area.name.trim().toLowerCase() === incomingArea.name.trim().toLowerCase()
+//       );
+
+//       if (!existingArea) {
+//         existingPincode.areas.push(incomingArea);
+//         updated = true;
+//       } else {
+//         for (const incomingSubArea of incomingArea.subAreas || []) {
+//           const subAreaExists = existingArea.subAreas.some(
+//             sa => sa.name.trim().toLowerCase() === incomingSubArea.name.trim().toLowerCase()
+//           );
+
+//           if (!subAreaExists) {
+//             existingArea.subAreas.push(incomingSubArea);
+//             updated = true;
+//           }
+//         }
+//       }
+//     }
+
+//     if (updated) {
+//       const saved = await existingPincode.save();
+//       return {
+//         updated: true,
+//         message: `Pincode ${pincodeData.code} updated successfully`,
+//         data: saved
+//       };
+//     } else {
+//       return {
+//         noChanges: true,
+//         message: `No changes were made. All areas and subareas already exist.`,
+//         data: existingPincode
+//       };
+//     }
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// export const deletePincodeService = async (pincodeData) => {
+//   try {
+//     const existingPincode = await Pincodes.findOne({ code: pincodeData?.code });
+
+//     if (!existingPincode) {
+//       return { notFound: true, message: `Pincode ${pincodeData?.code} not found.` };
+//     }
+
+//     if (!pincodeData.areas || pincodeData.areas.length === 0) {
+//       if (existingPincode.areas.length > 0) {
+//         return {
+//           cannotDelete: true,
+//           message: `Pincode has areas with subareas. Delete areas and subareas first.`,
+//           data: existingPincode
+//         };
+//       } else {
+//         await Pincodes.deleteOne({ code: pincodeData?.code });
+//         return {
+//           deleted: true,
+//           message: `Pincode ${pincodeData.code} deleted as it had no areas.`,
+//         };
+//       }
+//     }
+
+//     let changesMade = false;
+
+//     for (const inputArea of pincodeData.areas) {
+//       const areaIndex = existingPincode.areas.findIndex(
+//         area => area.name.trim().toLowerCase() === inputArea.name.trim().toLowerCase()
+//       );
+
+//       if (areaIndex === -1) continue;
+
+//       const area = existingPincode.areas[areaIndex];
+
+//       if (inputArea.subAreas && inputArea.subAreas.length > 0) {
+//         const originalLength = area.subAreas.length;
+
+//         area.subAreas = area.subAreas.filter(subArea => {
+//           return !inputArea.subAreas.some(inputSub =>
+//             inputSub.name.trim().toLowerCase() === subArea.name.trim().toLowerCase()
+//           );
+//         });
+
+//         if (area.subAreas.length < originalLength) {
+//           changesMade = true;
+//         }
+
+//       } else {
+//         if (area.subAreas.length > 0) {
+//           return {
+//             cannotDelete: true,
+//             message: `Area "${area.name}" has subareas. Delete subareas first.`,
+//             area: area
+//           };
+//         } else {
+//           existingPincode.areas.splice(areaIndex, 1);
+//           changesMade = true;
+//         }
+//       }
+//     }
+
+//     if (changesMade) {
+//       await existingPincode.save();
+//       return {
+//         deleted: true,
+//         message: `Deletion successful.`,
+//         data: existingPincode
+//       };
+//     } else {
+//       return {
+//         noChanges: true,
+//         message: `No matching areas or subareas found to delete.`,
+//         data: existingPincode
+//       };
+//     }
+
+//   } catch (error) {
+//     throw error;
+//   }
+// };
