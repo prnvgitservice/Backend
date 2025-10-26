@@ -32,6 +32,7 @@ import blogRoutes from './routes/blog.js';
 import getInTouchRoutes from './routes/authRoutes/getInTouch.js';
 import searchContentDataRoutes from './routes/searchContentData.js';
 import technicianSubscriptionRoutes from './routes/technician/technicianSubscriptionDetails.js';
+import adminDashboard from './routes/adminDashboard.js'
 
 import cors from 'cors';
 
@@ -72,6 +73,8 @@ app.use('/api/franchiseSubscription', franchiseSubscriptionRoutes);
 app.use('/api/franchiseSubscriptionDetails', franchiseSubscriptionDetailsRoutes);
 app.use('/api/franchiseAccounts', franchiseAccountsRoutes);
 app.use('/api/executiveAccounts', executiveAccountsRoutes);
+app.use('/api/adminDashboard', adminDashboard);
+
 
 app.use(errorHandler)
 
