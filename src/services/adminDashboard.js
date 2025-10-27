@@ -13,7 +13,8 @@ import GetInTouch from "../models/authModels/getInTouch.js";
 export const getStats = async () => {
     const totalCategories = await Category.countDocuments({});
     const totalUsers = await User.countDocuments({});
-    const totalTechnicians = await Technician.countDocuments({});
+    const allowedStatus = ["registered", "requested", "declined"]
+    const totalTechnicians = await Technician.find({ status: { $in: allowedStatus } }).countDocuments({});
     const totalFranchise = await Franchise.countDocuments({});
 
     // Calculate total revenue from completed bookings
@@ -106,18 +107,18 @@ export const getRecentGuestBooking = async () => {
 };
 
 export const getRecentTechnicians = async () => {
-  const allowedStatus = ["registered", "requested", "declined"]
+    const allowedStatus = ["registered", "requested", "declined"]
 
-    const technicians = await Technician.find({status: { $in: allowedStatus } })
+    const technicians = await Technician.find({ status: { $in: allowedStatus } })
         .sort({ createdAt: -1 })
         .limit(5);
 
-        const techDetails = await Promise.all(
-            technicians.map(async (technician) => {
-              const categoryDoc = await Category.findById(technician.category); // Assuming model is 'Category' (capitalized)
+    const techDetails = await Promise.all(
+        technicians.map(async (technician) => {
+            const categoryDoc = await Category.findById(technician.category); // Assuming model is 'Category' (capitalized)
             //   const techSubDetails = await getTechSubscriptionPlan(technician._id);
             // planDetails: techSubDetails.lastSub || null,
-              return {
+            return {
                 id: technician._id,
                 name: technician.username,
                 phoneNumber: technician.phoneNumber,
@@ -126,9 +127,9 @@ export const getRecentTechnicians = async () => {
                 categoryName: categoryDoc ? categoryDoc.category_name : null,
                 createdAt: technician.createdAt,
                 status: technician.status,
-              };
-            })
-          );
+            };
+        })
+    );
 
     return {
         techDetails
@@ -150,11 +151,11 @@ export const getCategorydetails = async () => {
 
     const categoriesDetails = await Promise.all(
         categories.map(async (category) => {
-            const noOfServices = await  CategoryServices.countDocuments({ categoryId: category._id })
+            const noOfServices = await CategoryServices.countDocuments({ categoryId: category._id })
 
             return {
-                id : category._id,
-                categoryName : category.category_name,
+                id: category._id,
+                categoryName: category.category_name,
                 noOfServices
             }
         })
@@ -165,34 +166,34 @@ export const getCategorydetails = async () => {
     }
 }
 
-export const getMonthlyBookings = async ({year}) => {
-// Validate year parameter
-    if(!year){
+export const getMonthlyBookings = async ({ year }) => {
+    // Validate year parameter
+    if (!year) {
         throw new Error('year is required')
     }
     // Query bookings for the given year with status filter
     const bookings = await BookingService.find({
-      createdAt: {
-        $gte: new Date(Date.UTC(year, 0, 1)), // Start of year in UTC
-        $lte: new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999)) // End of year in UTC
-      },
-      status: 'completed' // Add status filter if needed
+        createdAt: {
+            $gte: new Date(Date.UTC(year, 0, 1)), // Start of year in UTC
+            $lte: new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999)) // End of year in UTC
+        },
+        status: 'completed' // Add status filter if needed
     });
 
     // Initialize monthly earnings array
     const monthlyEarnings = Array(12).fill(0).map((_, index) => ({
-      month: index + 1,
-      monthName: new Date(Date.UTC(year, index, 1)).toLocaleString('default', { month: 'long' }),
-      totalEarnings: 0,
-      bookingCount: 0
+        month: index + 1,
+        monthName: new Date(Date.UTC(year, index, 1)).toLocaleString('default', { month: 'long' }),
+        totalEarnings: 0,
+        bookingCount: 0
     }));
 
     // Process bookings
     bookings.forEach(booking => {
-      const month = new Date(booking.createdAt).getUTCMonth(); // Use UTC to avoid timezone issues
-      const totalPrice = Number(booking.totalPrice) || 0; // Ensure totalPrice is a number
-      monthlyEarnings[month].totalEarnings += totalPrice;
-      monthlyEarnings[month].bookingCount += 1;
+        const month = new Date(booking.createdAt).getUTCMonth(); // Use UTC to avoid timezone issues
+        const totalPrice = Number(booking.totalPrice) || 0; // Ensure totalPrice is a number
+        monthlyEarnings[month].totalEarnings += totalPrice;
+        monthlyEarnings[month].bookingCount += 1;
     });
 
     // Calculate totals and averages
@@ -202,12 +203,12 @@ export const getMonthlyBookings = async ({year}) => {
     const averageBookingsPerMonth = totalBookings > 0 ? totalBookings / 12 : 0;
 
     return {
-      year,
-      monthlyEarnings,
-      totalEarnings,
-      totalBookings,
-      averageEarningsPerMonth: Number(averageEarningsPerMonth.toFixed(2)),
-      averageBookingsPerMonth: Number(averageBookingsPerMonth.toFixed(2)),
-      isEmpty: bookings.length === 0 // Indicate if no bookings were found
+        year,
+        monthlyEarnings,
+        totalEarnings,
+        totalBookings,
+        averageEarningsPerMonth: Number(averageEarningsPerMonth.toFixed(2)),
+        averageBookingsPerMonth: Number(averageBookingsPerMonth.toFixed(2)),
+        isEmpty: bookings.length === 0 // Indicate if no bookings were found
     };
 }
