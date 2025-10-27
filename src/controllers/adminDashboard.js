@@ -40,6 +40,20 @@ export const getRecentGuestBooking = async (req, res, next) => {
     }
 };
 
+export const getRecentTechnicians = async (req, res, next) => {
+    try {
+        const result = await adminServies.getRecentTechnicians();
+        res.status(201).json({
+            success: true,
+            message: result?.message,
+            result: result,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+
 export const getRecentGetInTouch = async (req, res, next) => {
     try {
         const result = await adminServies.getRecentGetInTouch();

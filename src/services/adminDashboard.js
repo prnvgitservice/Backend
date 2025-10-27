@@ -24,23 +24,23 @@ export const getStats = async () => {
     const stats = [
         {
             label: 'Total Categories',
-            value: totalCategories.toString(),
+            value: totalCategories,
         },
         {
             label: 'Total Technicians',
-            value: totalTechnicians.toString(),
+            value: totalTechnicians,
         },
         {
             label: 'Total Users',
-            value: totalUsers.toString(),
+            value: totalUsers,
         },
         {
             label: 'Total Franchise',
-            value: totalFranchise.toString(),
+            value: totalFranchise,
         },
         {
             label: 'Revenue',
-            value: `₹${totalRevenue.toLocaleString('en-IN')}`,
+            value: totalRevenue,
         },
     ];
 
@@ -104,6 +104,36 @@ export const getRecentGuestBooking = async () => {
         bookings
     };
 };
+
+export const getRecentTechnicians = async () => {
+  const allowedStatus = ["registered", "requested", "declined"]
+
+    const technicians = await Technician.find({status: { $in: allowedStatus } })
+        .sort({ createdAt: -1 })
+        .limit(5);
+
+        const techDetails = await Promise.all(
+            technicians.map(async (technician) => {
+              const categoryDoc = await Category.findById(technician.category); // Assuming model is 'Category' (capitalized)
+            //   const techSubDetails = await getTechSubscriptionPlan(technician._id);
+            // planDetails: techSubDetails.lastSub || null,
+              return {
+                id: technician._id,
+                name: technician.username,
+                phoneNumber: technician.phoneNumber,
+                category: technician.category,
+                profileImage: technician.profileImage,
+                categoryName: categoryDoc ? categoryDoc.category_name : null,
+                createdAt: technician.createdAt,
+                status: technician.status,
+              };
+            })
+          );
+
+    return {
+        techDetails
+    };
+}
 
 export const getRecentGetInTouch = async () => {
     const bookings = await GetInTouch.find({})

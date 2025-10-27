@@ -8,6 +8,7 @@ router.get('/categoriesDetails', adminControl.getCategorydetails);
 router.get('/monthRevenue/:year', adminControl.getMonthlyBookings);
 router.get('/recentBookings', adminControl.getRecentBookingsController);
 router.get('/recentGuest', adminControl.getRecentGuestBooking);
+router.get('/recentTechnicians', adminControl.getRecentTechnicians);
 router.get('/recentGetInTouch', adminControl.getRecentGetInTouch);
 
 export default router;
