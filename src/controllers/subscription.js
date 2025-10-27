@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { activeAndInActiveSubscription, addSubscription, deleteSubscription, getAllActivePlansService, getPlanById, updateSubscription } from '../services/subscription.js';
+import { activeAndInActiveSubscription, addSubscription, deleteSubscription, getAllActivePlansService, getAllPlansService, getPlanById, updateSubscription } from '../services/subscription.js';
 
 export const addSubscriptionCont = async (req, res, next) => {
   try {
@@ -11,6 +11,16 @@ export const addSubscriptionCont = async (req, res, next) => {
     });
   } catch (err) {
    next(err);
+  }
+};
+
+export const getAllPlans = async (req, res,next) => {
+  try {
+    const plans = await getAllPlansService();
+    res.status(200).json({ success: true, data: plans ,message: "Subscription Plans Fetched Successfully"});
+  } catch (error) {
+    console.error('Error fetching plans:', error);
+    next(err)
   }
 };
 
