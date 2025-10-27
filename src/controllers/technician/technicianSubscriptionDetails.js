@@ -22,7 +22,7 @@ export const getTechSubscriptionPlanComp = async (req, res, next) => {
    res.status(201).json({
           success: true,
           message: "Subcription Fetched Successfully",
-         result: result.subscription,
+         result: result.lastSub,
         });
   } catch (err) {
     next(err);

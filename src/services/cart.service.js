@@ -74,7 +74,7 @@ if (!mongoose.Types.ObjectId.isValid(technicianId)) {
       cart.items.push(itemData);
     }
   }
-  console.log("cart", cart);
+  // console.log("cart", cart);
   await cart.save();
   return {
     id: cart._id,
@@ -113,7 +113,7 @@ export const getCartService = async ({ userId }) => {
     err.errors = ["Cart Not Found For This User Id"];
     throw err;
   }
-  console.log("cart", cart);
+  // console.log("cart", cart);
   const detailedItems = await Promise.all(
     cart.items.map(async (item) => {
       const service = await CaregoryServices.findById(item.serviceId).select(

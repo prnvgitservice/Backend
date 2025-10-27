@@ -56,6 +56,8 @@ export const editProfile = async (req, res, next) => {
     files: filesMap,
   };
 
+  // console.log('userData', userData)
+
   try {
     const result = await authService.editProfile(userData);
     res.status(201).json({

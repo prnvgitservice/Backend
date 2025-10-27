@@ -1,5 +1,96 @@
 import SubscriptionPlan from "../models/subscription.js";
 import createError from "http-errors";
+import mongoose from "mongoose";
+
+// export const addSubscription = async ({
+//   name,
+//   originalPrice,
+//   discount,
+//   discountPercentage,
+//   price,
+//   gstPercentage,
+//   gst,
+//   finalPrice,
+//   validity,
+//   leads,
+//   endUpPrice,
+//   commisionAmount,
+//   executiveCommissionAmount,
+//   features,
+//   fullFeatures,
+//   isPopular,
+//   isActive,
+// }) => {
+//   if (
+//     !name ||
+//     !commisionAmount ||
+//     !executiveCommissionAmount ||
+//     originalPrice == null ||
+//     price == null ||
+//     gstPercentage == null ||
+//     gst == null ||
+//     finalPrice == null ||
+//     !Array.isArray(features)
+//   ) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 400;
+//     err.errors = ["Required fields are missing or invalid"];
+//     throw err;
+//   }
+
+//   if (validity == null && leads == null) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 400;
+//     err.errors = ["Either 'validity' or 'leads' must be provided"];
+//     throw err;
+//   }
+
+//   for (const feature of features) {
+//     if (!feature.name) {
+//       const err = new Error("Validation failed");
+//       err.statusCode = 400;
+//       err.errors = ["Each feature must have a name"];
+//       throw err;
+//     }
+//   }
+
+//   const newPlan = new SubscriptionPlan({
+//     name,
+//     originalPrice: originalPrice ?? null,
+//     discountPercentage,
+//     discount: discount ?? null,
+//     price,
+//     gstPercentage,
+//     gst,
+//     finalPrice,
+//     endUpPrice,
+//     commisionAmount,
+//     executiveCommissionAmount,
+//     validity: validity ?? null,
+//     leads: leads ?? null,
+//     features,
+//     fullFeatures: fullFeatures || [],
+//     isPopular: isPopular ?? false,
+//     isActive: isActive ?? true,
+//   });
+
+//   await newPlan.save();
+
+//   return {
+//     id: newPlan._id,
+//     name: newPlan.name,
+//     price: newPlan.price,
+//     finalPrice: newPlan.finalPrice,
+//     validity: newPlan.validity,
+//     leads: newPlan.leads,
+//     endUpPrice: newPlan.endUpPrice,
+//     commisionAmount: newPlan.commisionAmount,
+//     executiveCommissionAmount: newPlan.executiveCommissionAmount,
+//     isPopular: newPlan.isPopular,
+//     isActive: newPlan.isActive,
+//     createdAt: newPlan.createdAt,
+//   };
+// };
 
 export const addSubscription = async ({
   name,
@@ -15,6 +106,8 @@ export const addSubscription = async ({
   endUpPrice,
   commisionAmount,
   executiveCommissionAmount,
+  referalCommisionAmount,        // ✅ Add this
+  refExecutiveCommisionAmount,   // ✅ Add this
   features,
   fullFeatures,
   isPopular,
@@ -24,6 +117,8 @@ export const addSubscription = async ({
     !name ||
     !commisionAmount ||
     !executiveCommissionAmount ||
+    referalCommisionAmount == null ||       // ✅ Add this check
+    refExecutiveCommisionAmount == null ||  // ✅ Add this check
     originalPrice == null ||
     price == null ||
     gstPercentage == null ||
@@ -65,6 +160,8 @@ export const addSubscription = async ({
     endUpPrice,
     commisionAmount,
     executiveCommissionAmount,
+    referalCommisionAmount,        // ✅ Pass this
+    refExecutiveCommisionAmount,   // ✅ Pass this
     validity: validity ?? null,
     leads: leads ?? null,
     features,
@@ -85,6 +182,8 @@ export const addSubscription = async ({
     endUpPrice: newPlan.endUpPrice,
     commisionAmount: newPlan.commisionAmount,
     executiveCommissionAmount: newPlan.executiveCommissionAmount,
+    referalCommisionAmount: newPlan.referalCommisionAmount,         // ✅ include in response if needed
+    refExecutiveCommisionAmount: newPlan.refExecutiveCommisionAmount, // ✅ include in response if needed
     isPopular: newPlan.isPopular,
     isActive: newPlan.isActive,
     createdAt: newPlan.createdAt,
@@ -93,6 +192,10 @@ export const addSubscription = async ({
 
 export const getAllActivePlansService = async () => {
   return await SubscriptionPlan.find({ isActive: true });
+};
+
+export const getAllPlansService = async () => {
+  return await SubscriptionPlan.find();
 };
 
 export const getPlanById = async (id) => {

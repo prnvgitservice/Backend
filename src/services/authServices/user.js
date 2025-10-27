@@ -1,6 +1,9 @@
 import User from "../../models/authModels/user.js";
 import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
+
 
 export const register = async ({
   username,
@@ -167,6 +170,111 @@ export const getProfile = async (userId) => {
   };
 };
 
+// export const editProfile = async (updateData) => {
+//   const errors = [];
+//   const {
+//     id,
+//     username,
+//     password,
+//     buildingName,
+//     areaName,
+//     subAreaName,
+//     city,
+//     state,
+//     pincode,
+//     phoneNumber,
+//     role,
+//     files,
+//   } = updateData;
+
+//   if (phoneNumber) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = ["Phone number can't be updated."];
+//     throw err;
+//   }
+
+//   if (role) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = ["Role can't be updated."];
+//     throw err;
+//   }
+
+//   if (!id) {
+//     const err = new Error("ID is required.");
+//     err.statusCode = 400;
+//     throw err;
+//   }
+
+//   const user = await User.findById(id);
+//   if (!user) {
+//     const err = new Error("User not found.");
+//     err.statusCode = 404;
+//     throw err;
+//   }
+
+//   if (username && typeof username !== "string") {
+//     errors.push("Username must be a string.");
+//   }
+
+//   if (password && (password.length < 6 || password.length > 20)) {
+//     errors.push("Password must be between 6 and 20 characters.");
+//   }
+
+//   if (files?.profileImage?.[0]) {
+//     const filePath = files.profileImage[0].path;
+
+//     const oldUrl = user.profileImage;
+//     if (oldUrl) {
+//       const match = oldUrl?.match(/\/([^/]+)\.[a-z]+$/i);
+//       const publicId = match ? `UserProfiles/${match[1]}` : null;
+//       if (publicId) {
+//         await cloudinary.uploader.destroy(publicId);
+//       }
+//     }
+
+//     const uploadResult = await cloudinary.uploader.upload(filePath, {
+//       folder: "UserProfiles",
+//     });
+//     fs.unlinkSync(filePath);
+
+//     user.profileImage = uploadResult?.secure_url;
+//   }
+
+//   if (errors.length > 0) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 400;
+//     err.errors = errors;
+//     throw err;
+//   }
+
+//   if (username) user.username = username;
+//   if (password) user.password = password;
+//   if (buildingName) user.buildingName = buildingName;
+//   if (areaName) user.areaName = areaName;
+//   if (subAreaName) user.subAreaName = subAreaName;
+//   if (city) user.city = city;
+//   if (state) user.state = state;
+//   if (pincode) user.pincode = pincode;
+
+//   await user.save();
+
+//   return {
+//     id: user._id,
+//     username: user.username,
+//     phoneNumber: user.phoneNumber,
+//     role: user.role,
+//     buildingName: user.buildingName,
+//     areaName: user.areaName,
+//     subAreaName: user.subAreaName,
+//     city: user.city,
+//     state: user.state,
+//     pincode: user.pincode,
+//     profileImage: user.profileImage || '',
+//   };
+// };
+
 export const editProfile = async (updateData) => {
   const errors = [];
   const {
@@ -211,32 +319,13 @@ export const editProfile = async (updateData) => {
     throw err;
   }
 
+  // Move validations earlier to avoid side effects like uploads
   if (username && typeof username !== "string") {
     errors.push("Username must be a string.");
   }
 
   if (password && (password.length < 6 || password.length > 20)) {
     errors.push("Password must be between 6 and 20 characters.");
-  }
-
-  if (files?.profileImage?.[0]) {
-    const filePath = files.profileImage[0].path;
-
-    const oldUrl = user.profileImage;
-    if (oldUrl) {
-      const match = oldUrl?.match(/\/([^/]+)\.[a-z]+$/i);
-      const publicId = match ? `UserProfiles/${match[1]}` : null;
-      if (publicId) {
-        await cloudinary.uploader.destroy(publicId);
-      }
-    }
-
-    const uploadResult = await cloudinary.uploader.upload(filePath, {
-      folder: "UserProfiles",
-    });
-    fs.unlinkSync(filePath);
-
-    user.profileImage = uploadResult?.secure_url;
   }
 
   if (errors.length > 0) {
@@ -246,8 +335,24 @@ export const editProfile = async (updateData) => {
     throw err;
   }
 
+  // Handle image upload only after validation  const getFilePath = (fileObj) => fileObj?.filepath || fileObj?.path;
+  const getFilePath = (fileObj) => fileObj?.filepath || fileObj?.path;
+
+ const uploadToCloudinary = async (fileObj, folder) => {
+     const filePath = getFilePath(fileObj);
+     if (!filePath) throw new Error(`Missing file path for ${folder}`);
+     const upload = await cloudinary.uploader.upload(filePath, { folder });
+     fs.unlinkSync(filePath);
+     return upload.secure_url;
+   };
+ 
+  if (files?.profileImage?.[0])
+    user.profileImage = await uploadToCloudinary(files.profileImage[0], "TechProfiles");
+
+
+  // Apply updates
   if (username) user.username = username;
-  if (password) user.password = password;
+  if (password) user.password = password;  // Consider hashing if not already done elsewhere
   if (buildingName) user.buildingName = buildingName;
   if (areaName) user.areaName = areaName;
   if (subAreaName) user.subAreaName = subAreaName;
@@ -268,10 +373,9 @@ export const editProfile = async (updateData) => {
     city: user.city,
     state: user.state,
     pincode: user.pincode,
-    profileImage: user.profileImage,
+    profileImage: user.profileImage || "-",
   };
 };
-
 
 export const getAllUsers = async ({ offset = 0, limit = 10 }) => {
   const skip = parseInt(offset, 10);
