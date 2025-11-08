@@ -49,7 +49,7 @@ export const registerTechnicianController = async (req, res, next) => {
     const form = formidable({
       multiples: true,
       keepExtensions: true,
-      maxFileSize: 0.5 * 1024 * 1024, // 500 KB per file
+      maxFileSize: 3 * 1024 * 1024, // 3 MB per file
     });
 
     // Parse form-data (async/await wrapper)
@@ -107,7 +107,7 @@ export const registerTechnicianByAdminController = async (req, res, next) => {
     const form = formidable({
       multiples: true,
       keepExtensions: true,
-      maxFileSize: 0.5 * 1024 * 1024, // 500 KB per file
+      maxFileSize: 3 * 1024 * 1024, // 3 MB per file
     });
 
     // Parse form-data (async/await wrapper)

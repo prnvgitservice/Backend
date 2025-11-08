@@ -24,6 +24,8 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
+
+
 // cloudinary.api.ping((err, result) => {
 //   if (err) {
 //     console.error("Cloudinary Connection Failed:", err);
