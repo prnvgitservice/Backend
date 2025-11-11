@@ -1,7 +1,14 @@
 import app from './app.js';
 import { v2 as cloudinary } from 'cloudinary';
+import path from "path";
 
 const PORT = process.env.PORT || 8080;
+
+// const path = require("path");
+
+app.get("/robots.txt", (req, res) => {
+  res.sendFile(path.join(__dirname, "robots.txt"));
+});
 
 app.get('/', (req, res) => {
   res.send('🚀 Hello from Cloud Run');
