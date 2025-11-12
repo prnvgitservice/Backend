@@ -1,7 +1,7 @@
+import app from './app.js';
 import { v2 as cloudinary } from 'cloudinary';
 import path from "path";
 import { fileURLToPath } from 'url';
-import app from './app.js';
 
 const PORT = process.env.PORT || 8080;
 
