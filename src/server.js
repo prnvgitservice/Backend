@@ -1,9 +1,11 @@
 import app from './app.js';
 import { v2 as cloudinary } from 'cloudinary';
 import path from "path";
+import { fileURLToPath } from 'url';
 
 const PORT = process.env.PORT || 8080;
 
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // const path = require("path");
