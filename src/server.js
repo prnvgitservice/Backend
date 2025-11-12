@@ -4,6 +4,8 @@ import path from "path";
 
 const PORT = process.env.PORT || 8080;
 
+const __dirname = path.dirname(__filename);
+
 // const path = require("path");
 
 app.get("/robots.txt", (req, res) => {
