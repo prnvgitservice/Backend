@@ -67,7 +67,7 @@ app.use('/api/bookingServices', bookingServicesRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/franchaseEnquiry', franchaseRoutes);
 app.use('/api/guestBooking', guestBookingRoutes);
-app.use('/api/getInTouch', getInTouchRoutes);
+app.use('/api/getInTouch', getInTouchRoutes); 
 app.use('/api/searchContentData', searchContentDataRoutes);
 app.use('/api/technicianSubscription', technicianSubscriptionRoutes);
 app.use('/api/franchiseSubscription', franchiseSubscriptionRoutes);

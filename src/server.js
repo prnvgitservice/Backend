@@ -1,16 +1,29 @@
-import app from './app.js';
 import { v2 as cloudinary } from 'cloudinary';
+import path from "path";
+import { fileURLToPath } from 'url';
+import app from './app.js';
 
 const PORT = process.env.PORT || 8080;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.get("/robots.txt", (req, res) => {
+  res.sendFile(path.join(__dirname, "../robots.txt"));
+});
 
 app.get('/', (req, res) => {
   res.send('🚀 Hello from Cloud Run');
   // res.send('🚀 Server is running successfully!');
 });
-
 app.listen(PORT, () => {
   console.log(`🚀 Server is running port ${PORT}`)
   console.log(`http://localhost:${PORT}`);
+});
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
 });
 
 //  cloudinary.config({
@@ -18,12 +31,6 @@ app.listen(PORT, () => {
 //   api_key: `${process.env.CLOUD_API_KEY}`,
 //   api_secret: `${process.env.CLOUD_API_SECRET}`,
 // });
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET,
-});
-
 
 
 // cloudinary.api.ping((err, result) => {

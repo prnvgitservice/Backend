@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /login/user
+Sitemap: https://prnvservices.com/sitemap.xml 
