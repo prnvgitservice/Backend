@@ -4,7 +4,11 @@ import { generateToken } from "../../utils/generateToken.js";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-import { addTechSubscriptionPlan, getTechSubscriptionPlan, updateTechSubscriptionPlan } from "../technician/technicianSubscriptionDetails.js";
+import {
+  addTechSubscriptionPlan,
+  getTechSubscriptionPlan,
+  updateTechSubscriptionPlan,
+} from "../technician/technicianSubscriptionDetails.js";
 import TechSubscriptionsDetail from "../../models/technician/technicianSubscriptionDetails.js";
 import Franchise from "../../models/authModels/franchise.js";
 import Executive from "../../models/authModels/executive.js";
@@ -14,8 +18,7 @@ import { getServicesByCategoryIdForTech } from "../caregoryServices.js";
 import { addExecutiveAccount } from "../executive/executiveAccount.js";
 import { addReferralsAccount } from "../referrals/referralsAccounts.js";
 import category from "../../models/category.js";
-import Review from '../../models/technician/reviewsAndRatings.js';
-
+import Review from "../../models/technician/reviewsAndRatings.js";
 
 // export const registerTechnician = async ({
 //   userId,
@@ -263,7 +266,9 @@ export const addTechnician = async ({
   // Fetch Category Services
   let categoryServices = [];
   if (category) {
-    categoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+    categoryServices = await getServicesByCategoryIdForTech({
+      categoryId: category,
+    });
   }
 
   // Initialize Technician
@@ -281,8 +286,12 @@ export const addTechnician = async ({
     city,
     state,
     pincode,
-    description: description || "",
-    service: service || "",
+    subscriptionId,
+    authorized1Phone,
+    authorized2Phone,
+    description,
+    service,
+    files,
   });
 
   if (categoryServices?.service?.length > 0) {
@@ -306,30 +315,51 @@ export const addTechnician = async ({
 
   // Upload documents
   if (files?.profileImage?.[0])
-    technician.profileImage = await uploadToCloudinary(files.profileImage[0], "TechProfiles");
+    technician.profileImage = await uploadToCloudinary(
+      files.profileImage[0],
+      "TechProfiles"
+    );
 
   if (files?.aadharFront?.[0])
-    technician.aadharFront = await uploadToCloudinary(files.aadharFront[0], "TechProofs/AadharFront");
+    technician.aadharFront = await uploadToCloudinary(
+      files.aadharFront[0],
+      "TechProofs/AadharFront"
+    );
 
   if (files?.aadharBack?.[0])
-    technician.aadharBack = await uploadToCloudinary(files.aadharBack[0], "TechProofs/AadharBack");
+    technician.aadharBack = await uploadToCloudinary(
+      files.aadharBack[0],
+      "TechProofs/AadharBack"
+    );
 
   if (files?.panCard?.[0])
-    technician.panCard = await uploadToCloudinary(files.panCard[0], "TechProofs/PanCard");
+    technician.panCard = await uploadToCloudinary(
+      files.panCard[0],
+      "TechProofs/PanCard"
+    );
 
   if (files?.voterCard?.[0])
-    technician.voterCard = await uploadToCloudinary(files.voterCard[0], "TechProofs/VoterCard");
+    technician.voterCard = await uploadToCloudinary(
+      files.voterCard[0],
+      "TechProofs/VoterCard"
+    );
 
   // Authorized Persons
   technician.authorizedPersons = [];
 
   if (files?.auth1Photo?.[0]) {
-    const url = await uploadToCloudinary(files.auth1Photo[0], "TechProofs/AuthorizedPersons");
+    const url = await uploadToCloudinary(
+      files.auth1Photo[0],
+      "TechProofs/AuthorizedPersons"
+    );
     technician.authorizedPersons.push({ phone: authorized1Phone, photo: url });
   }
 
   if (files?.auth2Photo?.[0]) {
-    const url = await uploadToCloudinary(files.auth2Photo[0], "TechProofs/AuthorizedPersons");
+    const url = await uploadToCloudinary(
+      files.auth2Photo[0],
+      "TechProofs/AuthorizedPersons"
+    );
     technician.authorizedPersons.push({ phone: authorized2Phone, photo: url });
   }
 
@@ -381,6 +411,159 @@ export const addTechnician = async ({
   };
 };
 
+// export const registerTechnicianByFranchaise = async ({
+//   userId,
+//   username,
+//   phoneNumber,
+//   password,
+//   role = "technician",
+//   category,
+//   buildingName,
+//   areaName,
+//   subAreaName,
+//   city,
+//   state,
+//   pincode,
+//   franchiseId,
+//   subscriptionId,
+// }) => {
+//   const errors = [];
+
+//   if (
+//     !userId ||
+//     !username ||
+//     !phoneNumber ||
+//     !password ||
+//     !buildingName ||
+//     !areaName ||
+//     !role ||
+//     !category ||
+//     !city ||
+//     !state ||
+//     !pincode ||
+//     !franchiseId ||
+//     !subscriptionId
+//   ) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = ["All Fields Required."];
+//     throw err;
+//   }
+
+//   if (!/^\d{10}$/.test(phoneNumber)) {
+//     errors.push("Phone number must be exactly 10 digits.");
+//   }
+
+//   if (password?.length < 6 || password?.length > 20) {
+//     errors.push("Password must be between 6 and 20 characters.");
+//   }
+
+//   const phoneExists = await Technician.findOne({ phoneNumber });
+//   if (phoneExists) {
+//     errors.push("Phone number already exists.");
+//   }
+
+//   if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
+//     const err = new Error("Invalid Franchise ID format.");
+//     err.statusCode = 400;
+//     err.errors = ["Provided Franchise ID is not valid."];
+//     throw err;
+//   }
+
+//   const franchise = await Franchise.findById(franchiseId);
+//   if (!franchise) {
+//     const err = new Error("Franchise not found");
+//     err.statusCode = 404;
+//     err.errors = ["Franchise ID not found."];
+//     throw err;
+//   }
+
+//   if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+//     const err = new Error("Invalid Subscription ID format.");
+//     err.statusCode = 400;
+//     err.errors = ["Provided Subscription ID is not valid."];
+//     throw err;
+//   }
+
+//   const subscription = await SubscriptionPlan.findById(subscriptionId);
+//   if (!subscription) {
+//     const err = new Error("Subscription not found");
+//     err.statusCode = 404;
+//     err.errors = ["Subscription ID not found."];
+//     throw err;
+//   }
+
+//   let caregoryServices = [];
+//   if (category) {
+//     caregoryServices = await getServicesByCategoryIdForTech({
+//       categoryId: category,
+//     });
+//   }
+
+//   const technician = new Technician({
+//     franchiseId,
+//     userId,
+//     username,
+//     phoneNumber,
+//     password,
+//     role,
+//     category,
+//     buildingName,
+//     areaName,
+//     subAreaName,
+//     city,
+//     state,
+//     pincode,
+//   });
+
+//   if (caregoryServices?.service?.length > 0) {
+//     technician.categoryServices = caregoryServices.service.map((srv) => ({
+//       categoryServiceId: srv._id,
+//       status: true,
+//     }));
+//   }
+
+//   await technician.save();
+
+//   let result = null;
+//   if (subscription) {
+//     result = await addTechSubscriptionPlan({
+//       technicianId: technician._id,
+//       subscriptionId: subscription._id,
+//     });
+//   }
+
+//   let franhiseAccount = null;
+//   if (result) {
+//     franhiseAccount = await addFranchiseAccount({
+//       franchiseId,
+//       technicianId: technician._id.toString(),
+//       subscriptionId,
+//     });
+//   }
+
+//   return {
+//     id: technician._id,
+//     franchiseId: technician.franchiseId,
+//     userId: technician.userId,
+//     username: technician.username,
+//     phoneNumber: technician.phoneNumber,
+//     role: technician.role,
+//     category: technician.category,
+//     buildingName: technician.buildingName,
+//     areaName: technician.areaName,
+//     subAreaName: technician.subAreaName,
+//     city: technician.city,
+//     state: technician.state,
+//     pincode: technician.pincode,
+//     plan: subscription?._id || null,
+//     categoryServices: technician.categoryServices,
+//     result: result.subscription,
+//     franhiseAccount: franhiseAccount.newAccountDetails,
+//   };
+// };
+
+
 export const registerTechnicianByFranchaise = async ({
   userId,
   username,
@@ -396,9 +579,15 @@ export const registerTechnicianByFranchaise = async ({
   pincode,
   franchiseId,
   subscriptionId,
+  authorized1Phone,
+  authorized2Phone,
+  description,
+  service,
+  files,
 }) => {
   const errors = [];
 
+  // Basic Required Fields
   if (
     !userId ||
     !username ||
@@ -412,7 +601,9 @@ export const registerTechnicianByFranchaise = async ({
     !state ||
     !pincode ||
     !franchiseId ||
-    !subscriptionId
+    !subscriptionId ||
+    !authorized1Phone ||
+    !authorized2Phone
   ) {
     const err = new Error("Validation failed");
     err.statusCode = 401;
@@ -420,19 +611,45 @@ export const registerTechnicianByFranchaise = async ({
     throw err;
   }
 
-  if (!/^\d{10}$/.test(phoneNumber)) {
+  // Phone Validations
+  if (!/^\d{10}$/.test(phoneNumber))
     errors.push("Phone number must be exactly 10 digits.");
-  }
 
-  if (password?.length < 6 || password?.length > 20) {
+  if (!/^\d{10}$/.test(authorized1Phone))
+    errors.push("Authorized person 1 phone number must be exactly 10 digits.");
+
+  if (!/^\d{10}$/.test(authorized2Phone))
+    errors.push("Authorized person 2 phone number must be exactly 10 digits.");
+
+  // Password
+  if (password.length < 6 || password.length > 20)
     errors.push("Password must be between 6 and 20 characters.");
-  }
 
+  // Required Files
+  if (!files?.aadharFront?.[0]) errors.push("Aadhar front image is required.");
+  if (!files?.aadharBack?.[0]) errors.push("Aadhar back image is required.");
+
+  if (!files?.panCard?.[0] && !files?.voterCard?.[0])
+    errors.push("PAN card or Voter card is required.");
+
+  if (!files?.auth1Photo?.[0])
+    errors.push("Authorized person 1 photo is required.");
+
+  if (!files?.auth2Photo?.[0])
+    errors.push("Authorized person 2 photo is required.");
+
+  // Unique Phone Check
   const phoneExists = await Technician.findOne({ phoneNumber });
-  if (phoneExists) {
-    errors.push("Phone number already exists.");
+  if (phoneExists) errors.push("Phone number already exists.");
+
+  if (errors.length > 0) {
+    const err = new Error("Validation failed");
+    err.statusCode = 400;
+    err.errors = errors;
+    throw err;
   }
 
+  // Validate Franchise
   if (!mongoose.Types.ObjectId.isValid(franchiseId)) {
     const err = new Error("Invalid Franchise ID format.");
     err.statusCode = 400;
@@ -448,6 +665,7 @@ export const registerTechnicianByFranchaise = async ({
     throw err;
   }
 
+  // Validate Subscription
   if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
     const err = new Error("Invalid Subscription ID format.");
     err.statusCode = 400;
@@ -463,11 +681,27 @@ export const registerTechnicianByFranchaise = async ({
     throw err;
   }
 
-  let caregoryServices = [];
+  // Fetch Category Services
+  let categoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+    categoryServices = await getServicesByCategoryIdForTech({
+      categoryId: category,
+    });
   }
 
+  // Cloudinary Upload Helpers
+  const getFilePath = (fileObj) => fileObj?.filepath || fileObj?.path;
+
+  const uploadToCloudinary = async (fileObj, folder) => {
+    const filePath = getFilePath(fileObj);
+    if (!filePath) throw new Error(`Missing file path for ${folder}`);
+
+    const upload = await cloudinary.uploader.upload(filePath, { folder });
+    fs.unlinkSync(filePath);
+    return upload.secure_url;
+  };
+
+  // Create Technician
   const technician = new Technician({
     franchiseId,
     userId,
@@ -482,28 +716,85 @@ export const registerTechnicianByFranchaise = async ({
     city,
     state,
     pincode,
+    subscriptionId,
+    authorized1Phone,
+    authorized2Phone,
+    description,
+    service,
   });
 
-  if (caregoryServices?.service?.length > 0) {
-    technician.categoryServices = caregoryServices.service.map((srv) => ({
+  // Assign Category Services
+  if (categoryServices?.service?.length > 0) {
+    technician.categoryServices = categoryServices.service.map((srv) => ({
       categoryServiceId: srv._id,
       status: true,
     }));
   }
 
+  // Upload Documents
+  if (files.profileImage?.[0])
+    technician.profileImage = await uploadToCloudinary(
+      files.profileImage[0],
+      "TechProfiles"
+    );
+
+  technician.aadharFront = await uploadToCloudinary(
+    files.aadharFront[0],
+    "TechProofs/AadharFront"
+  );
+
+  technician.aadharBack = await uploadToCloudinary(
+    files.aadharBack[0],
+    "TechProofs/AadharBack"
+  );
+
+  if (files.panCard?.[0])
+    technician.panCard = await uploadToCloudinary(
+      files.panCard[0],
+      "TechProofs/PanCard"
+    );
+
+  if (files.voterCard?.[0])
+    technician.voterCard = await uploadToCloudinary(
+      files.voterCard[0],
+      "TechProofs/VoterCard"
+    );
+
+  // Authorized Person Photos
+  technician.authorizedPersons = [];
+
+  const auth1 = await uploadToCloudinary(
+    files.auth1Photo[0],
+    "TechProofs/AuthorizedPersons"
+  );
+
+  technician.authorizedPersons.push({
+    phone: authorized1Phone,
+    photo: auth1,
+  });
+
+  const auth2 = await uploadToCloudinary(
+    files.auth2Photo[0],
+    "TechProofs/AuthorizedPersons"
+  );
+
+  technician.authorizedPersons.push({
+    phone: authorized2Phone,
+    photo: auth2,
+  });
+
   await technician.save();
 
-  let result = null;
-  if (subscription) {
-    result = await addTechSubscriptionPlan({
-      technicianId: technician._id,
-      subscriptionId: subscription._id,
-    });
-  }
+  // Add Subscription Plan
+  const result = await addTechSubscriptionPlan({
+    technicianId: technician._id,
+    subscriptionId,
+  });
 
-  let franhiseAccount = null;
+  // Add Franchise Account
+  let franchiseAccount = null;
   if (result) {
-    franhiseAccount = await addFranchiseAccount({
+    franchiseAccount = await addFranchiseAccount({
       franchiseId,
       technicianId: technician._id.toString(),
       subscriptionId,
@@ -513,7 +804,6 @@ export const registerTechnicianByFranchaise = async ({
   return {
     id: technician._id,
     franchiseId: technician.franchiseId,
-    userId: technician.userId,
     username: technician.username,
     phoneNumber: technician.phoneNumber,
     role: technician.role,
@@ -524,10 +814,18 @@ export const registerTechnicianByFranchaise = async ({
     city: technician.city,
     state: technician.state,
     pincode: technician.pincode,
-    plan: subscription?._id || null,
+    description: technician.description,
+    service: technician.service,
+    profileImage: technician.profileImage || null,
+    aadharFront: technician.aadharFront,
+    aadharBack: technician.aadharBack,
+    panCard: technician.panCard || null,
+    voterCard: technician.voterCard || null,
+    authorizedPersons: technician.authorizedPersons,
     categoryServices: technician.categoryServices,
-    result: result.subscription,
-    franhiseAccount: franhiseAccount.newAccountDetails,
+    plan: subscription._id,
+    result: result?.subscription || null,
+    franchiseAccount: franchiseAccount?.newAccountDetails || null,
   };
 };
 
@@ -615,7 +913,9 @@ export const registerTechnicianByExecutive = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+    caregoryServices = await getServicesByCategoryIdForTech({
+      categoryId: category,
+    });
   }
 
   const technician = new Technician({
@@ -765,7 +1065,9 @@ export const registerTechnicianByReferrals = async ({
 
   let caregoryServices = [];
   if (category) {
-    caregoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+    caregoryServices = await getServicesByCategoryIdForTech({
+      categoryId: category,
+    });
   }
 
   const technician = new Technician({
@@ -948,7 +1250,9 @@ export const registerTechnicianByAdmin = async ({
   // Fetch Category Services
   let categoryServices = [];
   if (category) {
-    categoryServices = await getServicesByCategoryIdForTech({ categoryId: category });
+    categoryServices = await getServicesByCategoryIdForTech({
+      categoryId: category,
+    });
   }
 
   // Initialize Technician
@@ -969,7 +1273,7 @@ export const registerTechnicianByAdmin = async ({
     description: description || "",
     service: service || "",
     admin: true,
-    status: "registered"
+    status: "registered",
   });
 
   if (categoryServices?.service?.length > 0) {
@@ -982,7 +1286,6 @@ export const registerTechnicianByAdmin = async ({
   // Helper function for safe file extraction
   const getFilePath = (fileObj) => fileObj?.filepath || fileObj?.path;
 
-
   // Helper for upload
   const uploadToCloudinary = async (fileObj, folder) => {
     const filePath = getFilePath(fileObj);
@@ -994,30 +1297,51 @@ export const registerTechnicianByAdmin = async ({
 
   // Upload documents
   if (files?.profileImage?.[0])
-    technician.profileImage = await uploadToCloudinary(files.profileImage[0], "TechProfiles");
+    technician.profileImage = await uploadToCloudinary(
+      files.profileImage[0],
+      "TechProfiles"
+    );
 
   if (files?.aadharFront?.[0])
-    technician.aadharFront = await uploadToCloudinary(files.aadharFront[0], "TechProofs/AadharFront");
+    technician.aadharFront = await uploadToCloudinary(
+      files.aadharFront[0],
+      "TechProofs/AadharFront"
+    );
 
   if (files?.aadharBack?.[0])
-    technician.aadharBack = await uploadToCloudinary(files.aadharBack[0], "TechProofs/AadharBack");
+    technician.aadharBack = await uploadToCloudinary(
+      files.aadharBack[0],
+      "TechProofs/AadharBack"
+    );
 
   if (files?.panCard?.[0])
-    technician.panCard = await uploadToCloudinary(files.panCard[0], "TechProofs/PanCard");
+    technician.panCard = await uploadToCloudinary(
+      files.panCard[0],
+      "TechProofs/PanCard"
+    );
 
   if (files?.voterCard?.[0])
-    technician.voterCard = await uploadToCloudinary(files.voterCard[0], "TechProofs/VoterCard");
+    technician.voterCard = await uploadToCloudinary(
+      files.voterCard[0],
+      "TechProofs/VoterCard"
+    );
 
   // Authorized Persons
   technician.authorizedPersons = [];
 
   if (files?.auth1Photo?.[0]) {
-    const url = await uploadToCloudinary(files.auth1Photo[0], "TechProofs/AuthorizedPersons");
+    const url = await uploadToCloudinary(
+      files.auth1Photo[0],
+      "TechProofs/AuthorizedPersons"
+    );
     technician.authorizedPersons.push({ phone: authorized1Phone, photo: url });
   }
 
   if (files?.auth2Photo?.[0]) {
-    const url = await uploadToCloudinary(files.auth2Photo[0], "TechProofs/AuthorizedPersons");
+    const url = await uploadToCloudinary(
+      files.auth2Photo[0],
+      "TechProofs/AuthorizedPersons"
+    );
     technician.authorizedPersons.push({ phone: authorized2Phone, photo: url });
   }
 
@@ -1331,9 +1655,9 @@ export const loginTechnician = async ({ phoneNumber, password }) => {
 
   const errors = [];
 
-  const technician = await Technician.find({status : "registered"}).findOne({ phoneNumber }).select(
-    "+password"
-  );
+  const technician = await Technician.find({ status: "registered" })
+    .findOne({ phoneNumber })
+    .select("+password");
   if (!technician) {
     errors.push("Technician not found with this phone number.");
   }
@@ -1537,8 +1861,6 @@ export const updateTechByAdmin = async ({
     throw err;
   }
 
-  
-
   if (files.profileImage?.[0]) {
     const filePath = files.profileImage[0].path;
 
@@ -1561,17 +1883,17 @@ export const updateTechByAdmin = async ({
 
   let subscriptionDetail;
 
-  if(!subscriptionId){
+  if (!subscriptionId) {
     subscriptionDetail = null;
     return;
-  }else{
+  } else {
     subscriptionDetail = await updateTechSubscriptionPlan({
-     technicianId: technician._id,
-     subscriptionId,
-   });
-   if (subscriptionDetail && subscriptionDetail.error) {
-     errors.push(subscriptionDetail.error);
-   }
+      technicianId: technician._id,
+      subscriptionId,
+    });
+    if (subscriptionDetail && subscriptionDetail.error) {
+      errors.push(subscriptionDetail.error);
+    }
   }
 
   if (username) technician.username = username;
@@ -1611,7 +1933,7 @@ export const updateTechByAdmin = async ({
     service: technician.service,
     profileImage: technician.profileImage,
     subscriptionDetail: subscriptionDetail || null,
-    };
+  };
 };
 
 export const getTechnicianProfile = async (technicianId) => {
@@ -1637,7 +1959,7 @@ export const getTechnicianProfile = async (technicianId) => {
     throw err;
   }
 
-   const categories = await category.findById(technician.category)
+  const categories = await category.findById(technician.category);
   if (!categories) {
     const err = new Error("category not found");
     err.statusCode = 404;
@@ -1649,8 +1971,7 @@ export const getTechnicianProfile = async (technicianId) => {
     technicianId,
   });
 
-    const ratings = await Review.find({ technicianId });
-  
+  const ratings = await Review.find({ technicianId });
 
   let lastSubscription = null;
   if (
@@ -1871,15 +2192,17 @@ export const getAllTechnicians = async ({ offset = 0, limit = 10 }) => {
     throw err;
   }
 
-  const allowedStatus = ["registered", "requested", "declined"]
+  const allowedStatus = ["registered", "requested", "declined"];
 
-  const totalTechnicians = await Technician.find({status : allowedStatus}).countDocuments({});
-  const technicians = await Technician.find({ status : "registered"})
+  const totalTechnicians = await Technician.find({
+    status: allowedStatus,
+  }).countDocuments({});
+  const technicians = await Technician.find({ status: "registered" })
     .skip(skip)
     .limit(pageSize)
     .sort({ createdAt: -1 });
 
-const techDetails = await Promise.all(
+  const techDetails = await Promise.all(
     technicians.map(async (technician) => {
       const categoryDoc = await category.findById(technician.category); // Assuming model is 'Category' (capitalized)
       const techSubDetails = await getTechSubscriptionPlan(technician._id);
@@ -1917,8 +2240,7 @@ const techDetails = await Promise.all(
   };
 };
 
-export const getAllTechRequest = async ({offset , limit}) =>{
-
+export const getAllTechRequest = async ({ offset, limit }) => {
   const skip = parseInt(offset, 10);
   const pageSize = parseInt(limit, 10);
 
@@ -1929,16 +2251,17 @@ export const getAllTechRequest = async ({offset , limit}) =>{
     throw err;
   }
 
-  const allowedStatus = ["requested", "declined"]
+  const allowedStatus = ["requested", "declined"];
 
-  const technicians = await Technician.find({status : allowedStatus})
-  .skip(skip)
-  .limit(pageSize)
-  .sort({ createdAt: -1 });
-  
+  const technicians = await Technician.find({ status: allowedStatus })
+    .skip(skip)
+    .limit(pageSize)
+    .sort({ createdAt: -1 });
+
   // const totalTechnicians = (await Technician.find({status : allowedStatus})).length;
-  const totalTechnicians = await Technician.find({status : allowedStatus}).countDocuments({});
-
+  const totalTechnicians = await Technician.find({
+    status: allowedStatus,
+  }).countDocuments({});
 
   const techDetails = await Promise.all(
     technicians.map(async (technician) => {
@@ -1951,7 +2274,7 @@ export const getAllTechRequest = async ({offset , limit}) =>{
     })
   );
 
-   return {
+  return {
     total: totalTechnicians,
     offset: skip,
     limit: pageSize,
@@ -1981,21 +2304,26 @@ export const getAllTechRequest = async ({offset , limit}) =>{
       createdAt: technician.createdAt,
       techDetails: techDetails[technicians.indexOf(technician)],
     })),
-  };  
-}
+  };
+};
 
-export const updateTechnicianStatusService = async (technicianId, newStatus) => {
-  if (!['registered', 'declined'].includes(newStatus)) {
+export const updateTechnicianStatusService = async (
+  technicianId,
+  newStatus
+) => {
+  if (!["registered", "declined"].includes(newStatus)) {
     throw new Error('Invalid status. Must be "registered" or "declined".');
   }
 
   const technician = await Technician.findById(technicianId);
   if (!technician) {
-    throw new Error('Technician not found.');
+    throw new Error("Technician not found.");
   }
 
-  if (technician.status !== 'requested') {
-    throw new Error('Can only update status from "requested" to "registered" or "declined".');
+  if (technician.status !== "requested") {
+    throw new Error(
+      'Can only update status from "requested" to "registered" or "declined".'
+    );
   }
 
   const allowedStatuses = ["registered", "declined"];
@@ -2013,7 +2341,6 @@ export const updateTechnicianStatusService = async (technicianId, newStatus) => 
 
   return technician;
 };
-
 
 export const changeServiceStatus = async ({
   technicianId,

@@ -24,8 +24,6 @@ const generateSequrityCode = () => {
   return sequrityCode;
 };
 
-
-
 // export const registerTechnicianController = async (req, res, next) => {
 //   try {
 //     const technicianData = {
@@ -63,16 +61,20 @@ export const registerTechnicianController = async (req, res, next) => {
     // Convert formidable field arrays into plain key:value
     const parsedFields = {};
     for (const key in fields) {
-      parsedFields[key] = Array.isArray(fields[key]) ? fields[key][0] : fields[key];
+      parsedFields[key] = Array.isArray(fields[key])
+        ? fields[key][0]
+        : fields[key];
     }
 
     // Map nested keys for authorized persons
     const mappedFields = { ...parsedFields };
     if (parsedFields["authorizedPersons[0][phone]"]) {
-      mappedFields.authorized1Phone = parsedFields["authorizedPersons[0][phone]"];
+      mappedFields.authorized1Phone =
+        parsedFields["authorizedPersons[0][phone]"];
     }
     if (parsedFields["authorizedPersons[1][phone]"]) {
-      mappedFields.authorized2Phone = parsedFields["authorizedPersons[1][phone]"];
+      mappedFields.authorized2Phone =
+        parsedFields["authorizedPersons[1][phone]"];
     }
 
     // Clean up unwanted nested keys
@@ -85,7 +87,6 @@ export const registerTechnicianController = async (req, res, next) => {
       userId: generateSequrityCode(), // Generate a unique technician code
       files,
     };
-
 
     // Call service to register technician
     const result = await technician.addTechnician(technicianData);
@@ -121,16 +122,20 @@ export const registerTechnicianByAdminController = async (req, res, next) => {
     // Convert formidable field arrays into plain key:value
     const parsedFields = {};
     for (const key in fields) {
-      parsedFields[key] = Array.isArray(fields[key]) ? fields[key][0] : fields[key];
+      parsedFields[key] = Array.isArray(fields[key])
+        ? fields[key][0]
+        : fields[key];
     }
 
     // Map nested keys for authorized persons
     const mappedFields = { ...parsedFields };
     if (parsedFields["authorizedPersons[0][phone]"]) {
-      mappedFields.authorized1Phone = parsedFields["authorizedPersons[0][phone]"];
+      mappedFields.authorized1Phone =
+        parsedFields["authorizedPersons[0][phone]"];
     }
     if (parsedFields["authorizedPersons[1][phone]"]) {
-      mappedFields.authorized2Phone = parsedFields["authorizedPersons[1][phone]"];
+      mappedFields.authorized2Phone =
+        parsedFields["authorizedPersons[1][phone]"];
     }
 
     // Clean up unwanted nested keys
@@ -143,7 +148,6 @@ export const registerTechnicianByAdminController = async (req, res, next) => {
       userId: generateSequrityCode(), // Generate a unique technician code
       files,
     };
-
 
     // Call service to register technician
     const result = await technician.registerTechnicianByAdmin(technicianData);
@@ -165,13 +169,51 @@ export const registerTechnicianByFranchaiseController = async (
   next
 ) => {
   try {
+        const form = formidable({
+      multiples: true,
+      keepExtensions: true,
+      maxFileSize: 3 * 1024 * 1024, // 3 MB per file
+    });
+
+    // Parse form-data (async/await wrapper)
+    const [fields, files] = await new Promise((resolve, reject) => {
+      form.parse(req, (err, fields, files) => {
+        if (err) reject(err);
+        else resolve([fields, files]);
+      });
+    });
+
+    // Convert formidable field arrays into plain key:value
+    const parsedFields = {};
+    for (const key in fields) {
+      parsedFields[key] = Array.isArray(fields[key])
+        ? fields[key][0]
+        : fields[key];
+    }
+
+    // Map nested keys for authorized persons
+    const mappedFields = { ...parsedFields };
+    if (parsedFields["authorizedPersons[0][phone]"]) {
+      mappedFields.authorized1Phone =
+        parsedFields["authorizedPersons[0][phone]"];
+    }
+    if (parsedFields["authorizedPersons[1][phone]"]) {
+      mappedFields.authorized2Phone =
+        parsedFields["authorizedPersons[1][phone]"];
+    }
+
+    // Clean up unwanted nested keys
+    delete mappedFields["authorizedPersons[0][phone]"];
+    delete mappedFields["authorizedPersons[1][phone]"];
+
+    // Prepare technician data
     const technicianData = {
-      ...req.body,
-      userId: generateSequrityCode(),
+      ...mappedFields,
+      userId: generateSequrityCode(), // Generate a unique technician code
+      files,
     };
-    const result = await technician.registerTechnicianByFranchaise(
-      technicianData
-    );
+    
+    const result = await technician.registerTechnicianByFranchaise(technicianData);
     res.status(201).json({
       success: true,
       message: "Technician Registered By Franchaise successfully.",
@@ -352,17 +394,20 @@ export const getAllTechnicianController = async (req, res, next) => {
 export const getAllTechRequestController = async (req, res, next) => {
   try {
     const { offset, limit } = req.query;
-    const result = await technician.getAllTechRequest({offset , limit});
+    const result = await technician.getAllTechRequest({ offset, limit });
     res.status(200).json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
-}
+};
 
 export const updateTechnicianStatusCont = async (req, res, next) => {
   const { technicianId, status } = req.params; // or req.body if you prefer
   try {
-    const updated = await technician.updateTechnicianStatusService(technicianId, status);
+    const updated = await technician.updateTechnicianStatusService(
+      technicianId,
+      status
+    );
     return res.status(200).json({
       success: true,
       message: `Technician status updated to "${updated.status}".`,
@@ -371,12 +416,13 @@ export const updateTechnicianStatusCont = async (req, res, next) => {
   } catch (err) {
     // ensure we propagate typed status codes if set in service
     if (err.status) {
-      return res.status(err.status).json({ success: false, message: err.message });
+      return res
+        .status(err.status)
+        .json({ success: false, message: err.message });
     }
     next(err);
   }
 };
-
 
 export const changeServiceStatusController = async (req, res, next) => {
   try {
