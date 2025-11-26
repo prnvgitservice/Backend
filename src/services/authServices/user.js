@@ -45,7 +45,13 @@ export const register = async ({
 
   const phoneExists = await User.findOne({ phoneNumber });
   if (phoneExists) {
-    errors.push("Phone number already exists.");
+    // errors.push("Phone number already exists.");
+    if (errors.includes("Phone number already exists.")) {
+    const err = new Error("Duplicate entry");
+    err.statusCode = 409;
+    err.errors = ["Phone number already exists."];
+    throw err;
+}
   }
 
   if (errors.length > 0) {
@@ -84,6 +90,60 @@ export const register = async ({
   };
 };
 
+// export const login = async ({ phoneNumber, password }) => {
+//   if (!phoneNumber || !password) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 400;
+//     err.errors = ["Phone number and password are required."];
+//     throw err;
+//   }
+//   const errors = [];
+//   const user = await User.findOne({ phoneNumber }).select("+password");
+
+//   if (!user) {
+//     // errors.push("User not found with this phone number.");
+//     if (!user) {
+//   const err = new Error("User not found with this phone number.");
+//   err.statusCode = 404;
+//   err.errors = ["User not found with this phone number."];
+//   throw err;
+// }
+//   }
+
+//   let isMatch = false;
+
+//   if (user) {
+//     isMatch = await user.isPasswordMatch(password);
+//     if (!isMatch) {
+//       errors.push("Invalid credentials.");
+//     }
+//   }
+
+//   if (errors.length > 0) {
+//     const err = new Error("Validation failed");
+//     err.statusCode = 401;
+//     err.errors = errors;
+//     throw err;
+//   }
+
+//   const token = generateToken(user);
+
+//   return {
+//     id: user._id,
+//     username: user.username,
+//     phoneNumber: user.phoneNumber,
+//     role: user.role,
+//     category: user.category,
+//     buildingName: user.buildingName,
+//     areaName: user.areaName,
+//     subAreaName: user.subAreaName,
+//     city: user.city,
+//     state: user.state,
+//     pincode: user.pincode,
+//     token,
+//   };
+// };
+
 export const login = async ({ phoneNumber, password }) => {
   if (!phoneNumber || !password) {
     const err = new Error("Validation failed");
@@ -91,26 +151,22 @@ export const login = async ({ phoneNumber, password }) => {
     err.errors = ["Phone number and password are required."];
     throw err;
   }
-  const errors = [];
+
   const user = await User.findOne({ phoneNumber }).select("+password");
 
   if (!user) {
-    errors.push("User not found with this phone number.");
+    const err = new Error("User not found");
+    err.statusCode = 404;
+    err.errors = ["User not found with this phone number."];
+    throw err;
   }
 
-  let isMatch = false;
+  const isMatch = await user.isPasswordMatch(password);
 
-  if (user) {
-    isMatch = await user.isPasswordMatch(password);
-    if (!isMatch) {
-      errors.push("Invalid credentials.");
-    }
-  }
-
-  if (errors.length > 0) {
-    const err = new Error("Validation failed");
+  if (!isMatch) {
+    const err = new Error("Invalid credentials");
     err.statusCode = 401;
-    err.errors = errors;
+    err.errors = ["Invalid credentials."];
     throw err;
   }
 
