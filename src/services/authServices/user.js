@@ -156,7 +156,7 @@ export const login = async ({ phoneNumber, password }) => {
 
   if (!user) {
     const err = new Error("User not found");
-    err.statusCode = 404;
+    err.statusCode = 200;
     err.errors = ["User not found with this phone number."];
     throw err;
   }
