@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 8080;
 //   res.sendFile(path.join(__dirname, "../robots.txt"));
 // });
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) => {  
   res.send('🚀 Hello from Cloud Run');
   // res.send('🚀 Server is running successfully!');
 });
@@ -34,7 +34,7 @@ setTimeout(() => {
       console.log("✅ Cloudinary Connected Successfully");
     }
   });
-}, 2000);
+}, 2000);  
 
 //  cloudinary.config({
 //   cloud_name: `${process.env.CLOUD_NAME}`,

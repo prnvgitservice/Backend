@@ -30,7 +30,7 @@ export const register = async ({
     !pincode
   ) {
     const err = new Error("Validation failed");
-    err.statusCode = 401;
+    err.statusCode = 400;
     err.errors = ["All Fields Required."];
     throw err;
   }
@@ -50,7 +50,7 @@ export const register = async ({
 
   if (errors.length > 0) {
     const err = new Error("Validation failed");
-    err.statusCode = 401;
+    err.statusCode = 400;
     err.errors = errors;
     throw err;
   }
@@ -87,7 +87,7 @@ export const register = async ({
 export const login = async ({ phoneNumber, password }) => {
   if (!phoneNumber || !password) {
     const err = new Error("Validation failed");
-    err.statusCode = 401;
+    err.statusCode = 400;
     err.errors = ["Phone number and password are required."];
     throw err;
   }

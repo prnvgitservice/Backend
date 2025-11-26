@@ -187,7 +187,7 @@ export const addTechnician = async ({
     !authorized2Phone
   ) {
     const err = new Error("Validation failed");
-    err.statusCode = 401;
+    err.statusCode = 400;
     err.errors = ["All Fields Required."];
     throw err;
   }

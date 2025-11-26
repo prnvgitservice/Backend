@@ -82,7 +82,7 @@ export const registerTechnicianController = async (req, res, next) => {
     // Prepare technician data
     const technicianData = {
       ...mappedFields,
-      userId: generateSequrityCode(), // Generate a unique technician code
+      userId: generateSequrityCode(), 
       files,
     };
 
@@ -151,7 +151,7 @@ export const registerTechnicianByAdminController = async (req, res, next) => {
     // Success response
     res.status(201).json({
       success: true,
-      message: "Technician registered successfully.",
+      message: "Technician registered By Admin successfully.",
       result,
     });
   } catch (err) {
@@ -220,7 +220,7 @@ export const renewTechnicianByFranchaiseController = async (req, res, next) => {
 export const loginTechnicianController = async (req, res, next) => {
   try {
     const result = await technician.loginTechnician(req.body);
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Technician Login successfully.",
       result,
@@ -290,7 +290,7 @@ export const getTechProfileControl = async (req, res, next) => {
   try {
     const { technicianId } = req.params;
     const result = await technician.getTechnicianProfile(technicianId);
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Technician profile fetched successfully.",
       result,
@@ -310,7 +310,7 @@ export const getTechnicianProfilesByFranchiseIdCont = async (
     const result = await technician.getTechnicianProfilesByFranchiseId(
       franchiseId
     );
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Technicians profile fetched by Franchise successfully.",
       result,
@@ -329,7 +329,7 @@ export const getTechnicianProfilesByExecutiveIdCont = async (
     const result = await technician.getTechnicianProfilesByExecutiveId(
       executiveId
     );
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Technicians profile fetched by Executive successfully.",
       result,
