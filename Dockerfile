@@ -16,7 +16,7 @@ COPY . .
 
 # Expose port (Cloud Run expects environment variable $PORT)
 # ENV PORT=8080
-EXPOSE 3000
+EXPOSE 8080
 
 # Start the app
 CMD ["npm", "start"]
