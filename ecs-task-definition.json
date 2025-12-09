@@ -1,18 +1,18 @@
 {
-  "family": "backend-task-family",
+  "family": "backend-api-task",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
+  "executionRoleArn": "arn:aws:iam::<arn:aws:iam::347201599372:role/ecsTaskExecutionRole
+>:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "backend-api",
       "image": "347201599372.dkr.ecr.eu-north-1.amazonaws.com/backend-api:latest",
-      "essential": true,
       "portMappings": [
         {
           "containerPort": 8080,
-          "hostPort": 8080,
           "protocol": "tcp"
         }
       ]
