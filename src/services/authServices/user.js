@@ -18,7 +18,6 @@ export const register = async ({
   pincode,
 }) => {
   const errors = [];
-
   if (
     !username ||
     !phoneNumber ||
