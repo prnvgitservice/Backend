@@ -4,8 +4,7 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::<arn:aws:iam::347201599372:role/ecsTaskExecutionRole
->:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::347201599372:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "backend-api",
