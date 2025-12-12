@@ -45,11 +45,10 @@ const generateSequrityCode = () => {
 
 export const registerTechnicianController = async (req, res, next) => {
   try {
-    // Initialize formidable with safe limits
     const form = formidable({
       multiples: true,
       keepExtensions: true,
-      maxFileSize: 3 * 1024 * 1024, // 3 MB per file
+      maxFileSize: 3 * 1024 * 1024, 
     });
 
     // Parse form-data (async/await wrapper)
