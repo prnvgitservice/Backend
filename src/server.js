@@ -16,6 +16,10 @@ app.get('/', (req, res) => {
   res.send('🚀 Hello from Cloud Run');
   // res.send('🚀 Server is running successfully!');
 });
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server is running port ${PORT}`)
   console.log(`http://localhost:${PORT}`);

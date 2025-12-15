@@ -6,7 +6,7 @@
   "memory": "512",
 
   "executionRoleArn": "arn:aws:iam::347201599372:role/ecsTaskExecutionRole",
-  "taskRoleArn": "arn:aws:iam::347201599372:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::347201599372:role/backend-api-task-role",
 
   "containerDefinitions": [
     {

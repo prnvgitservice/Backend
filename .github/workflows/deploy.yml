@@ -37,4 +37,4 @@ jobs:
           task-definition: ecs-task-definition.json
           service: backend-task-service
           cluster: backend_cluster
-          wait-for-service-stability: true
+          wait-for-service-stability: false
